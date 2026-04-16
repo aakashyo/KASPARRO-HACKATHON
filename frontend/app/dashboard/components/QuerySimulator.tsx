@@ -37,9 +37,9 @@ export default function QuerySimulator({ products }: QuerySimulatorProps) {
   };
 
   const getMedal = (rank: number) => {
-    if (rank === 1) return '🥇';
-    if (rank === 2) return '🥈';
-    if (rank === 3) return '🥉';
+    if (rank === 1) return 'Rank 1';
+    if (rank === 2) return 'Rank 2';
+    if (rank === 3) return 'Rank 3';
     return `#${rank}`;
   };
 
