@@ -27,6 +27,7 @@ class GapAnalysis(BaseModel):
     missing_attributes: List[str]
     misinterpretations: List[str]
     confidence_drop_reasons: List[str]
+    insight: str
     severity: int
     impact_level: Literal["low", "medium", "high"]
 

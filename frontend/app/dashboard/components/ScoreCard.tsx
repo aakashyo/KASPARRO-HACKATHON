@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Info } from 'lucide-react';
 
 interface ScoreCardProps {
@@ -8,48 +8,31 @@ interface ScoreCardProps {
 }
 
 export default function ScoreCard({ label, score, reason }: ScoreCardProps) {
-  const [showReason, setShowReason] = useState(false);
-
-  const getScoreColor = (s: number) => {
-    if (s >= 80) return 'text-emerald-400';
-    if (s >= 50) return 'text-amber-400';
-    return 'text-rose-400';
-  };
-
-  const getBgColor = (s: number) => {
-    if (s >= 80) return 'bg-emerald-400/10 border-emerald-400/20';
-    if (s >= 50) return 'bg-amber-400/10 border-amber-400/20';
-    return 'bg-rose-400/10 border-rose-400/20';
-  };
-
   return (
-    <div 
-      className={`p-6 rounded-2xl border ${getBgColor(score)} backdrop-blur-sm transition-all hover:scale-[1.02] cursor-help relative group`}
-      onMouseEnter={() => setShowReason(true)}
-      onMouseLeave={() => setShowReason(false)}
-    >
-      <div className="flex justify-between items-start mb-4">
-        <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wider">{label}</h3>
-        <span className={`text-2xl font-bold ${getScoreColor(score)}`}>{score}%</span>
-      </div>
-      <div className="w-full bg-zinc-800 rounded-full h-1.5 mb-2">
-        <div 
-          className={`h-1.5 rounded-full transition-all duration-1000 ${getScoreColor(score).replace('text-', 'bg-')}`} 
-          style={{ width: `${score}%` }}
-        ></div>
-      </div>
-      <div className="flex items-center gap-1.5 mt-2">
-        <Info size={12} className="text-zinc-500" />
-        <p className="text-[10px] text-zinc-500 uppercase font-bold">Details</p>
+    <div className="card-premium p-6 flex flex-col items-center justify-center text-center relative group overflow-hidden">
+      {/* Tooltip on hover */}
+      <div className="absolute inset-0 bg-slate-900/95 text-white p-4 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center text-[10px] sm:text-xs leading-relaxed z-10 font-medium">
+        <p>{reason}</p>
       </div>
 
-      {showReason && (
-        <div className="absolute top-[110%] left-0 right-0 z-30 p-4 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-          <p className="text-xs text-zinc-300 leading-relaxed font-medium">
-            {reason}
-          </p>
+      <div className="relative z-0 flex flex-col items-center">
+        <div className="absolute -top-10 -right-10 w-20 h-20 bg-blue-50 rounded-full blur-2xl opacity-50 group-hover:bg-blue-100 transition-colors" />
+        
+        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2 truncate max-w-full px-2">
+            {label}
+        </span>
+        
+        <div className="relative">
+            <span className={`text-4xl font-black tabular-nums transition-colors ${score > 80 ? 'text-emerald-500' : score > 50 ? 'text-amber-500' : 'text-red-500'}`}>
+                {score}
+            </span>
+            <span className="text-xs font-bold text-slate-300 ml-0.5">/100</span>
         </div>
-      )}
+
+        <div className="mt-4 p-1.5 bg-slate-50 border border-slate-100 rounded-lg text-slate-400 group-hover:text-blue-600 transition-colors">
+            <Info size={14} />
+        </div>
+      </div>
     </div>
   );
 }

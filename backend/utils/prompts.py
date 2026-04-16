@@ -62,13 +62,14 @@ Return:
   "missing_attributes": [],
   "misinterpretations": [],
   "confidence_drop_reasons": [],
+  "insight": "",
   "severity": 1,
   "impact_level": "low | medium | high"
 }}
 Rules:
-- Missing attributes = present in intent but absent in perception
-- Misinterpretation = AI misunderstood meaning
-- Severity must reflect impact on recommendation
+- missing_attributes = present in intent but absent in perception
+- insight must be a one-line executive summary of the core misunderstanding
+- severity must reflect impact on recommendation
 - Be specific, not generic"""
     }
 
