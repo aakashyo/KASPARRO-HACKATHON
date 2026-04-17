@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { Inter, Montserrat, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({
@@ -8,25 +8,32 @@ const inter = Inter({
   display: "swap",
 });
 
+const montserrat = Montserrat({
+  variable: "--font-montserrat",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800", "900"],
+  display: "swap",
+});
+
 const jetbrains = JetBrains_Mono({
-  variable: "--font-mono",
+  variable: "--font-jetbrains",
   subsets: ["latin"],
   display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "AI RepOptimizer — Perception Intelligence for Shopify",
-  description: "Diagnose how AI shopping agents perceive your Shopify store. Identify intelligence gaps, fix product data, and win the agentic ranking race.",
+  title: "RepOptimizer — AI Perception Intelligence for Shopify",
+  description: "See how AI shopping agents perceive your store. Diagnose intelligence gaps and fix your product data to rank higher in the agentic commerce era.",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${jetbrains.variable}`}>
-      <body className="min-h-screen bg-[#0a0a0f] text-[#f0f0f5] antialiased">{children}</body>
+    <html lang="en" className={`${inter.variable} ${montserrat.variable} ${jetbrains.variable}`}>
+      <body className="min-h-screen bg-[#0e0e0e] text-[#f5f5f5] antialiased">
+        {children}
+      </body>
     </html>
   );
 }
