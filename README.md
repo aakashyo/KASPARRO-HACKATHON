@@ -57,7 +57,9 @@ Most Shopify stores are invisible to these agents because their data is ambiguou
 ```bash
 cd backend
 pip install -r requirements.txt
-# Create .env and add:
+# Create .env from the template:
+cp .env.example .env
+# Then update the keys in .env:
 # GROQ_API_KEY=your_key
 # SHOPIFY_STORE_URL=your_store
 # SHOPIFY_ADMIN_TOKEN=your_token
@@ -67,7 +69,9 @@ python -m backend.main
 ### 3. Frontend Setup
 ```bash
 cd frontend
-# Create .env.local and add:
+# Create .env.local from the template:
+cp .env.local.example .env.local
+# Then update the keys in .env.local:
 # NEXT_PUBLIC_API_URL=http://localhost:8000
 npm install
 npm run dev
