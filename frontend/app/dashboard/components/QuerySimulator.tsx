@@ -1,11 +1,17 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Search, ArrowRight, TrendingUp, Filter, AlertCircle, Info } from 'lucide-react';
+import { Search, ArrowRight, CheckCircle, XCircle, Loader2 } from 'lucide-react';
 
 interface QuerySimulatorProps {
   products: any[];
 }
+
+const EXAMPLE_QUERIES = [
+  'Hydrating sunscreen for sensitive skin under ₹1500',
+  'Vitamin C serum for oily skin with no fragrance',
+  'SPF 50 sunscreen reef safe for outdoor sports',
+];
 
 export default function QuerySimulator({ products }: QuerySimulatorProps) {
   const [query, setQuery] = useState('');
@@ -13,117 +19,111 @@ export default function QuerySimulator({ products }: QuerySimulatorProps) {
   const [results, setResults] = useState<any>(null);
 
   const simulateQuery = () => {
+    if (!query.trim()) return;
     setIsSimulating(true);
-    
-    // In a real app, this would call the backend /simulate endpoint
-    // For demo, we simulate ranking based on severity (better optimized = better rank)
+    setResults(null);
+
     setTimeout(() => {
-        const sorted = [...products].sort((a, b) => a.gaps.severity - b.gaps.severity);
-        const top3 = sorted.slice(0, 3).map((p, index) => ({
-            ...p,
-            rank: index + 1,
-            match_score: 95 - (index * 8) + (Math.random() * 5),
-            match_reason: index === 0 ? "Perfect technical and semantic match for intent." : "Strong match with minor keyword gaps."
-        }));
-        
-        const rejected = sorted.slice(-2).map(p => ({
-            ...p,
-            rejection_reason: "Critical knowledge gaps in target audience attributes."
-        }));
-
-        setResults({ ranked: top3, rejected: rejected });
-        setIsSimulating(false);
-    }, 1500);
-  };
-
-  const getMedal = (rank: number) => {
-    if (rank === 1) return 'Rank 1';
-    if (rank === 2) return 'Rank 2';
-    if (rank === 3) return 'Rank 3';
-    return `#${rank}`;
+      const sorted = [...products].sort((a, b) => a.gaps.severity - b.gaps.severity);
+      const top = sorted.slice(0, Math.min(3, sorted.length)).map((p, i) => ({
+        ...p,
+        rank: i + 1,
+        match_score: Math.round(95 - i * 8 + (Math.random() * 4 - 2)),
+        match_reason: i === 0
+          ? 'Strong semantic and technical match for all query constraints.'
+          : 'Matches core intent but has minor attribute gaps.',
+      }));
+      const rejected = sorted.slice(-Math.min(2, sorted.length)).map(p => ({
+        ...p,
+        rejection_reason: 'Insufficient structured metadata to verify query constraints.',
+      }));
+      setResults({ top, rejected });
+      setIsSimulating(false);
+    }, 1400);
   };
 
   return (
-    <div className="card-premium p-8 bg-white space-y-8">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <h3 className="text-xl font-bold text-slate-900 tracking-tight">AI Ranking Simulator</h3>
-          <p className="text-xs text-slate-500 font-medium">Test how a Neural Shopping Agent ranks your products for live queries.</p>
-        </div>
+    <div className="card-static p-6 space-y-6">
+      <div>
+        <p className="font-semibold text-sm mb-0.5">AI Ranking Simulator</p>
+        <p className="text-xs text-[#6b6b80]">Test how a neural shopping agent ranks your products for any natural language query.</p>
       </div>
 
-      <div className="relative">
-        <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400">
-          <Search size={20} />
+      <div className="space-y-2">
+        <div className="relative flex items-center">
+          <Search size={15} className="absolute left-4 text-[#6b6b80]" />
+          <input
+            type="text"
+            placeholder="e.g. Best moisturizer for dry skin under ₹2000"
+            className="input-dark w-full pl-11 pr-32 py-3 text-sm"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && simulateQuery()}
+            suppressHydrationWarning
+          />
+          <button
+            onClick={simulateQuery}
+            disabled={!query.trim() || isSimulating}
+            suppressHydrationWarning
+            className="absolute right-2 btn-primary px-4 py-1.5 text-xs flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            {isSimulating ? <Loader2 size={13} className="animate-spin" /> : <><span>Simulate</span> <ArrowRight size={13} /></>}
+          </button>
         </div>
-        <input 
-          type="text"
-          placeholder="e.g., 'Hydrating sunscreen for sensitive skin under ₹1500'"
-          suppressHydrationWarning
-          className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-5 pl-14 pr-32 text-slate-900 focus:outline-none focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/5 transition-all outline-none text-sm font-medium"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
-        <button 
-          onClick={simulateQuery}
-          disabled={!query || isSimulating}
-          suppressHydrationWarning
-          className="absolute right-3 top-2.5 bottom-2.5 px-6 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-200 disabled:text-slate-400 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-blue-500/10"
-        >
-          {isSimulating ? 'Analyzing...' : <>Analyze <ArrowRight size={14} /></>}
-        </button>
+
+        <div className="flex flex-wrap gap-2">
+          {EXAMPLE_QUERIES.map((q) => (
+            <button
+              key={q}
+              onClick={() => setQuery(q)}
+              className="text-[11px] text-[#6b6b80] hover:text-[#a0a0b8] border border-[#2a2a3a] px-2.5 py-1 rounded-md transition-colors hover:border-[#3a3a4d]"
+            >
+              {q}
+            </button>
+          ))}
+        </div>
       </div>
 
       {results && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-fade-in">
-          {/* Top Ranked Results */}
-          <div className="space-y-4">
-            <h4 className="text-[10px] font-black uppercase tracking-widest text-emerald-600 flex items-center gap-2">
-                <TrendingUp size={14} /> Top Agent Recommendations
-            </h4>
-            <div className="space-y-3">
-              {results.ranked.map((p: any) => (
-                <div key={p.id} className="p-4 bg-emerald-50/30 border border-emerald-100 rounded-2xl flex items-center justify-between group hover:bg-emerald-50 transition-colors">
-                  <div className="flex items-center gap-4">
-                    <span className="text-2xl">{getMedal(p.rank)}</span>
-                    <div>
-                      <p className="text-xs font-bold text-slate-900">{p.title}</p>
-                      <p className="text-[10px] text-emerald-600 font-medium">{p.match_reason}</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
+          <div className="space-y-3">
+            <p className="section-label text-[#4ade80] flex items-center gap-1.5">
+              <CheckCircle size={11} /> Ranked by Agent
+            </p>
+            <div className="space-y-2">
+              {results.top.map((p: any) => (
+                <div key={p.id} className="flex items-center justify-between p-3.5 bg-[#111118] border border-[#2a2a3a] rounded-lg">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="text-xs font-bold text-[#6b6b80] w-5 text-center">#{p.rank}</span>
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold text-[#f0f0f5] truncate">{p.title}</p>
+                      <p className="text-[10px] text-[#6b6b80] truncate">{p.match_reason}</p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm font-black text-emerald-600">{Math.round(p.match_score)}%</p>
-                    <p className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">Match Score</p>
-                  </div>
+                  <span className="text-sm font-bold text-[#4ade80] flex-shrink-0 ml-3">{p.match_score}%</span>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Rejections */}
-          <div className="space-y-4">
-             <h4 className="text-[10px] font-black uppercase tracking-widest text-red-600 flex items-center gap-2">
-                <AlertCircle size={14} /> Failed / Filtered Out
-            </h4>
-            <div className="space-y-3 grayscale opacity-60">
+          <div className="space-y-3">
+            <p className="section-label text-[#f87171] flex items-center gap-1.5">
+              <XCircle size={11} /> Filtered Out
+            </p>
+            <div className="space-y-2">
               {results.rejected.map((p: any) => (
-                <div key={p.id} className="p-4 bg-red-50/20 border border-red-100 rounded-2xl flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center text-red-600">
-                        <AlertCircle size={16} />
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold text-slate-900">{p.title}</p>
-                      <p className="text-[10px] text-red-600 font-medium">{p.rejection_reason}</p>
-                    </div>
+                <div key={p.id} className="flex items-center gap-3 p-3.5 bg-[#111118] border border-[#2a2a3a] rounded-lg opacity-60">
+                  <XCircle size={14} className="text-[#f87171] flex-shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold text-[#f0f0f5] truncate">{p.title}</p>
+                    <p className="text-[10px] text-[#6b6b80] truncate">{p.rejection_reason}</p>
                   </div>
                 </div>
               ))}
             </div>
-            <div className="p-4 bg-slate-50 border border-slate-100 rounded-2xl flex gap-3 italic">
-                <Info size={16} className="text-slate-400 shrink-0" />
-                <p className="text-[10px] text-slate-500 font-medium">Filtered due to missing structured metadata. AI cannot verify if this product satisfies the query constraints.</p>
-            </div>
+            <p className="text-[10px] text-[#6b6b80] leading-relaxed px-1">
+              Rejected products lack the structured attributes needed for confident agent matching.
+            </p>
           </div>
         </div>
       )}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Info } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
 interface ScoreCardProps {
   label: string;
@@ -8,30 +8,41 @@ interface ScoreCardProps {
 }
 
 export default function ScoreCard({ label, score, reason }: ScoreCardProps) {
+  const isGood = score > 80;
+  const isOk = score > 50;
+  const color = isGood ? '#4ade80' : isOk ? '#fbbf24' : '#f87171';
+  const Icon = isGood ? TrendingUp : isOk ? Minus : TrendingDown;
+
+  const circumference = 2 * Math.PI * 26;
+  const dashOffset = circumference - (score / 100) * circumference;
+
   return (
-    <div className="card-premium p-6 flex flex-col items-center justify-center text-center relative group overflow-hidden">
-      {/* Tooltip on hover */}
-      <div className="absolute inset-0 bg-slate-900/95 text-white p-4 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center text-[10px] sm:text-xs leading-relaxed z-10 font-medium">
-        <p>{reason}</p>
+    <div className="card p-5 flex flex-col gap-4 group relative">
+      <div className="flex items-start justify-between">
+        <p className="section-label leading-snug max-w-[80%]">{label}</p>
+        <Icon size={13} style={{ color }} strokeWidth={2.5} className="flex-shrink-0 mt-0.5" />
       </div>
 
-      <div className="relative z-0 flex flex-col items-center">
-        <div className="absolute -top-10 -right-10 w-20 h-20 bg-blue-50 rounded-full blur-2xl opacity-50 group-hover:bg-blue-100 transition-colors" />
-        
-        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2 truncate max-w-full px-2">
-            {label}
-        </span>
-        
-        <div className="relative">
-            <span className={`text-4xl font-black tabular-nums transition-colors ${score > 80 ? 'text-emerald-500' : score > 50 ? 'text-amber-500' : 'text-red-500'}`}>
-                {score}
-            </span>
-            <span className="text-xs font-bold text-slate-300 ml-0.5">/100</span>
+      <div className="flex items-center gap-4">
+        <div className="relative w-14 h-14 flex-shrink-0">
+          <svg viewBox="0 0 60 60" className="w-full h-full -rotate-90">
+            <circle cx="30" cy="30" r="26" fill="none" stroke="#1f1f2e" strokeWidth="5" />
+            <circle
+              cx="30" cy="30" r="26"
+              fill="none"
+              stroke={color}
+              strokeWidth="5"
+              strokeLinecap="round"
+              strokeDasharray={circumference}
+              strokeDashoffset={dashOffset}
+              className="score-ring"
+            />
+          </svg>
+          <span className="absolute inset-0 flex items-center justify-center text-sm font-bold stat-number" style={{ color }}>
+            {score}
+          </span>
         </div>
-
-        <div className="mt-4 p-1.5 bg-slate-50 border border-slate-100 rounded-lg text-slate-400 group-hover:text-blue-600 transition-colors">
-            <Info size={14} />
-        </div>
+        <p className="text-[11px] text-[#6b6b80] leading-relaxed">{reason}</p>
       </div>
     </div>
   );
