@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, ArrowRight } from 'lucide-react';
+import { ChevronDown, ChevronUp, ArrowRight, ShieldCheck, AlertCircle, Zap, Target, MessageSquare, Info, Loader2 } from 'lucide-react';
 import GapView from './GapView';
 import FixSuggestions from './FixSuggestions';
 
@@ -12,144 +12,179 @@ interface ProductCardProps {
 
 export default function ProductCard({ product, highlighted = false }: ProductCardProps) {
   const [open, setOpen] = useState(false);
-  const [tab, setTab]   = useState<'diagnosis' | 'fix'>('diagnosis');
-  const { severity }    = product.gaps;
+  const [tab, setTab] = useState<'audit' | 'logs' | 'fixes'>('audit');
+  
+  const scan = product.scan_quick;
+  const audit = product.audit_deep;
+  const isAudited = product.is_audited;
 
+  const severity = isAudited ? audit.gaps.severity : scan.severity;
+  
   const status = severity >= 7
-    ? { label: 'Needs Urgent Fix', color: '#ef4444', bg: 'rgba(239,68,68,0.1)',  border: 'rgba(239,68,68,0.2)' }
+    ? { label: 'CRITICAL', color: '#ef4444', bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.2)' }
     : severity >= 4
-    ? { label: 'Can Be Improved',  color: '#f59e0b', bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.2)' }
-    : { label: 'Looking Good',     color: '#22c55e', bg: 'rgba(34,197,94,0.1)',  border: 'rgba(34,197,94,0.2)' };
+    ? { label: 'WARNING', color: '#f59e0b', bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.2)' }
+    : { label: 'OPTIMIZED', color: '#22c55e', bg: 'rgba(34,197,94,0.1)', border: 'rgba(34,197,94,0.2)' };
 
-  const before = Math.round(product.impact.before_score * 100);
-  const after  = Math.round(product.impact.after_score  * 100);
+  const currentScore = isAudited ? Math.round(audit.impact.before_score * 100) : scan.quick_score;
+  const targetScore = isAudited ? Math.round(audit.impact.after_score * 100) : 100;
 
   return (
     <div style={{
       background: '#0e0e14',
-      border: `1px solid ${highlighted ? 'rgba(239,68,68,0.2)' : 'rgba(255,255,255,0.07)'}`,
-      borderRadius: 16,
+      border: `1px solid ${highlighted ? 'rgba(239,68,68,0.3)' : 'rgba(255,255,255,0.07)'}`,
+      borderRadius: 18,
       overflow: 'hidden',
-      transition: 'border-color 0.2s',
+      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      ...(open && { boxShadow: '0 20px 40px -20px rgba(0,0,0,0.5), 0 0 20px rgba(200,241,53,0.03)' })
     }}>
+      {/* Header Bar */}
       <div
-        style={{ padding: '16px 20px', cursor: 'pointer', transition: 'background 0.15s' }}
+        style={{ padding: '18px 24px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}
         onClick={() => setOpen(!open)}
-        onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.02)')}
-        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
       >
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14, minWidth: 0, flex: 1 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 12, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-              {product.original_data?.image
-                ? <img src={product.original_data.image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                : <span style={{ fontSize: 9, fontWeight: 700, color: 'rgba(240,240,240,0.2)' }}>IMG</span>
-              }
-            </div>
-            <div style={{ minWidth: 0 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 3 }}>
-                <p style={{ fontFamily: 'var(--font-head)', fontWeight: 700, fontSize: 14, color: '#f0f0f0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {product.title}
-                </p>
-                <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: status.bg, border: `1px solid ${status.border}`, color: status.color, flexShrink: 0, fontFamily: 'var(--font-head)', letterSpacing: '0.02em' }}>
-                  {status.label}
-                </span>
-              </div>
-              <p style={{ fontSize: 12, color: 'rgba(240,240,240,0.4)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{product.gaps.insight}</p>
-            </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, flex: 1, minWidth: 0 }}>
+          <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', position: 'relative', overflow: 'hidden', flexShrink: 0 }}>
+             {product.original_data?.image?.src || product.original_data?.image
+               ? <img src={product.original_data.image.src || product.original_data.image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+               : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.1)', fontSize: 10, fontWeight: 800 }}>AI</div>
+             }
+             {isAudited && (
+               <div style={{ position: 'absolute', top: 0, right: 0, padding: 2, background: '#c8f135', borderRadius: '0 0 0 4px' }}>
+                 <Zap size={8} color="#08080c" />
+               </div>
+             )}
           </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexShrink: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 12, color: 'rgba(240,240,240,0.25)', textDecoration: 'line-through', fontFamily: 'var(--font-mono)' }}>{before}%</span>
-              <ArrowRight size={11} style={{ color: 'rgba(240,240,240,0.2)' }} />
-              <span style={{ fontSize: 13, fontWeight: 800, color: '#22c55e', fontFamily: 'var(--font-mono)' }}>{after}%</span>
+          
+          <div style={{ minWidth: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+              <h3 style={{ fontSize: 14, fontWeight: 700, color: '#f0f0f0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{product.title}</h3>
+              <span style={{ fontSize: 9, fontWeight: 900, padding: '2px 8px', borderRadius: 6, background: status.bg, border: `1px solid ${status.border}`, color: status.color, letterSpacing: '0.05em' }}>{status.label}</span>
             </div>
-            <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(240,240,240,0.3)' }}>
-              {open ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
-            </div>
+            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {isAudited ? audit.gaps.insight : scan.basic_gap}
+            </p>
           </div>
         </div>
 
-        <div style={{ marginTop: 12, height: 3, borderRadius: 99, background: 'rgba(255,255,255,0.05)' }}>
-          <div style={{ height: '100%', borderRadius: 99, background: status.color, width: `${before}%`, opacity: 0.6 }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 24, flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ textAlign: 'right' }}>
+              <p style={{ fontSize: 9, fontWeight: 800, color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', marginBottom: 2 }}>Current Readiness</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontSize: 13, fontWeight: 800, color: currentScore < 50 ? '#ef4444' : '#f59e0b', fontFamily: 'var(--font-mono)' }}>{currentScore}%</span>
+                <ArrowRight size={10} color="rgba(255,255,255,0.1)" />
+                <span style={{ fontSize: 13, fontWeight: 800, color: '#22c55e', fontFamily: 'var(--font-mono)' }}>{targetScore}%</span>
+              </div>
+            </div>
+          </div>
+          <div style={{ width: 32, height: 32, borderRadius: 10, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.2)' }}>
+            {open ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+          </div>
         </div>
       </div>
 
+      {/* Expanded Content */}
       {open && (
-        <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', animation: 'fadeIn 0.2s ease' }}>
-          <div style={{ display: 'flex', background: 'rgba(0,0,0,0.15)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-            {(['diagnosis', 'fix'] as const).map(t => (
-              <button key={t} onClick={() => setTab(t)}
-                style={{ padding: '12px 20px', fontSize: 12, fontWeight: 700, cursor: 'pointer', background: 'transparent', border: 'none', borderBottom: tab === t ? '2px solid #c8f135' : '2px solid transparent', color: tab === t ? '#f0f0f0' : 'rgba(240,240,240,0.35)', fontFamily: 'var(--font-head)', transition: 'all 0.15s', letterSpacing: '0.01em' }}>
-                {t === 'diagnosis' ? '🔍 What Is Wrong' : '✨ How To Fix It'}
-              </button>
-            ))}
-          </div>
-
-          <div style={{ padding: '20px 24px' }}>
-            {tab === 'diagnosis' && (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
-                <div>
-                  <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(240,240,240,0.3)', marginBottom: 10, fontFamily: 'var(--font-head)' }}>What You're Selling</p>
-                  <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-                    <div>
-                      <p style={{ fontSize: 10, color: 'rgba(240,240,240,0.3)', marginBottom: 4 }}>Target Customer</p>
-                      <p style={{ fontSize: 12, fontWeight: 600, color: '#f0f0f0' }}>{product.intent.target_user}</p>
-                    </div>
-                    <div>
-                      <p style={{ fontSize: 10, color: 'rgba(240,240,240,0.3)', marginBottom: 4 }}>Main Use Case</p>
-                      <p style={{ fontSize: 12, fontWeight: 600, color: '#f0f0f0' }}>{product.intent.use_case}</p>
-                    </div>
-                    {product.intent.key_attributes?.length > 0 && (
-                      <div>
-                        <p style={{ fontSize: 10, color: 'rgba(240,240,240,0.3)', marginBottom: 6 }}>Key Features</p>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
-                          {product.intent.key_attributes.map((a: string, i: number) => (
-                            <span key={i} style={{ fontSize: 10, padding: '2px 8px', borderRadius: 99, background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', color: '#22c55e', fontFamily: 'var(--font-head)', fontWeight: 600 }}>{a}</span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div>
-                  <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(240,240,240,0.3)', marginBottom: 10, fontFamily: 'var(--font-head)' }}>How AI Sees It</p>
-                  <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-                    <div>
-                      <p style={{ fontSize: 10, color: 'rgba(240,240,240,0.3)', marginBottom: 4 }}>AI Summary</p>
-                      <p style={{ fontSize: 12, fontWeight: 600, color: '#f0f0f0', lineHeight: 1.4 }}>{product.ai_perception.summary}</p>
-                    </div>
-                    <div>
-                      <p style={{ fontSize: 10, color: 'rgba(240,240,240,0.3)', marginBottom: 6 }}>AI Confidence</p>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <div style={{ flex: 1, height: 5, borderRadius: 99, background: 'rgba(255,255,255,0.06)' }}>
-                          <div style={{ height: '100%', borderRadius: 99, width: `${product.ai_perception.confidence * 100}%`, background: product.ai_perception.confidence > 0.7 ? '#22c55e' : product.ai_perception.confidence > 0.4 ? '#f59e0b' : '#ef4444' }} />
-                        </div>
-                        <span style={{ fontSize: 12, fontWeight: 800, color: '#f0f0f0', fontFamily: 'var(--font-mono)' }}>{Math.round(product.ai_perception.confidence * 100)}%</span>
-                      </div>
-                    </div>
-                    <div>
-                      <p style={{ fontSize: 10, color: 'rgba(240,240,240,0.3)', marginBottom: 5 }}>Will AI Recommend?</p>
-                      <span style={{ fontSize: 10, padding: '3px 10px', borderRadius: 99, fontWeight: 700, fontFamily: 'var(--font-head)', ...(product.ai_perception.recommendation === 'yes' ? { background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', color: '#22c55e' } : { background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', color: '#ef4444' }) }}>
-                        {product.ai_perception.recommendation === 'yes' ? '✓ Yes' : '✗ No'}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(240,240,240,0.3)', marginBottom: 10, fontFamily: 'var(--font-head)' }}>The Problems</p>
-                  <GapView gaps={product.gaps} />
-                </div>
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', animation: 'slideDown 0.3s ease' }}>
+          {!isAudited ? (
+            <div style={{ padding: '24px', textAlign: 'center', background: 'rgba(0,0,0,0.1)' }}>
+               <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(255,255,255,0.03)', margin: '0 auto 12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                 <Loader2 size={18} className="animate-spin" color="rgba(255,255,255,0.2)" />
+               </div>
+               <p style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.4)' }}>Deep intelligence processing...</p>
+               <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)', marginTop: 4 }}>Fast scan identified severity level {scan.severity}. Audit report arriving soon.</p>
+            </div>
+          ) : (
+            <>
+              {/* Tab Navigation */}
+              <div style={{ display: 'flex', background: 'rgba(0,0,0,0.2)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                 {[
+                   { id: 'audit', label: 'Audit Report', icon: <ShieldCheck size={14} /> },
+                   { id: 'logs', label: 'AI Reasoning', icon: <MessageSquare size={14} /> },
+                   { id: 'fixes', label: 'Fix Pipeline', icon: < Zap size={14} /> }
+                 ].map(t => (
+                   <button 
+                     key={t.id} 
+                     onClick={() => setTab(t.id as any)}
+                     style={{ 
+                       flex: 1, padding: '14px 0', border: 'none', background: 'transparent', cursor: 'pointer',
+                       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontSize: 12, fontWeight: 700,
+                       color: tab === t.id ? '#c8f135' : 'rgba(255,255,255,0.3)', borderBottom: `2px solid ${tab === t.id ? '#c8f135' : 'transparent'}`,
+                       transition: 'all 0.2s', fontFamily: 'var(--font-head)'
+                     }}
+                   >
+                     {t.icon} {t.label}
+                   </button>
+                 ))}
               </div>
-            )}
-            {tab === 'fix' && <FixSuggestions fixes={product.fixes} />}
-          </div>
+
+              {/* Tab Content */}
+              <div style={{ padding: '24px' }}>
+                 {tab === 'audit' && (
+                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+                     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                        <div style={{ padding: '16px', borderRadius: 16, background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                           <p style={{ fontSize: 10, fontWeight: 800, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}><Target size={12} /> Merchant Intent</p>
+                           <div style={{ display: 'grid', gap: 10 }}>
+                             <div>
+                               <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)', marginBottom: 2 }}>Target Demographic</p>
+                               <p style={{ fontSize: 12, fontWeight: 600, color: '#f0f0f0' }}>{audit.intent.target_user}</p>
+                             </div>
+                             <div>
+                               <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)', marginBottom: 2 }}>Primary Use Case</p>
+                               <p style={{ fontSize: 12, fontWeight: 600, color: '#f0f0f0' }}>{audit.intent.use_case}</p>
+                             </div>
+                           </div>
+                        </div>
+                        <div style={{ padding: '16px', borderRadius: 16, background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                           <p style={{ fontSize: 10, fontWeight: 800, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}><Info size={12} /> Impact Analysis</p>
+                           <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', lineHeight: 1.5 }}>{audit.impact.detailed_impact}</p>
+                        </div>
+                     </div>
+                     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                        <GapView gaps={audit.gaps} />
+                        <div style={{ padding: '16px', borderRadius: 16, background: status.bg, border: `1px solid ${status.border}` }}>
+                           <p style={{ fontSize: 10, fontWeight: 800, color: status.color, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>DIAGNOSTIC INSIGHT</p>
+                           <p style={{ fontSize: 12, fontWeight: 600, color: '#f0f0f0', lineHeight: 1.5 }}>{audit.gaps.detailed_explanation}</p>
+                        </div>
+                     </div>
+                   </div>
+                 )}
+
+                 {tab === 'logs' && (
+                   <div style={{ background: '#000', borderRadius: 16, border: '1px solid rgba(255,255,255,0.08)', overflow: 'hidden' }}>
+                      <div style={{ padding: '10px 16px', background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <span style={{ fontSize: 10, fontWeight: 800, color: 'rgba(255,255,255,0.3)', fontFamily: 'var(--font-mono)' }}>AI_PERCEPTION_LOG_v1.0.43</span>
+                        <div style={{ display: 'flex', gap: 4 }}>
+                          <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#ef4444' }} />
+                          <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#f59e0b' }} />
+                          <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e' }} />
+                        </div>
+                      </div>
+                      <div style={{ padding: '20px', fontFamily: 'var(--font-mono)', fontSize: 11, lineHeight: 1.7, color: '#c8f135', background: 'rgba(200,241,53,0.02)' }}>
+                        <p style={{ color: 'rgba(255,255,255,0.3)' }}>// Simulating AI Agent reasoning process...</p>
+                        <p style={{ marginTop: 8 }}>{audit.ai_perception.detailed_reasoning}</p>
+                        <p style={{ marginTop: 12, color: 'rgba(255,255,255,0.3)' }}>// Evaluation Conclusion:</p>
+                        <p style={{ color: audit.ai_perception.recommendation === 'yes' ? '#22c55e' : '#ef4444' }}>
+                           &gt; Recommendation: {audit.ai_perception.recommendation.toUpperCase()} ({Math.round(audit.ai_perception.confidence * 100)}% Confidence)
+                        </p>
+                        <p style={{ color: 'rgba(255,255,255,0.4)', marginTop: 4 }}>&gt; Reason: {audit.ai_perception.reason}</p>
+                      </div>
+                   </div>
+                 )}
+
+                 {tab === 'fixes' && <FixSuggestions fixes={audit.fixes} />}
+              </div>
+            </>
+          )}
         </div>
       )}
-      <style>{`@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }`}</style>
+
+      <style>{`
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-spin { animation: spin 1s linear infinite; }
+      `}</style>
     </div>
   );
 }

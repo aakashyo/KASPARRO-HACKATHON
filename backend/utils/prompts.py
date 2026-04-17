@@ -1,150 +1,110 @@
 from typing import Dict, List, Any
 
-def get_intent_extraction_prompt(title: str, description: str, tags: str) -> Dict[str, str]:
+# STAGE 1: FAST SCAN
+def get_fast_scan_prompt(title: str, description: str, tags: str) -> Dict[str, str]:
     return {
-        "system": "You are an expert e-commerce product analyst. Your job is to extract structured merchant intent from raw product data so that an AI shopping agent can clearly understand it. You must return ONLY valid JSON. Do not include any explanation outside JSON.",
-        "user": f"""Extract structured intent from the following product:
+        "system": "You are a high-speed AI diagnostic engine. Quickly assess a product's search visibility for AI agents. Return ONLY valid JSON.",
+        "user": f"""Quickly scan this product for AI recommendation readiness:
 TITLE: {title}
 DESCRIPTION: {description}
 TAGS: {tags}
 
-Return JSON in this exact format:
+Format:
 {{
-  "category": "",
-  "target_user": "",
-  "use_case": "",
-  "price_segment": "",
-  "key_attributes": [],
-  "important_keywords": []
-}}
-Rules:
-- Be specific (e.g., "dry skin users", not "people")
-- Infer missing fields if possible
-- Extract real attributes, not generic words
-- Keywords must be highly relevant for AI recommendation"""
+  "quick_score": 0-100,
+  "severity": 1-10,
+  "basic_gap": "Short summary of the biggest issue",
+  "priority": "low | medium | high"
+}}"""
     }
 
-def get_ai_simulator_prompt(title: str, description: str, tags: str) -> Dict[str, str]:
+# STAGE 2: DEEP AUDIT (Merged Call 1: Intent + Perception)
+def get_intent_and_perception_prompt(title: str, description: str, tags: str) -> Dict[str, str]:
     return {
-        "system": "You are an AI shopping assistant. You must interpret product data exactly as an AI agent would when deciding whether to recommend it. Be strict. If information is missing, reduce confidence. Return ONLY valid JSON.",
-        "user": f"""User Query: "Best product for dry skin under ₹1000"
-Product Data:
+        "system": "You are a senior AI product architect. Step 1: Extract deep merchant intent. Step 2: Simulate strict AI agent perception. Return ONLY valid JSON.",
+        "user": f"""DEEP ANALYSIS for:
 TITLE: {title}
 DESCRIPTION: {description}
 TAGS: {tags}
 
-Return:
+Format:
 {{
-  "summary": "",
-  "target_user": "",
-  "key_benefits": [],
-  "confidence": 0,
-  "recommendation": "yes | no",
-  "reason": ""
-}}
-Rules:
-- Confidence must reflect clarity of product data
-- If important info (price, skin type) is missing → lower confidence
-- Be critical, not optimistic"""
+  "intent": {{
+    "category": "",
+    "target_user": "",
+    "use_case": "",
+    "price_segment": "",
+    "key_attributes": [],
+    "important_keywords": []
+  }},
+  "ai_perception": {{
+    "summary": "",
+    "target_user": "",
+    "key_benefits": [],
+    "confidence": 0-1,
+    "recommendation": "yes | no",
+    "reason": "Immediate answer",
+    "detailed_reasoning": "Step-by-step reasoning logs (3-4 lines)"
+  }}
+}}"""
     }
 
-def get_gap_prompt(intent_json: str, ai_perception_json: str) -> Dict[str, str]:
+# STAGE 2: DEEP AUDIT (Merged Call 2: Gap + Impact)
+def get_gap_and_impact_prompt(intent_json: str, perception_json: str) -> Dict[str, str]:
     return {
-        "system": "You are an AI reasoning engine. Your job is to compare merchant intent with AI perception and identify gaps that reduce recommendation quality. Return ONLY valid JSON.",
-        "user": f"""Merchant Intent:
-{intent_json}
+        "system": "You are an AI logic engine. Compare Intent vs Perception to find gaps, then estimate the impact of fixing them. Return ONLY valid JSON.",
+        "user": f"""DATA:
+INTENT: {intent_json}
+PERCEPTION: {perception_json}
 
-AI Perception:
-{ai_perception_json}
-
-Return:
+Format:
 {{
-  "missing_attributes": [],
-  "misinterpretations": [],
-  "confidence_drop_reasons": [],
-  "insight": "",
-  "severity": 1,
-  "impact_level": "low | medium | high"
-}}
-Rules:
-- missing_attributes = present in intent but absent in perception
-- insight must be a one-line executive summary of the core misunderstanding
-- severity must reflect impact on recommendation
-- Be specific, not generic"""
+  "gaps": {{
+    "missing_attributes": [],
+    "misinterpretations": [],
+    "confidence_drop_reasons": [],
+    "insight": "Executive summary",
+    "severity": 1-10,
+    "impact_level": "low | medium | high",
+    "detailed_explanation": "WHY this gap affects AI recommendations (2-3 lines)"
+  }},
+  "impact": {{
+    "before_score": 0-1,
+    "after_score": 0-1,
+    "improvement_percentage": "",
+    "reason": "Short logic",
+    "detailed_impact": "Explain HOW fixes improve ranking confidence (2-3 lines)"
+  }}
+}}"""
     }
 
-def get_impact_prompt(gap_json: str) -> Dict[str, str]:
-    return {
-        "system": "You are an AI product optimization analyst. Estimate how improving product clarity affects AI recommendation likelihood. Return ONLY valid JSON.",
-        "user": f"""Gap Analysis:
-{gap_json}
-
-Return:
-{{
-  "before_score": 0,
-  "after_score": 0,
-  "improvement_percentage": "",
-  "reason": ""
-}}
-Rules:
-- Before score should reflect current gaps
-- After score assumes fixes are applied
-- Improvement must be realistic
-- Reason must explain WHY improvement happens"""
-    }
-
+# STAGE 2: DEEP AUDIT (Call 3: Fix Generator)
 def get_fix_prompt(title: str, description: str, gap_json: str) -> Dict[str, str]:
     return {
-        "system": "You are an expert e-commerce copywriter optimizing for AI systems. Rewrite product content so that AI agents clearly understand and recommend it. Return ONLY valid JSON.",
-        "user": f"""Original Product:
-TITLE: {title}
-DESCRIPTION: {description}
+        "system": "You are an AI SEO copywriter. Generate technical fixes to optimize for AI agents. Return ONLY valid JSON.",
+        "user": f"""PRODUCT: {title}
+GAPS: {gap_json}
 
-Detected Gaps:
-{gap_json}
-
-Return:
+Format:
 {{
   "improved_description": "",
   "added_keywords": [],
   "structured_tags": [],
-  "faq_suggestions": []
-}}
-Rules:
-- Be specific and structured
-- Include target user, use case, and key attributes
-- Optimize for clarity, not marketing fluff
-- structured_tags MUST be a list of strings only (e.g. ["Category:Value"]). NO DICTIONARIES.
-- faq_suggestions MUST be a list of dictionaries with "question" and "answer" keys. (e.g. [{{ "question": "...", "answer": "..." }}]). NO STRINGS.
-- Ensure all JSON fields match the schema exactly."""
+  "faq_suggestions": [{{ "question": "", "answer": "" }}],
+  "explanation": "WHY these fixes improve AI understanding"
+}}"""
     }
 
+# Global Query Simulator (Remains similar)
 def get_query_prompt(query: str, products_json: str) -> Dict[str, str]:
     return {
-        "system": "You are an AI shopping agent. Given a user query and multiple products, rank them based on how well they match the query. Return ONLY valid JSON.",
-        "user": f"""User Query: {query}
-Products:
-{products_json}
+        "system": "You are an AI shopping agent. Rank products by query relevance. Return ONLY valid JSON.",
+        "user": f"""QUERY: {query}
+PRODUCTS: {products_json}
 
-Return:
+Format:
 {{
-  "ranked_results": [
-    {{
-      "rank": 1,
-      "product_id": "",
-      "match_score": 0,
-      "reason": ""
-    }}
-  ],
-  "rejected_products": [
-    {{
-      "product_id": "",
-      "reason": ""
-    }}
-  ]
-}}
-Rules:
-- Ranking must be strict
-- Match score must reflect relevance
-- Clearly explain why products are rejected"""
+  "ranked_results": [{{ "rank": 1, "product_id": "", "match_score": 0, "reason": "" }}],
+  "rejected_products": [{{ "product_id": "", "reason": "" }}]
+}}"""
     }

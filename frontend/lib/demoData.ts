@@ -2,11 +2,11 @@ export const demoData = {
   store_score: {
     overall_score: 58,
     dimension_scores: {
-      "Product Quality": { score: 45, reason: "Lacks structured attributes like skin type or specific benefits in description." },
-      "Policy Clarity": { score: 85, reason: "Essential legal policies detected, building agent trust." },
-      "FAQ Coverage": { score: 40, reason: "Missing explicit FAQs, forcing AI to guess on edge cases." },
-      "Trust Signals": { score: 70, reason: "Multiple trust markers (Refund, TOS) are clearly accessible." },
-      "Knowledge Structure": { score: 50, reason: "Inconsistent tag usage makes categorization difficult for AI." }
+      "Product_Quality": { score: 45, reason: "Lacks structured attributes like skin type or specific benefits in description." },
+      "Policy_Clarity": { score: 85, reason: "Essential legal policies detected, building agent trust." },
+      "FAQ_Coverage": { score: 40, reason: "Missing explicit FAQs, forcing AI to guess on edge cases." },
+      "Trust_Signals": { score: 70, reason: "Multiple trust markers (Refund, TOS) are clearly accessible." },
+      "Structured_Data": { score: 50, reason: "Inconsistent tag usage makes categorization difficult for AI." }
     }
   },
   products: [

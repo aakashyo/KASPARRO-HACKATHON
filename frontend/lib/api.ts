@@ -1,25 +1,39 @@
-import axios from 'axios';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
-const API_BASE_URL = 'http://localhost:8000';
+export const analyzeStore = async (
+  storeUrl: string, 
+  accessToken: string,
+  onUpdate: (data: any) => void
+) => {
+  const response = await fetch(`${API_BASE_URL}/analyze`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ store_url: storeUrl, access_token: accessToken }),
+  });
 
-export const analyzeStore = async (storeUrl: string, accessToken: string) => {
-  try {
-    const response = await axios.post(`${API_BASE_URL}/analyze`, {
-      store_url: storeUrl,
-      access_token: accessToken,
-    }, {
-      timeout: 120000 // 2 minute timeout for deep analysis
-    });
-    
-    if (!response.data || !response.data.products) {
-        throw new Error('Invalid response format from server');
+  if (!response.body) throw new Error('No response body');
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop() || '';
+
+    for (const line of lines) {
+      if (line.trim().startsWith('data: ')) {
+        try {
+          const data = JSON.parse(line.trim().slice(6));
+          onUpdate(data);
+        } catch (e) {
+          console.error('Error parsing stream line:', e);
+        }
+      }
     }
-    
-    return response.data;
-  } catch (error: any) {
-    if (error.code === 'ECONNABORTED') {
-        throw new Error('Analysis timed out. Try analyzing fewer products or check server health.');
-    }
-    throw error;
   }
 };

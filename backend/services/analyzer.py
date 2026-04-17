@@ -5,8 +5,16 @@ class Scorer:
     def calculate_scores(products_data: List[Dict], policies: List[Any], pages: List[Any]) -> Dict[str, Any]:
         # Intelligent scoring with reasons
         
-        # 1. Product Context
-        avg_confidence = sum(p["ai_perception"]["confidence"] for p in products_data) / len(products_data) if products_data else 0
+        # 1. Product Context (Safe extraction from both scan and audit)
+        total_confidence = 0
+        for p in products_data:
+            if p.get("is_audited") and p.get("audit_deep"):
+                total_confidence += p["audit_deep"]["ai_perception"].get("confidence", 0.5)
+            else:
+                # Use quick_score as a proxy for confidence (0.0 - 1.0)
+                total_confidence += (p.get("scan_quick", {}).get("quick_score", 50) / 100)
+        
+        avg_confidence = total_confidence / len(products_data) if products_data else 0
         prod_quality = int(avg_confidence * 100)
         prod_reason = "Product data provides clear signals for AI classification." if prod_quality > 70 else "Lacks structured attributes like price, skin type, or clear benefits."
 
@@ -33,10 +41,10 @@ class Scorer:
         return {
             "overall_score": overall,
             "dimension_scores": {
-                "product_quality": {"score": prod_quality, "reason": prod_reason},
-                "policy_clarity": {"score": policy_score, "reason": policy_reason},
-                "faq_coverage": {"score": faq_score, "reason": faq_reason},
-                "trust_signals": {"score": trust_score, "reason": trust_reason},
-                "structured_data": {"score": struct_score, "reason": struct_reason}
+                "Product_Quality": {"score": prod_quality, "reason": prod_reason},
+                "Policy_Clarity": {"score": policy_score, "reason": policy_reason},
+                "FAQ_Coverage": {"score": faq_score, "reason": faq_reason},
+                "Trust_Signals": {"score": trust_score, "reason": trust_reason},
+                "Structured_Data": {"score": struct_score, "reason": struct_reason}
             }
         }

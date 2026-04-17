@@ -14,7 +14,7 @@ class ShopifyClient:
     async def fetch_products(self) -> List[Dict[str, Any]]:
         query = """
         {
-          products(first: 10) {
+          products(first: 250) {
             edges {
               node {
                 id
@@ -62,7 +62,7 @@ class ShopifyClient:
     async def fetch_pages(self) -> List[Dict[str, Any]]:
         query = """
         {
-          pages(first: 10) {
+          pages(first: 250) {
             edges {
               node {
                 id

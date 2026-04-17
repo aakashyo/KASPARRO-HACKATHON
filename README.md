@@ -67,9 +67,17 @@ python -m backend.main
 ### 3. Frontend Setup
 ```bash
 cd frontend
+# Create .env.local and add:
+# NEXT_PUBLIC_API_URL=http://localhost:8000
 npm install
 npm run dev
 ```
+
+---
+
+## Developer Notes
+- **Full Analysis**: The backend is configured to analyze **all products** from the connected store for a complete optimization report.
+- **CORS**: The backend allows all origins (`*`) for easy hackathon integration.
 
 ---
 
