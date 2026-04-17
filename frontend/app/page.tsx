@@ -5,10 +5,10 @@ import { useRouter } from 'next/navigation';
 import { ArrowRight, Lock, Zap, BarChart2, ShieldCheck, GitBranch } from 'lucide-react';
 
 const FEATURES = [
-  { icon: Zap,          label: 'intent extraction',    desc: 'Understand what your product is actually trying to sell.' },
-  { icon: BarChart2,    label: 'gap analysis',          desc: 'Find exactly what AI agents need but cannot find.' },
-  { icon: ShieldCheck,  label: 'perception simulation', desc: "See your store through an AI agent's eyes." },
-  { icon: GitBranch,    label: 'neural fix generator',  desc: 'Get optimized descriptions and structured tags instantly.' },
+  { icon: Zap,          label: 'understand your product', desc: 'We figure out what you are selling and who it is for.' },
+  { icon: BarChart2,    label: 'find what is missing',    desc: 'We spot exact details AI shoppers need but cannot find.' },
+  { icon: ShieldCheck,  label: 'see through AI eyes',     desc: "See your store exactly how a smart AI shopping assistant sees it." },
+  { icon: GitBranch,    label: 'get instant fixes',       desc: 'Get better product descriptions and tags ready to copy-paste.' },
 ];
 
 export default function LandingPage() {
@@ -67,23 +67,21 @@ export default function LandingPage() {
           <div className="space-y-10">
             <div className="space-y-6">
               <div className="pill pill-accent w-fit">
-                track 5 — ai representation optimizer
+                ✦ AI store health check
               </div>
 
               <h1
                 className="text-[4.5rem] font-black lowercase tracking-tighter leading-[0.88] text-[var(--text)]"
                 style={{ fontFamily: 'var(--font-montserrat)' }}
               >
-                your store is{' '}
+                AI shoppers skip your store.{' '}
                 <span className="text-[var(--accent)]">
-                  invisible
-                </span>{' '}
-                to ai agents.
+                  let's fix that.
+                </span>
               </h1>
 
               <p className="text-[var(--text-muted)] text-base leading-relaxed max-w-md">
-                ai shopping agents are replacing search. we diagnose why they skip your products — 
-                and generate the precise fixes to rank at the top.
+                When someone asks an AI assistant "find me the best sunscreen under ₹500", your products might get skipped — even if they are a perfect match. We show you exactly why, and how to fix it in seconds.
               </p>
             </div>
 
@@ -100,9 +98,9 @@ export default function LandingPage() {
 
             <div className="flex items-center gap-8 pt-2 border-t border-[var(--border-subtle)]">
               {[
-                { val: '142%', label: 'avg confidence lift' },
-                { val: '< 60s', label: 'full store audit' },
-                { val: '5 dims', label: 'scored & ranked' },
+                { val: '142%', label: 'better AI visibility' },
+                { val: '< 60s', label: 'full store check' },
+                { val: 'free',  label: 'no credit card' },
               ].map(({ val, label }) => (
                 <div key={label}>
                   <p
@@ -123,10 +121,10 @@ export default function LandingPage() {
                 className="text-base font-bold lowercase mb-1"
                 style={{ fontFamily: 'var(--font-montserrat)' }}
               >
-                connect your store
+                check your shopify store
               </p>
               <p className="text-xs text-[var(--text-subtle)]">
-                read-only access. credentials never stored.
+                We only read your product info. We never change or store anything.
               </p>
             </div>
 
@@ -198,10 +196,10 @@ export default function LandingPage() {
               className="text-4xl font-black lowercase tracking-tighter"
               style={{ fontFamily: 'var(--font-montserrat)' }}
             >
-              a real intelligence pipeline.
+              four simple steps.
             </h2>
             <p className="text-[var(--text-muted)] mt-3 max-w-lg text-sm leading-relaxed">
-              not a chatbot wrapper. five deterministic + ai phases run on every product.
+              connect your store and we do the rest — no technical knowledge needed.
             </p>
           </div>
 
@@ -230,9 +228,9 @@ export default function LandingPage() {
                 className="text-2xl font-black lowercase tracking-tight"
                 style={{ fontFamily: 'var(--font-montserrat)' }}
               >
-                ready to audit your store?
+                want to see it in action?
               </h3>
-              <p className="text-sm text-[var(--text-muted)] mt-1">see the exact gaps an ai agent sees. under 60 seconds.</p>
+              <p className="text-sm text-[var(--text-muted)] mt-1">Try the demo — no sign up, no credit card, takes less than a minute.</p>
             </div>
             <div className="flex items-center gap-3 flex-shrink-0">
               <button

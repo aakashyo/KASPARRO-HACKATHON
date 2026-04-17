@@ -165,14 +165,21 @@ export default function Dashboard() {
 
         <section className="space-y-6">
           <div>
-            <p className="label mb-2">store intelligence overview</p>
+            <p className="label mb-2">your store's AI health check</p>
             <h1 className="font-black lowercase tracking-tighter" style={{ fontFamily: 'var(--font-montserrat)', fontSize: '2.5rem', lineHeight: 1 }}>
-              ai readiness.{' '}
+              overall score.{' '}
               <span style={{ color: data.store_score.overall_score > 70 ? 'var(--ok)' : data.store_score.overall_score > 50 ? 'var(--warn)' : 'var(--danger)' }}>
                 {data.store_score.overall_score}
               </span>
               <span style={{ color: 'var(--text-subtle)' }}>/100</span>
             </h1>
+            <p className="text-sm mt-2" style={{ color: 'var(--text-subtle)' }}>
+              {data.store_score.overall_score > 70
+                ? 'Your store is well-optimized for AI shoppers. A few tweaks can push it further.'
+                : data.store_score.overall_score > 50
+                ? 'AI shoppers can find some of your products. Several improvements can help a lot.'
+                : 'AI shoppers are likely skipping most of your products. The fixes below can make a big difference.'}
+            </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
             {Object.entries(data.store_score.dimension_scores).map(([key, details]: [string, any]) => (
@@ -185,7 +192,7 @@ export default function Dashboard() {
           <div className="lg:col-span-2 card-flat p-5">
             <div className="flex items-center gap-2 mb-4">
               <BarChart2 size={13} style={{ color: 'var(--accent)' }} />
-              <p className="label">dimension performance</p>
+              <p className="label">score breakdown</p>
             </div>
             <div style={{ height: 220 }}>
               <StoreHealthCharts type="bar" data={data.store_score.dimension_scores} />
@@ -195,7 +202,7 @@ export default function Dashboard() {
           <div className="card-flat p-5">
             <div className="flex items-center gap-2 mb-4">
               <AlertTriangle size={13} style={{ color: 'var(--danger)' }} />
-              <p className="label">asset health</p>
+              <p className="label">product health</p>
             </div>
             <div style={{ height: 140 }}>
               <StoreHealthCharts type="pie" data={health} />
@@ -218,8 +225,8 @@ export default function Dashboard() {
         <section className="space-y-4">
           <div className="flex items-center gap-3">
             <AlertTriangle size={13} style={{ color: 'var(--danger)' }} />
-            <h2 className="font-bold text-sm lowercase" style={{ fontFamily: 'var(--font-montserrat)' }}>high priority issues</h2>
-            <span className="pill pill-danger">{sorted.filter((p: any) => p.gaps.severity >= 7).length} critical</span>
+            <h2 className="font-bold text-sm lowercase" style={{ fontFamily: 'var(--font-montserrat)' }}>products AI shoppers are skipping</h2>
+            <span className="pill pill-danger">{sorted.filter((p: any) => p.gaps.severity >= 7).length} need urgent fixes</span>
           </div>
           <div className="space-y-3">
             {sorted.filter((p: any) => p.gaps.severity >= 7).map((p: any) => (
@@ -234,8 +241,8 @@ export default function Dashboard() {
         <section className="space-y-4">
           <div className="flex items-center gap-3">
             <Database size={13} style={{ color: 'var(--accent)' }} />
-            <h2 className="font-bold text-sm lowercase" style={{ fontFamily: 'var(--font-montserrat)' }}>full product audit</h2>
-            <span className="text-[11px]" style={{ color: 'var(--text-subtle)' }}>{data.products.length} products</span>
+            <h2 className="font-bold text-sm lowercase" style={{ fontFamily: 'var(--font-montserrat)' }}>all your products</h2>
+            <span className="text-[11px]" style={{ color: 'var(--text-subtle)' }}>{data.products.length} analyzed</span>
           </div>
           <div className="space-y-3">
             {sorted.map((p: any) => <ProductCard key={p.id} product={p} />)}
@@ -245,7 +252,7 @@ export default function Dashboard() {
         <section className="space-y-4">
           <div className="flex items-center gap-2">
             <Search size={13} style={{ color: 'var(--info)' }} />
-            <h2 className="font-bold text-sm lowercase" style={{ fontFamily: 'var(--font-montserrat)' }}>ai query simulator</h2>
+            <h2 className="font-bold text-sm lowercase" style={{ fontFamily: 'var(--font-montserrat)' }}>test how AI would search your store</h2>
           </div>
           <QuerySimulator products={data.products} />
         </section>

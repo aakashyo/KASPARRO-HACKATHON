@@ -82,7 +82,7 @@ export default function ProductCard({ product, highlighted = false }: ProductCar
                   borderBottom: tab === t ? `2px solid var(--accent)` : '2px solid transparent',
                 }}
               >
-                {t === 'diagnosis' ? 'gap diagnosis' : 'neural fixes'}
+                {t === 'diagnosis' ? 'what is wrong' : 'how to fix it'}
               </button>
             ))}
           </div>
