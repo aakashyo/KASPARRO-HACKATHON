@@ -11,42 +11,27 @@ export default function ScoreCard({ label, score, reason }: ScoreCardProps) {
   const isGood = score > 80;
   const isOk = score > 50;
   const color = isGood ? 'var(--ok)' : isOk ? 'var(--warn)' : 'var(--danger)';
+  const softBg = isGood ? 'var(--ok-soft)' : isOk ? 'var(--warn-soft)' : 'var(--danger-soft)';
   const Icon = isGood ? TrendingUp : isOk ? Minus : TrendingDown;
 
-  const r = 24;
-  const circ = 2 * Math.PI * r;
-  const offset = circ - (score / 100) * circ;
-
   return (
-    <div className="card p-5 flex flex-col gap-3">
+    <div className="card p-4 flex flex-col gap-3">
       <div className="flex items-center justify-between">
-        <p className="label leading-snug max-w-[75%]">{label}</p>
-        <Icon size={12} style={{ color }} strokeWidth={2.5} />
-      </div>
-      <div className="flex items-center gap-3">
-        <div className="relative w-12 h-12 flex-shrink-0">
-          <svg viewBox="0 0 60 60" className="w-full h-full -rotate-90">
-            <circle cx="30" cy="30" r={r} fill="none" stroke="var(--border)" strokeWidth="6" />
-            <circle
-              cx="30" cy="30" r={r}
-              fill="none"
-              stroke={color}
-              strokeWidth="6"
-              strokeLinecap="round"
-              strokeDasharray={circ}
-              strokeDashoffset={offset}
-              style={{ transition: 'stroke-dashoffset 1s ease' }}
-            />
-          </svg>
-          <span
-            className="absolute inset-0 flex items-center justify-center text-xs font-black"
-            style={{ color, fontFamily: 'var(--font-montserrat)' }}
-          >
-            {score}
-          </span>
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-muted)]" style={{ fontFamily: 'var(--font-head)' }}>
+          {label}
+        </p>
+        <div className="w-5 h-5 rounded-md flex items-center justify-center" style={{ background: softBg }}>
+          <Icon size={11} style={{ color }} strokeWidth={2.5} />
         </div>
-        <p className="text-[11px] text-[var(--text-subtle)] leading-relaxed">{reason}</p>
       </div>
+      <div className="flex items-end gap-2">
+        <span className="text-3xl font-black leading-none" style={{ color, fontFamily: 'var(--font-head)' }}>{score}</span>
+        <span className="text-xs text-[var(--text-faint)] mb-0.5">/100</span>
+      </div>
+      <div className="progress-bar">
+        <div className="progress-bar-fill" style={{ width: `${score}%`, background: color }} />
+      </div>
+      <p className="text-[11px] text-[var(--text-muted)] leading-relaxed">{reason}</p>
     </div>
   );
 }

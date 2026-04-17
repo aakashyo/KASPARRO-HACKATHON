@@ -15,32 +15,31 @@ function CopyBtn({ text }: { text: string }) {
     setTimeout(() => setCopied(false), 2000);
   };
   return (
-    <button onClick={copy} style={{ color: copied ? 'var(--ok)' : 'var(--text-subtle)' }} className="p-1 hover:opacity-70 transition-opacity">
-      {copied ? <Check size={12} /> : <Copy size={12} />}
+    <button onClick={copy} className="p-1.5 rounded-md hover:bg-[var(--bg-elevated)] transition-colors" style={{ color: copied ? 'var(--ok)' : 'var(--text-faint)' }}>
+      {copied ? <Check size={13} /> : <Copy size={13} />}
     </button>
   );
 }
 
 export default function FixSuggestions({ fixes }: FixSuggestionsProps) {
-  const desc = fixes?.improved_description || 'No description update needed.';
+  const desc = fixes?.improved_description || 'No changes needed.';
   const tags = fixes?.structured_tags || [];
   const keywords = fixes?.added_keywords || [];
   const faqs = fixes?.faq_suggestions || [];
 
   return (
     <div className="space-y-5">
-
-      <div style={{ background: 'var(--bg-surface)', border: '1.5px solid var(--border)', borderRadius: 16, overflow: 'hidden' }}>
-        <div className="flex items-center justify-between px-4 py-2.5" style={{ borderBottom: '1.5px solid var(--border-subtle)' }}>
-          <p className="label" style={{ color: 'var(--ok)' }}>optimized description</p>
+      <div className="rounded-xl overflow-hidden" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
+        <div className="flex items-center justify-between px-4 py-2.5" style={{ borderBottom: '1px solid var(--border)' }}>
+          <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--ok)', fontFamily: 'var(--font-head)' }}>Improved Description</p>
           <CopyBtn text={desc} />
         </div>
-        <p className="px-4 py-3.5 text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>{desc}</p>
+        <p className="px-4 py-3.5 text-[13px] leading-relaxed text-[var(--text-secondary)]">{desc}</p>
       </div>
 
       {keywords.length > 0 && (
         <div className="space-y-2">
-          <p className="label">added keywords</p>
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-muted)]" style={{ fontFamily: 'var(--font-head)' }}>Added Keywords</p>
           <div className="flex flex-wrap gap-1.5">
             {keywords.map((kw: string, i: number) => (
               <span key={i} className="pill pill-ok">{kw}</span>
@@ -51,10 +50,10 @@ export default function FixSuggestions({ fixes }: FixSuggestionsProps) {
 
       {tags.length > 0 && (
         <div className="space-y-2">
-          <p className="label">structured tags</p>
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-muted)]" style={{ fontFamily: 'var(--font-head)' }}>Structured Tags</p>
           <div className="flex flex-wrap gap-1.5">
             {tags.map((tag: string, i: number) => (
-              <span key={i} className="mono px-2.5 py-1 rounded-lg" style={{ background: 'var(--bg-surface)', border: '1.5px solid var(--border)', color: 'var(--accent)' }}>
+              <span key={i} className="mono px-2.5 py-1 rounded-lg" style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', color: 'var(--accent)' }}>
                 {tag}
               </span>
             ))}
@@ -64,33 +63,21 @@ export default function FixSuggestions({ fixes }: FixSuggestionsProps) {
 
       {faqs.length > 0 && (
         <div className="space-y-2">
-          <p className="label">suggested faqs</p>
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-muted)]" style={{ fontFamily: 'var(--font-head)' }}>Suggested FAQs</p>
           <div className="space-y-2">
             {faqs.map((faq: any, i: number) => (
-              <div key={i} className="px-4 py-3 space-y-1" style={{ background: 'var(--bg-surface)', border: '1.5px solid var(--border)', borderRadius: 14 }}>
-                <p className="text-xs font-semibold" style={{ color: 'var(--text)', fontFamily: 'var(--font-montserrat)' }}>{faq.question}</p>
-                <p className="text-[11px] leading-relaxed" style={{ color: 'var(--text-subtle)' }}>{faq.answer}</p>
+              <div key={i} className="px-4 py-3 space-y-1 rounded-xl" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
+                <p className="text-[12px] font-semibold text-[var(--text)]" style={{ fontFamily: 'var(--font-head)' }}>{faq.question}</p>
+                <p className="text-[11px] leading-relaxed text-[var(--text-muted)]">{faq.answer}</p>
               </div>
             ))}
           </div>
         </div>
       )}
 
-      <button
-        className="w-full py-3 text-sm lowercase flex items-center justify-center gap-2 font-semibold transition-all"
-        style={{
-          background: 'var(--accent-dim)',
-          border: '1.5px solid var(--accent-border)',
-          borderRadius: 14,
-          color: 'var(--accent)',
-          fontFamily: 'var(--font-montserrat)',
-        }}
-        onMouseEnter={e => (e.currentTarget.style.background = 'color-mix(in srgb, var(--accent) 20%, transparent)')}
-        onMouseLeave={e => (e.currentTarget.style.background = 'var(--accent-dim)')}
-      >
-        push fixes to shopify <ArrowUpRight size={14} />
+      <button className="btn-accent w-full py-3 text-sm flex items-center justify-center gap-2" style={{ fontFamily: 'var(--font-head)' }}>
+        Push All Fixes to Shopify <ArrowUpRight size={14} />
       </button>
-
     </div>
   );
 }
