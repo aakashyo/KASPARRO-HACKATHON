@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, ArrowRight, Brain, Target, Eye } from 'lucide-react';
+import { ChevronDown, ChevronUp, ArrowRight } from 'lucide-react';
 import GapView from './GapView';
 import FixSuggestions from './FixSuggestions';
 
@@ -12,113 +12,101 @@ interface ProductCardProps {
 
 export default function ProductCard({ product, highlighted = false }: ProductCardProps) {
   const [open, setOpen] = useState(false);
-  const [tab, setTab] = useState<'diagnosis' | 'fix'>('diagnosis');
-  const severity = product.gaps.severity;
+  const [tab, setTab]   = useState<'diagnosis' | 'fix'>('diagnosis');
+  const { severity }    = product.gaps;
 
-  const statusConfig = severity >= 7
-    ? { label: 'Needs Urgent Fix', cls: 'pill-danger', bar: 'var(--danger)' }
+  const status = severity >= 7
+    ? { label: 'Needs Urgent Fix', color: '#ef4444', bg: 'rgba(239,68,68,0.1)',  border: 'rgba(239,68,68,0.2)' }
     : severity >= 4
-    ? { label: 'Can Be Improved', cls: 'pill-warn',   bar: 'var(--warn)'   }
-    : { label: 'Looking Good',    cls: 'pill-ok',     bar: 'var(--ok)'     };
+    ? { label: 'Can Be Improved',  color: '#f59e0b', bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.2)' }
+    : { label: 'Looking Good',     color: '#22c55e', bg: 'rgba(34,197,94,0.1)',  border: 'rgba(34,197,94,0.2)' };
 
   const before = Math.round(product.impact.before_score * 100);
   const after  = Math.round(product.impact.after_score  * 100);
 
   return (
-    <div
-      className="rounded-2xl overflow-hidden transition-all duration-200"
-      style={{
-        background: 'var(--bg-card)',
-        border: `1px solid ${highlighted ? 'rgba(239,68,68,0.25)' : 'var(--border)'}`,
-      }}
-    >
+    <div style={{
+      background: '#0e0e14',
+      border: `1px solid ${highlighted ? 'rgba(239,68,68,0.2)' : 'rgba(255,255,255,0.07)'}`,
+      borderRadius: 16,
+      overflow: 'hidden',
+      transition: 'border-color 0.2s',
+    }}>
       <div
-        className="px-5 py-4 cursor-pointer select-none"
+        style={{ padding: '16px 20px', cursor: 'pointer', transition: 'background 0.15s' }}
         onClick={() => setOpen(!open)}
-        style={{ transition: 'background 0.15s' }}
-        onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-card-hover)')}
+        onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.02)')}
         onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
       >
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4 min-w-0">
-            <div className="w-10 h-10 rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center"
-              style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14, minWidth: 0, flex: 1 }}>
+            <div style={{ width: 40, height: 40, borderRadius: 12, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
               {product.original_data?.image
-                ? <img src={product.original_data.image} alt="" className="w-full h-full object-cover" />
-                : <span className="text-[10px] font-bold text-[var(--text-faint)]">IMG</span>
+                ? <img src={product.original_data.image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                : <span style={{ fontSize: 9, fontWeight: 700, color: 'rgba(240,240,240,0.2)' }}>IMG</span>
               }
             </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2.5 flex-wrap mb-0.5">
-                <p className="font-bold text-[14px] truncate" style={{ fontFamily: 'var(--font-head)' }}>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 3 }}>
+                <p style={{ fontFamily: 'var(--font-head)', fontWeight: 700, fontSize: 14, color: '#f0f0f0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {product.title}
                 </p>
-                <span className={`pill ${statusConfig.cls}`}>{statusConfig.label}</span>
+                <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: status.bg, border: `1px solid ${status.border}`, color: status.color, flexShrink: 0, fontFamily: 'var(--font-head)', letterSpacing: '0.02em' }}>
+                  {status.label}
+                </span>
               </div>
-              <p className="text-[12px] text-[var(--text-muted)] truncate">{product.gaps.insight}</p>
+              <p style={{ fontSize: 12, color: 'rgba(240,240,240,0.4)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{product.gaps.insight}</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-5 flex-shrink-0">
-            <div className="hidden sm:flex items-center gap-2">
-              <span className="text-xs text-[var(--text-faint)] line-through">{before}%</span>
-              <ArrowRight size={11} className="text-[var(--text-faint)]" />
-              <span className="text-sm font-bold" style={{ color: 'var(--ok)', fontFamily: 'var(--font-head)' }}>{after}%</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexShrink: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 12, color: 'rgba(240,240,240,0.25)', textDecoration: 'line-through', fontFamily: 'var(--font-mono)' }}>{before}%</span>
+              <ArrowRight size={11} style={{ color: 'rgba(240,240,240,0.2)' }} />
+              <span style={{ fontSize: 13, fontWeight: 800, color: '#22c55e', fontFamily: 'var(--font-mono)' }}>{after}%</span>
             </div>
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
-              {open ? <ChevronUp size={14} className="text-[var(--text-muted)]" /> : <ChevronDown size={14} className="text-[var(--text-muted)]" />}
+            <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(240,240,240,0.3)' }}>
+              {open ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
             </div>
           </div>
         </div>
 
-        <div className="mt-3 progress-bar" style={{ height: 3 }}>
-          <div className="progress-bar-fill" style={{ width: `${before}%`, background: statusConfig.bar }} />
+        <div style={{ marginTop: 12, height: 3, borderRadius: 99, background: 'rgba(255,255,255,0.05)' }}>
+          <div style={{ height: '100%', borderRadius: 99, background: status.color, width: `${before}%`, opacity: 0.6 }} />
         </div>
       </div>
 
       {open && (
-        <div style={{ borderTop: '1px solid var(--border)' }} className="anim-fade-in">
-          <div className="flex" style={{ borderBottom: '1px solid var(--border)', background: 'var(--bg-surface)' }}>
-            {(['diagnosis', 'fix'] as const).map((t) => (
-              <button
-                key={t}
-                onClick={() => setTab(t)}
-                className="px-5 py-3 text-[12px] font-semibold transition-all relative"
-                style={{
-                  fontFamily: 'var(--font-head)',
-                  color: tab === t ? 'var(--text)' : 'var(--text-muted)',
-                }}
-              >
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', animation: 'fadeIn 0.2s ease' }}>
+          <div style={{ display: 'flex', background: 'rgba(0,0,0,0.15)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+            {(['diagnosis', 'fix'] as const).map(t => (
+              <button key={t} onClick={() => setTab(t)}
+                style={{ padding: '12px 20px', fontSize: 12, fontWeight: 700, cursor: 'pointer', background: 'transparent', border: 'none', borderBottom: tab === t ? '2px solid #c8f135' : '2px solid transparent', color: tab === t ? '#f0f0f0' : 'rgba(240,240,240,0.35)', fontFamily: 'var(--font-head)', transition: 'all 0.15s', letterSpacing: '0.01em' }}>
                 {t === 'diagnosis' ? '🔍 What Is Wrong' : '✨ How To Fix It'}
-                {tab === t && (
-                  <span className="absolute bottom-0 left-0 right-0 h-0.5" style={{ background: 'var(--accent)' }} />
-                )}
               </button>
             ))}
           </div>
 
-          <div className="p-5">
+          <div style={{ padding: '20px 24px' }}>
             {tab === 'diagnosis' && (
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-                <div className="space-y-2">
-                  <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-muted)] flex items-center gap-1.5" style={{ fontFamily: 'var(--font-head)' }}>
-                    <Target size={10} /> What You're Selling
-                  </p>
-                  <div className="p-3.5 rounded-xl space-y-3" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
+                <div>
+                  <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(240,240,240,0.3)', marginBottom: 10, fontFamily: 'var(--font-head)' }}>What You're Selling</p>
+                  <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
                     <div>
-                      <p className="text-[10px] text-[var(--text-faint)] mb-1">Target Customer</p>
-                      <p className="text-[12px] font-medium text-[var(--text)]">{product.intent.target_user}</p>
+                      <p style={{ fontSize: 10, color: 'rgba(240,240,240,0.3)', marginBottom: 4 }}>Target Customer</p>
+                      <p style={{ fontSize: 12, fontWeight: 600, color: '#f0f0f0' }}>{product.intent.target_user}</p>
                     </div>
                     <div>
-                      <p className="text-[10px] text-[var(--text-faint)] mb-1">Main Use Case</p>
-                      <p className="text-[12px] font-medium text-[var(--text)]">{product.intent.use_case}</p>
+                      <p style={{ fontSize: 10, color: 'rgba(240,240,240,0.3)', marginBottom: 4 }}>Main Use Case</p>
+                      <p style={{ fontSize: 12, fontWeight: 600, color: '#f0f0f0' }}>{product.intent.use_case}</p>
                     </div>
                     {product.intent.key_attributes?.length > 0 && (
                       <div>
-                        <p className="text-[10px] text-[var(--text-faint)] mb-1.5">Key Features</p>
-                        <div className="flex flex-wrap gap-1.5">
+                        <p style={{ fontSize: 10, color: 'rgba(240,240,240,0.3)', marginBottom: 6 }}>Key Features</p>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
                           {product.intent.key_attributes.map((a: string, i: number) => (
-                            <span key={i} className="pill pill-ok">{a}</span>
+                            <span key={i} style={{ fontSize: 10, padding: '2px 8px', borderRadius: 99, background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', color: '#22c55e', fontFamily: 'var(--font-head)', fontWeight: 600 }}>{a}</span>
                           ))}
                         </div>
                       </div>
@@ -126,42 +114,33 @@ export default function ProductCard({ product, highlighted = false }: ProductCar
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-muted)] flex items-center gap-1.5" style={{ fontFamily: 'var(--font-head)' }}>
-                    <Eye size={10} /> How AI Sees It
-                  </p>
-                  <div className="p-3.5 rounded-xl space-y-3" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
+                <div>
+                  <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(240,240,240,0.3)', marginBottom: 10, fontFamily: 'var(--font-head)' }}>How AI Sees It</p>
+                  <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
                     <div>
-                      <p className="text-[10px] text-[var(--text-faint)] mb-1">AI Summary</p>
-                      <p className="text-[12px] font-medium text-[var(--text)]">{product.ai_perception.summary}</p>
+                      <p style={{ fontSize: 10, color: 'rgba(240,240,240,0.3)', marginBottom: 4 }}>AI Summary</p>
+                      <p style={{ fontSize: 12, fontWeight: 600, color: '#f0f0f0', lineHeight: 1.4 }}>{product.ai_perception.summary}</p>
                     </div>
                     <div>
-                      <p className="text-[10px] text-[var(--text-faint)] mb-1.5">AI Confidence</p>
-                      <div className="flex items-center gap-2">
-                        <div className="flex-1 progress-bar" style={{ height: 5 }}>
-                          <div className="progress-bar-fill" style={{
-                            width: `${product.ai_perception.confidence * 100}%`,
-                            background: product.ai_perception.confidence > 0.7 ? 'var(--ok)' : product.ai_perception.confidence > 0.4 ? 'var(--warn)' : 'var(--danger)'
-                          }} />
+                      <p style={{ fontSize: 10, color: 'rgba(240,240,240,0.3)', marginBottom: 6 }}>AI Confidence</p>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div style={{ flex: 1, height: 5, borderRadius: 99, background: 'rgba(255,255,255,0.06)' }}>
+                          <div style={{ height: '100%', borderRadius: 99, width: `${product.ai_perception.confidence * 100}%`, background: product.ai_perception.confidence > 0.7 ? '#22c55e' : product.ai_perception.confidence > 0.4 ? '#f59e0b' : '#ef4444' }} />
                         </div>
-                        <span className="text-[12px] font-bold" style={{ fontFamily: 'var(--font-head)', color: 'var(--text)' }}>
-                          {Math.round(product.ai_perception.confidence * 100)}%
-                        </span>
+                        <span style={{ fontSize: 12, fontWeight: 800, color: '#f0f0f0', fontFamily: 'var(--font-mono)' }}>{Math.round(product.ai_perception.confidence * 100)}%</span>
                       </div>
                     </div>
                     <div>
-                      <p className="text-[10px] text-[var(--text-faint)] mb-1">Will AI Recommend It?</p>
-                      <span className={`pill ${product.ai_perception.recommendation === 'yes' ? 'pill-ok' : 'pill-danger'}`}>
+                      <p style={{ fontSize: 10, color: 'rgba(240,240,240,0.3)', marginBottom: 5 }}>Will AI Recommend?</p>
+                      <span style={{ fontSize: 10, padding: '3px 10px', borderRadius: 99, fontWeight: 700, fontFamily: 'var(--font-head)', ...(product.ai_perception.recommendation === 'yes' ? { background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', color: '#22c55e' } : { background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', color: '#ef4444' }) }}>
                         {product.ai_perception.recommendation === 'yes' ? '✓ Yes' : '✗ No'}
                       </span>
                     </div>
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-muted)] flex items-center gap-1.5" style={{ fontFamily: 'var(--font-head)' }}>
-                    <Brain size={10} /> The Problems
-                  </p>
+                <div>
+                  <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(240,240,240,0.3)', marginBottom: 10, fontFamily: 'var(--font-head)' }}>The Problems</p>
                   <GapView gaps={product.gaps} />
                 </div>
               </div>
@@ -170,6 +149,7 @@ export default function ProductCard({ product, highlighted = false }: ProductCar
           </div>
         </div>
       )}
+      <style>{`@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }`}</style>
     </div>
   );
 }

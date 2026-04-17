@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Search, ArrowRight, CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { Search, ArrowRight, Loader2 } from 'lucide-react';
 
 const EXAMPLES = [
   'best moisturizer for dry skin under ₹1500',
@@ -10,7 +10,7 @@ const EXAMPLES = [
 ];
 
 export default function QuerySimulator({ products }: { products: any[] }) {
-  const [query, setQuery]   = useState('');
+  const [query, setQuery]     = useState('');
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<any>(null);
 
@@ -24,9 +24,7 @@ export default function QuerySimulator({ products }: { products: any[] }) {
         ...p,
         rank: i + 1,
         match_score: Math.round(94 - i * 9 + (Math.random() * 4 - 2)),
-        match_reason: i === 0
-          ? 'Strong match — clear attributes and description.'
-          : 'Partial match — some details were missing.',
+        match_reason: i === 0 ? 'Strong match — clear attributes and description.' : 'Partial match — some details were missing.',
       }));
       const rejected = sorted.slice(-Math.min(2, sorted.length)).map(p => ({
         ...p,
@@ -38,46 +36,46 @@ export default function QuerySimulator({ products }: { products: any[] }) {
   };
 
   return (
-    <div className="card-flat p-6 space-y-6 rounded-2xl">
-      <div>
-        <p className="font-bold text-[15px] mb-1" style={{ fontFamily: 'var(--font-head)' }}>
+    <div style={{ background: '#0e0e14', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 18, padding: '28px 32px' }}>
+      <div style={{ marginBottom: 20 }}>
+        <p style={{ fontFamily: 'var(--font-head)', fontWeight: 700, fontSize: 15, color: '#f0f0f0', marginBottom: 6 }}>
           Test How AI Would Search Your Store
         </p>
-        <p className="text-[13px] text-[var(--text-secondary)]">
-          Type any shopping question. See which of your products an AI assistant would recommend — and which it would skip.
+        <p style={{ fontSize: 13, color: 'rgba(240,240,240,0.45)', lineHeight: 1.6 }}>
+          Type any shopping question. See which products an AI assistant would recommend — and which it would skip.
         </p>
       </div>
 
-      <div className="space-y-3">
-        <div className="relative flex items-center">
-          <Search size={15} className="absolute left-4 text-[var(--text-muted)]" />
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+          <Search size={14} style={{ position: 'absolute', left: 14, color: 'rgba(240,240,240,0.3)', pointerEvents: 'none' }} />
           <input
             type="text"
             placeholder="e.g. best moisturizer for dry skin under ₹2000"
-            className="input-field w-full pl-11 pr-32 py-3 text-[13px]"
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && simulate()}
+            onChange={e => setQuery(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && simulate()}
             suppressHydrationWarning
+            style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '11px 120px 11px 40px', fontSize: 13, color: '#f0f0f0', outline: 'none', transition: 'border-color 0.2s', fontFamily: 'var(--font-sans)', boxSizing: 'border-box' }}
+            onFocus={e => (e.target.style.borderColor = 'rgba(200,241,53,0.4)')}
+            onBlur={e => (e.target.style.borderColor = 'rgba(255,255,255,0.1)')}
           />
           <button
             onClick={simulate}
             disabled={!query.trim() || loading}
             suppressHydrationWarning
-            className="btn-accent absolute right-2 px-4 py-2 text-[12px] flex items-center gap-1.5"
-            style={{ fontFamily: 'var(--font-head)' }}
+            style={{ position: 'absolute', right: 6, background: query.trim() && !loading ? '#c8f135' : 'rgba(200,241,53,0.15)', color: query.trim() && !loading ? '#08080c' : 'rgba(200,241,53,0.5)', border: 'none', borderRadius: 8, padding: '7px 14px', fontSize: 12, fontWeight: 700, cursor: query.trim() && !loading ? 'pointer' : 'not-allowed', fontFamily: 'var(--font-head)', display: 'flex', alignItems: 'center', gap: 5, transition: 'all 0.2s' }}
           >
-            {loading ? <Loader2 size={13} className="animate-spin" /> : <><span>Simulate</span><ArrowRight size={13} /></>}
+            {loading ? <Loader2 size={13} style={{ animation: 'spin 1s linear infinite' }} /> : <><span>Simulate</span><ArrowRight size={12} /></>}
           </button>
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 10 }}>
           {EXAMPLES.map(q => (
-            <button
-              key={q}
-              onClick={() => setQuery(q)}
-              className="text-[11px] px-3 py-1.5 rounded-full transition-all hover:border-[var(--accent)] hover:text-[var(--text)]"
-              style={{ border: '1px solid var(--border)', color: 'var(--text-muted)', background: 'var(--bg-surface)', fontFamily: 'var(--font-head)' }}
+            <button key={q} onClick={() => setQuery(q)}
+              style={{ fontSize: 11, padding: '5px 12px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(240,240,240,0.4)', background: 'transparent', cursor: 'pointer', fontFamily: 'var(--font-head)', transition: 'all 0.15s' }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(200,241,53,0.3)'; e.currentTarget.style.color = '#c8f135'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = 'rgba(240,240,240,0.4)'; }}
             >
               {q}
             </button>
@@ -86,48 +84,51 @@ export default function QuerySimulator({ products }: { products: any[] }) {
       </div>
 
       {results && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 anim-fade-in">
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <CheckCircle size={13} style={{ color: 'var(--ok)' }} />
-              <p className="text-[12px] font-semibold" style={{ color: 'var(--ok)', fontFamily: 'var(--font-head)' }}>AI Would Recommend</p>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginTop: 24, paddingTop: 24, borderTop: '1px solid rgba(255,255,255,0.06)', animation: 'fadeIn 0.3s ease' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+              <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e' }} />
+              <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#22c55e', fontFamily: 'var(--font-head)' }}>AI Would Recommend</p>
             </div>
-            <div className="space-y-2">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {results.top.map((p: any) => (
-                <div key={p.id} className="flex items-center gap-3 p-3.5 rounded-xl" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
-                  <span className="text-[11px] font-bold w-6 text-center text-[var(--text-faint)]" style={{ fontFamily: 'var(--font-head)' }}>#{p.rank}</span>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[12px] font-semibold truncate text-[var(--text)]" style={{ fontFamily: 'var(--font-head)' }}>{p.title}</p>
-                    <p className="text-[11px] text-[var(--text-muted)] truncate">{p.match_reason}</p>
+                <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: 12, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(240,240,240,0.3)', width: 20, flexShrink: 0, fontFamily: 'var(--font-mono)' }}>#{p.rank}</span>
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <p style={{ fontSize: 12, fontWeight: 600, color: '#f0f0f0', fontFamily: 'var(--font-head)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: 2 }}>{p.title}</p>
+                    <p style={{ fontSize: 11, color: 'rgba(240,240,240,0.35)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.match_reason}</p>
                   </div>
-                  <span className="text-[13px] font-bold flex-shrink-0" style={{ color: 'var(--ok)', fontFamily: 'var(--font-head)' }}>{p.match_score}%</span>
+                  <span style={{ fontSize: 13, fontWeight: 800, color: '#22c55e', flexShrink: 0, fontFamily: 'var(--font-head)' }}>{p.match_score}%</span>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <XCircle size={13} style={{ color: 'var(--danger)' }} />
-              <p className="text-[12px] font-semibold" style={{ color: 'var(--danger)', fontFamily: 'var(--font-head)' }}>AI Would Skip</p>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+              <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#ef4444' }} />
+              <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#ef4444', fontFamily: 'var(--font-head)' }}>AI Would Skip</p>
             </div>
-            <div className="space-y-2">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {results.rejected.map((p: any) => (
-                <div key={p.id} className="flex items-center gap-3 p-3.5 rounded-xl opacity-60" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
-                  <XCircle size={13} style={{ color: 'var(--danger)', flexShrink: 0 }} />
-                  <div className="min-w-0">
-                    <p className="text-[12px] font-semibold truncate text-[var(--text)]" style={{ fontFamily: 'var(--font-head)' }}>{p.title}</p>
-                    <p className="text-[11px] text-[var(--text-muted)] truncate">{p.rejection_reason}</p>
+                <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: 12, background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', opacity: 0.6 }}>
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <p style={{ fontSize: 12, fontWeight: 600, color: '#f0f0f0', fontFamily: 'var(--font-head)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: 2 }}>{p.title}</p>
+                    <p style={{ fontSize: 11, color: 'rgba(240,240,240,0.35)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.rejection_reason}</p>
                   </div>
                 </div>
               ))}
             </div>
-            <p className="text-[11px] text-[var(--text-faint)] px-1 leading-relaxed">
-              These products need better descriptions and tags before AI will recommend them.
+            <p style={{ fontSize: 11, color: 'rgba(240,240,240,0.25)', marginTop: 10, lineHeight: 1.5 }}>
+              These products need better descriptions before AI will recommend them.
             </p>
           </div>
         </div>
       )}
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+      `}</style>
     </div>
   );
 }
