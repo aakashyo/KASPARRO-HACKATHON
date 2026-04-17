@@ -7,26 +7,22 @@ interface FixSuggestionsProps {
   fixes: any;
 }
 
-function CopyButton({ text }: { text: string }) {
+function CopyBtn({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
-  const handleCopy = () => {
+  const copy = () => {
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
   return (
-    <button
-      onClick={handleCopy}
-      className="p-1.5 rounded-md text-[#6b6b80] hover:text-[#f0f0f5] hover:bg-[#1f1f2e] transition-all"
-      title="Copy"
-    >
-      {copied ? <Check size={12} className="text-[#4ade80]" /> : <Copy size={12} />}
+    <button onClick={copy} style={{ color: copied ? 'var(--ok)' : 'var(--text-subtle)' }} className="p-1 hover:opacity-70 transition-opacity">
+      {copied ? <Check size={12} /> : <Copy size={12} />}
     </button>
   );
 }
 
 export default function FixSuggestions({ fixes }: FixSuggestionsProps) {
-  const description = fixes?.improved_description || 'No description update required.';
+  const desc = fixes?.improved_description || 'No description update needed.';
   const tags = fixes?.structured_tags || [];
   const keywords = fixes?.added_keywords || [];
   const faqs = fixes?.faq_suggestions || [];
@@ -34,20 +30,20 @@ export default function FixSuggestions({ fixes }: FixSuggestionsProps) {
   return (
     <div className="space-y-5">
 
-      <div className="bg-[#111118] border border-[#2a2a3a] rounded-lg overflow-hidden">
-        <div className="flex items-center justify-between px-4 py-2.5 border-b border-[#1f1f2e]">
-          <p className="section-label text-[#4ade80]">Optimized Description</p>
-          <CopyButton text={description} />
+      <div style={{ background: 'var(--bg-surface)', border: '1.5px solid var(--border)', borderRadius: 16, overflow: 'hidden' }}>
+        <div className="flex items-center justify-between px-4 py-2.5" style={{ borderBottom: '1.5px solid var(--border-subtle)' }}>
+          <p className="label" style={{ color: 'var(--ok)' }}>optimized description</p>
+          <CopyBtn text={desc} />
         </div>
-        <p className="px-4 py-3.5 text-sm text-[#a0a0b8] leading-relaxed">{description}</p>
+        <p className="px-4 py-3.5 text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>{desc}</p>
       </div>
 
       {keywords.length > 0 && (
         <div className="space-y-2">
-          <p className="section-label">Added Keywords</p>
-          <div className="flex flex-wrap gap-2">
+          <p className="label">added keywords</p>
+          <div className="flex flex-wrap gap-1.5">
             {keywords.map((kw: string, i: number) => (
-              <span key={i} className="badge badge-success">{kw}</span>
+              <span key={i} className="pill pill-ok">{kw}</span>
             ))}
           </div>
         </div>
@@ -55,10 +51,10 @@ export default function FixSuggestions({ fixes }: FixSuggestionsProps) {
 
       {tags.length > 0 && (
         <div className="space-y-2">
-          <p className="section-label">Structured Tags</p>
-          <div className="flex flex-wrap gap-2">
+          <p className="label">structured tags</p>
+          <div className="flex flex-wrap gap-1.5">
             {tags.map((tag: string, i: number) => (
-              <span key={i} className="px-2.5 py-1 rounded-md bg-[#111118] border border-[#2a2a3a] text-[11px] font-mono text-[#7c5cfc]">
+              <span key={i} className="mono px-2.5 py-1 rounded-lg" style={{ background: 'var(--bg-surface)', border: '1.5px solid var(--border)', color: 'var(--accent)' }}>
                 {tag}
               </span>
             ))}
@@ -68,20 +64,31 @@ export default function FixSuggestions({ fixes }: FixSuggestionsProps) {
 
       {faqs.length > 0 && (
         <div className="space-y-2">
-          <p className="section-label">Suggested FAQs</p>
+          <p className="label">suggested faqs</p>
           <div className="space-y-2">
             {faqs.map((faq: any, i: number) => (
-              <div key={i} className="bg-[#111118] border border-[#2a2a3a] rounded-lg px-4 py-3 space-y-1">
-                <p className="text-xs font-semibold text-[#f0f0f5]">{faq.question}</p>
-                <p className="text-xs text-[#6b6b80] leading-relaxed">{faq.answer}</p>
+              <div key={i} className="px-4 py-3 space-y-1" style={{ background: 'var(--bg-surface)', border: '1.5px solid var(--border)', borderRadius: 14 }}>
+                <p className="text-xs font-semibold" style={{ color: 'var(--text)', fontFamily: 'var(--font-montserrat)' }}>{faq.question}</p>
+                <p className="text-[11px] leading-relaxed" style={{ color: 'var(--text-subtle)' }}>{faq.answer}</p>
               </div>
             ))}
           </div>
         </div>
       )}
 
-      <button className="w-full py-3 rounded-[10px] border border-[#2a2a3a] bg-gradient-to-r from-[#00d4ff]/10 to-[#7c5cfc]/10 hover:from-[#00d4ff]/15 hover:to-[#7c5cfc]/15 text-sm font-semibold text-[#f0f0f5] transition-all flex items-center justify-center gap-2">
-        Push all fixes to Shopify <ArrowUpRight size={14} />
+      <button
+        className="w-full py-3 text-sm lowercase flex items-center justify-center gap-2 font-semibold transition-all"
+        style={{
+          background: 'var(--accent-dim)',
+          border: '1.5px solid var(--accent-border)',
+          borderRadius: 14,
+          color: 'var(--accent)',
+          fontFamily: 'var(--font-montserrat)',
+        }}
+        onMouseEnter={e => (e.currentTarget.style.background = 'color-mix(in srgb, var(--accent) 20%, transparent)')}
+        onMouseLeave={e => (e.currentTarget.style.background = 'var(--accent-dim)')}
+      >
+        push fixes to shopify <ArrowUpRight size={14} />
       </button>
 
     </div>

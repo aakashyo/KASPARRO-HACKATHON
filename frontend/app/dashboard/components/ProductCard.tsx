@@ -11,97 +11,103 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product, highlighted = false }: ProductCardProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'diagnosis' | 'fix'>('diagnosis');
+  const [open, setOpen] = useState(false);
+  const [tab, setTab] = useState<'diagnosis' | 'fix'>('diagnosis');
   const severity = product.gaps.severity;
 
-  const statusConfig = severity >= 7
-    ? { label: 'Critical Gap', cls: 'badge-critical' }
-    : severity >= 4
-    ? { label: 'Needs Work', cls: 'badge-warning' }
-    : { label: 'Optimized', cls: 'badge-success' };
+  const pillCls = severity >= 7 ? 'pill pill-danger' : severity >= 4 ? 'pill pill-warn' : 'pill pill-ok';
+  const pillLabel = severity >= 7 ? 'critical gap' : severity >= 4 ? 'needs work' : 'optimized';
 
-  const confidenceBefore = Math.round(product.impact.before_score * 100);
-  const confidenceAfter = Math.round(product.impact.after_score * 100);
+  const before = Math.round(product.impact.before_score * 100);
+  const after  = Math.round(product.impact.after_score  * 100);
+
+  const borderColor = highlighted
+    ? 'color-mix(in srgb, var(--danger) 30%, transparent)'
+    : 'var(--border)';
 
   return (
-    <div className={`card-static overflow-hidden ${highlighted ? 'border-[#f87171]/30' : ''}`}>
+    <div style={{ background: 'var(--bg-card)', border: `1.5px solid ${borderColor}`, borderRadius: 20, overflow: 'hidden', transition: 'border-color 0.2s' }}>
 
       <div
-        className="px-5 py-4 cursor-pointer hover:bg-[#111118] transition-colors"
-        onClick={() => setIsOpen(!isOpen)}
+        className="px-5 py-4 cursor-pointer transition-colors"
+        style={{ transition: 'background 0.15s' }}
+        onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-card-hover)')}
+        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+        onClick={() => setOpen(!open)}
         suppressHydrationWarning
       >
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-4 min-w-0">
-            <div className="w-10 h-10 rounded-lg bg-[#1e1e2a] border border-[#2a2a3a] overflow-hidden flex-shrink-0 flex items-center justify-center">
-              {product.original_data.image ? (
-                <img src={product.original_data.image} alt="" className="w-full h-full object-cover" />
-              ) : (
-                <div className="text-[#3a3a4d] text-[9px] font-bold uppercase">IMG</div>
-              )}
+            <div className="w-10 h-10 rounded-[14px] overflow-hidden flex-shrink-0 flex items-center justify-center" style={{ background: 'var(--bg-elevated)', border: '1.5px solid var(--border)' }}>
+              {product.original_data.image
+                ? <img src={product.original_data.image} alt="" className="w-full h-full object-cover" />
+                : <span className="text-[9px] font-bold" style={{ color: 'var(--text-faint)' }}>IMG</span>
+              }
             </div>
             <div className="min-w-0">
-              <div className="flex items-center gap-2.5 flex-wrap">
-                <p className="font-semibold text-sm text-[#f0f0f5] truncate">{product.title}</p>
-                <span className={`badge ${statusConfig.cls}`}>{statusConfig.label}</span>
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className="font-bold text-sm lowercase truncate" style={{ fontFamily: 'var(--font-montserrat)', color: 'var(--text)' }}>
+                  {product.title.toLowerCase()}
+                </p>
+                <span className={pillCls}>{pillLabel}</span>
               </div>
-              <p className="text-xs text-[#6b6b80] mt-0.5 truncate">{product.gaps.insight}</p>
+              <p className="text-[11px] mt-0.5 truncate" style={{ color: 'var(--text-subtle)' }}>{product.gaps.insight}</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-6 flex-shrink-0">
-            <div className="hidden sm:flex items-center gap-3 text-sm">
-              <span className="stat-number text-[#6b6b80] line-through text-xs">{confidenceBefore}%</span>
-              <ArrowRight size={12} className="text-[#3a3a4d]" />
-              <span className="stat-number text-[#4ade80] font-bold">{confidenceAfter}%</span>
+          <div className="flex items-center gap-5 flex-shrink-0">
+            <div className="hidden sm:flex items-center gap-2 text-sm">
+              <span className="line-through text-xs" style={{ color: 'var(--text-faint)' }}>{before}%</span>
+              <ArrowRight size={11} style={{ color: 'var(--text-faint)' }} />
+              <span className="font-bold text-sm" style={{ color: 'var(--ok)', fontFamily: 'var(--font-montserrat)' }}>{after}%</span>
             </div>
-            <div className="w-6 h-6 rounded-full bg-[#1f1f2e] flex items-center justify-center text-[#6b6b80]">
-              {isOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+            <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: 'var(--bg-surface)', border: '1.5px solid var(--border)', color: 'var(--text-subtle)' }}>
+              {open ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
             </div>
           </div>
         </div>
       </div>
 
-      {isOpen && (
-        <div className="border-t border-[#1f1f2e] animate-fade-in">
-          <div className="flex border-b border-[#1f1f2e]">
-            {(['diagnosis', 'fix'] as const).map((tab) => (
+      {open && (
+        <div style={{ borderTop: '1.5px solid var(--border)' }} className="anim-fade-in">
+          <div className="flex" style={{ borderBottom: '1.5px solid var(--border)' }}>
+            {(['diagnosis', 'fix'] as const).map((t) => (
               <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-5 py-3 text-xs font-semibold transition-colors capitalize ${
-                  activeTab === tab
-                    ? 'text-[#f0f0f5] border-b-2 border-[#00d4ff]'
-                    : 'text-[#6b6b80] hover:text-[#a0a0b8]'
-                }`}
+                key={t}
+                onClick={() => setTab(t)}
+                className="px-5 py-3 text-xs font-semibold lowercase transition-colors"
+                style={{
+                  fontFamily: 'var(--font-montserrat)',
+                  color: tab === t ? 'var(--text)' : 'var(--text-subtle)',
+                  borderBottom: tab === t ? `2px solid var(--accent)` : '2px solid transparent',
+                }}
               >
-                {tab === 'diagnosis' ? 'Gap Diagnosis' : 'Neural Fixes'}
+                {t === 'diagnosis' ? 'gap diagnosis' : 'neural fixes'}
               </button>
             ))}
           </div>
 
           <div className="p-6">
-            {activeTab === 'diagnosis' && (
+            {tab === 'diagnosis' && (
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-                <div className="space-y-3">
-                  <p className="section-label flex items-center gap-1.5"><Target size={11} /> Merchant Intent</p>
-                  <div className="bg-[#111118] border border-[#2a2a3a] rounded-lg p-4 space-y-3">
+                <div className="space-y-2">
+                  <p className="label flex items-center gap-1.5"><Target size={10} />merchant intent</p>
+                  <div className="p-4 space-y-3" style={{ background: 'var(--bg-surface)', border: '1.5px solid var(--border)', borderRadius: 14 }}>
                     <div>
-                      <p className="text-[10px] text-[#6b6b80] mb-1">Target User</p>
-                      <p className="text-xs font-medium text-[#f0f0f5]">{product.intent.target_user}</p>
+                      <p className="text-[10px] mb-1" style={{ color: 'var(--text-subtle)' }}>target user</p>
+                      <p className="text-xs font-medium" style={{ color: 'var(--text)' }}>{product.intent.target_user}</p>
                     </div>
                     <div>
-                      <p className="text-[10px] text-[#6b6b80] mb-1">Use Case</p>
-                      <p className="text-xs font-medium text-[#f0f0f5]">{product.intent.use_case}</p>
+                      <p className="text-[10px] mb-1" style={{ color: 'var(--text-subtle)' }}>use case</p>
+                      <p className="text-xs font-medium" style={{ color: 'var(--text)' }}>{product.intent.use_case}</p>
                     </div>
                     {product.intent.key_attributes?.length > 0 && (
                       <div>
-                        <p className="text-[10px] text-[#6b6b80] mb-1.5">Key Attributes</p>
+                        <p className="text-[10px] mb-1.5" style={{ color: 'var(--text-subtle)' }}>key attributes</p>
                         <div className="flex flex-wrap gap-1.5">
                           {product.intent.key_attributes.map((a: string, i: number) => (
-                            <span key={i} className="badge badge-success">{a}</span>
+                            <span key={i} className="pill pill-ok">{a}</span>
                           ))}
                         </div>
                       </div>
@@ -109,48 +115,47 @@ export default function ProductCard({ product, highlighted = false }: ProductCar
                   </div>
                 </div>
 
-                <div className="space-y-3">
-                  <p className="section-label flex items-center gap-1.5"><Eye size={11} /> AI Perception</p>
-                  <div className="bg-[#111118] border border-[#2a2a3a] rounded-lg p-4 space-y-3">
+                <div className="space-y-2">
+                  <p className="label flex items-center gap-1.5"><Eye size={10} />ai perception</p>
+                  <div className="p-4 space-y-3" style={{ background: 'var(--bg-surface)', border: '1.5px solid var(--border)', borderRadius: 14 }}>
                     <div>
-                      <p className="text-[10px] text-[#6b6b80] mb-1">Summary</p>
-                      <p className="text-xs font-medium text-[#f0f0f5]">{product.ai_perception.summary}</p>
+                      <p className="text-[10px] mb-1" style={{ color: 'var(--text-subtle)' }}>summary</p>
+                      <p className="text-xs font-medium" style={{ color: 'var(--text)' }}>{product.ai_perception.summary}</p>
                     </div>
                     <div>
-                      <p className="text-[10px] text-[#6b6b80] mb-1">Confidence</p>
+                      <p className="text-[10px] mb-1.5" style={{ color: 'var(--text-subtle)' }}>confidence</p>
                       <div className="flex items-center gap-2">
-                        <div className="flex-1 h-1.5 bg-[#1f1f2e] rounded-full overflow-hidden">
+                        <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--border)' }}>
                           <div
                             className="h-full rounded-full"
                             style={{
                               width: `${product.ai_perception.confidence * 100}%`,
-                              background: product.ai_perception.confidence > 0.7 ? '#4ade80' : product.ai_perception.confidence > 0.4 ? '#fbbf24' : '#f87171'
+                              background: product.ai_perception.confidence > 0.7 ? 'var(--ok)' : product.ai_perception.confidence > 0.4 ? 'var(--warn)' : 'var(--danger)'
                             }}
                           />
                         </div>
-                        <span className="text-xs font-bold text-[#f0f0f5]">{Math.round(product.ai_perception.confidence * 100)}%</span>
+                        <span className="text-xs font-bold" style={{ color: 'var(--text)', fontFamily: 'var(--font-montserrat)' }}>
+                          {Math.round(product.ai_perception.confidence * 100)}%
+                        </span>
                       </div>
                     </div>
                     <div>
-                      <p className="text-[10px] text-[#6b6b80] mb-1">Will Recommend</p>
-                      <span className={`badge ${product.ai_perception.recommendation === 'yes' ? 'badge-success' : 'badge-critical'}`}>
-                        {product.ai_perception.recommendation === 'yes' ? 'Yes' : 'No'}
+                      <p className="text-[10px] mb-1" style={{ color: 'var(--text-subtle)' }}>will recommend</p>
+                      <span className={product.ai_perception.recommendation === 'yes' ? 'pill pill-ok' : 'pill pill-danger'}>
+                        {product.ai_perception.recommendation === 'yes' ? 'yes' : 'no'}
                       </span>
                     </div>
                   </div>
                 </div>
 
-                <div className="space-y-3">
-                  <p className="section-label flex items-center gap-1.5"><Brain size={11} /> Intelligence Gaps</p>
+                <div className="space-y-2">
+                  <p className="label flex items-center gap-1.5"><Brain size={10} />intelligence gaps</p>
                   <GapView gaps={product.gaps} />
                 </div>
 
               </div>
             )}
-
-            {activeTab === 'fix' && (
-              <FixSuggestions fixes={product.fixes} />
-            )}
+            {tab === 'fix' && <FixSuggestions fixes={product.fixes} />}
           </div>
         </div>
       )}

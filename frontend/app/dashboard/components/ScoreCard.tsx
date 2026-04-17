@@ -10,39 +10,42 @@ interface ScoreCardProps {
 export default function ScoreCard({ label, score, reason }: ScoreCardProps) {
   const isGood = score > 80;
   const isOk = score > 50;
-  const color = isGood ? '#4ade80' : isOk ? '#fbbf24' : '#f87171';
+  const color = isGood ? 'var(--ok)' : isOk ? 'var(--warn)' : 'var(--danger)';
   const Icon = isGood ? TrendingUp : isOk ? Minus : TrendingDown;
 
-  const circumference = 2 * Math.PI * 26;
-  const dashOffset = circumference - (score / 100) * circumference;
+  const r = 24;
+  const circ = 2 * Math.PI * r;
+  const offset = circ - (score / 100) * circ;
 
   return (
-    <div className="card p-5 flex flex-col gap-4 group relative">
-      <div className="flex items-start justify-between">
-        <p className="section-label leading-snug max-w-[80%]">{label}</p>
-        <Icon size={13} style={{ color }} strokeWidth={2.5} className="flex-shrink-0 mt-0.5" />
+    <div className="card p-5 flex flex-col gap-3">
+      <div className="flex items-center justify-between">
+        <p className="label leading-snug max-w-[75%]">{label}</p>
+        <Icon size={12} style={{ color }} strokeWidth={2.5} />
       </div>
-
-      <div className="flex items-center gap-4">
-        <div className="relative w-14 h-14 flex-shrink-0">
+      <div className="flex items-center gap-3">
+        <div className="relative w-12 h-12 flex-shrink-0">
           <svg viewBox="0 0 60 60" className="w-full h-full -rotate-90">
-            <circle cx="30" cy="30" r="26" fill="none" stroke="#1f1f2e" strokeWidth="5" />
+            <circle cx="30" cy="30" r={r} fill="none" stroke="var(--border)" strokeWidth="6" />
             <circle
-              cx="30" cy="30" r="26"
+              cx="30" cy="30" r={r}
               fill="none"
               stroke={color}
-              strokeWidth="5"
+              strokeWidth="6"
               strokeLinecap="round"
-              strokeDasharray={circumference}
-              strokeDashoffset={dashOffset}
-              className="score-ring"
+              strokeDasharray={circ}
+              strokeDashoffset={offset}
+              style={{ transition: 'stroke-dashoffset 1s ease' }}
             />
           </svg>
-          <span className="absolute inset-0 flex items-center justify-center text-sm font-bold stat-number" style={{ color }}>
+          <span
+            className="absolute inset-0 flex items-center justify-center text-xs font-black"
+            style={{ color, fontFamily: 'var(--font-montserrat)' }}
+          >
             {score}
           </span>
         </div>
-        <p className="text-[11px] text-[#6b6b80] leading-relaxed">{reason}</p>
+        <p className="text-[11px] text-[var(--text-subtle)] leading-relaxed">{reason}</p>
       </div>
     </div>
   );

@@ -6,14 +6,14 @@ interface GapViewProps {
 
 export default function GapView({ gaps }: GapViewProps) {
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
 
       {gaps.missing_attributes?.length > 0 && (
         <div className="space-y-2">
-          <p className="section-label text-[#f87171]">Missing Attributes</p>
-          <div className="flex flex-wrap gap-2">
+          <p className="label" style={{ color: 'var(--danger)' }}>missing attributes</p>
+          <div className="flex flex-wrap gap-1.5">
             {gaps.missing_attributes.map((attr: string, i: number) => (
-              <span key={i} className="badge badge-critical">{attr}</span>
+              <span key={i} className="pill pill-danger">{attr}</span>
             ))}
           </div>
         </div>
@@ -21,12 +21,12 @@ export default function GapView({ gaps }: GapViewProps) {
 
       {gaps.misinterpretations?.length > 0 && (
         <div className="space-y-2">
-          <p className="section-label">AI Misinterpretations</p>
+          <p className="label">ai misinterpretations</p>
           <div className="space-y-2">
             {gaps.misinterpretations.map((m: string, i: number) => (
-              <div key={i} className="flex gap-3 p-3.5 bg-[#111118] border border-[#2a2a3a] rounded-lg">
-                <div className="w-1 flex-shrink-0 rounded-full bg-[#fbbf24] self-stretch" />
-                <p className="text-xs text-[#a0a0b8] leading-relaxed">{m}</p>
+              <div key={i} className="flex gap-3 p-3" style={{ background: 'var(--bg-surface)', border: '1.5px solid var(--border)', borderRadius: 14 }}>
+                <div className="w-0.5 rounded-full flex-shrink-0 self-stretch" style={{ background: 'var(--warn)' }} />
+                <p className="text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>{m}</p>
               </div>
             ))}
           </div>
@@ -35,10 +35,10 @@ export default function GapView({ gaps }: GapViewProps) {
 
       {gaps.confidence_drop_reasons?.length > 0 && (
         <div className="space-y-2">
-          <p className="section-label">Confidence Drop Factors</p>
-          <div className="flex flex-wrap gap-2">
+          <p className="label">confidence drop factors</p>
+          <div className="flex flex-wrap gap-1.5">
             {gaps.confidence_drop_reasons.map((reason: string, i: number) => (
-              <span key={i} className="badge badge-info">{reason}</span>
+              <span key={i} className="pill pill-info">{reason}</span>
             ))}
           </div>
         </div>
