@@ -2,39 +2,37 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, Lock, Zap, BarChart2, ShieldCheck, GitBranch, Check, TrendingUp, AlertTriangle, ChevronRight } from 'lucide-react';
-
-const FEATURES = [
-  { icon: Zap,          label: 'Understand Your Products', desc: 'We figure out what you are selling and who it is for.' },
-  { icon: BarChart2,    label: 'Find What\'s Missing',     desc: 'We spot exact details AI shoppers need but cannot find.' },
-  { icon: ShieldCheck,  label: 'See Through AI Eyes',      desc: 'See your store exactly how a smart AI assistant sees it.' },
-  { icon: GitBranch,    label: 'Get Instant Fixes',        desc: 'Better product descriptions and tags, ready to copy-paste.' },
-];
-
-const DEMO_SCORES = [
-  { label: 'Product Quality', score: 45, color: '#ef4444' },
-  { label: 'Policy Clarity',  score: 85, color: '#22c55e' },
-  { label: 'FAQ Coverage',    score: 40, color: '#ef4444' },
-  { label: 'Trust Signals',   score: 70, color: '#f59e0b' },
-  { label: 'Tags & Structure', score: 50, color: '#f59e0b' },
-];
+import { ArrowRight, Lock, ArrowUpRight } from 'lucide-react';
 
 export default function LandingPage() {
   const router = useRouter();
   const [storeUrl, setStoreUrl] = useState('');
   const [token, setToken]       = useState('');
   const [loading, setLoading]   = useState(false);
+  const [count, setCount]       = useState(0);
   const heroRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handleMouse = (e: MouseEvent) => {
-      if (!heroRef.current) return;
-      const rect = heroRef.current.getBoundingClientRect();
-      heroRef.current.style.setProperty('--mx', `${e.clientX - rect.left}px`);
-      heroRef.current.style.setProperty('--my', `${e.clientY - rect.top}px`);
+    const target = 58;
+    let n = 0;
+    const timer = setInterval(() => {
+      n += 2;
+      if (n >= target) { setCount(target); clearInterval(timer); }
+      else setCount(n);
+    }, 28);
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    const el = heroRef.current;
+    if (!el) return;
+    const move = (e: MouseEvent) => {
+      const r = el.getBoundingClientRect();
+      el.style.setProperty('--mx', `${e.clientX - r.left}px`);
+      el.style.setProperty('--my', `${e.clientY - r.top}px`);
     };
-    window.addEventListener('mousemove', handleMouse);
-    return () => window.removeEventListener('mousemove', handleMouse);
+    window.addEventListener('mousemove', move);
+    return () => window.removeEventListener('mousemove', move);
   }, []);
 
   const handleStart = (e: React.FormEvent) => {
@@ -52,268 +50,199 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
+    <div style={{ background: '#08080c', color: '#f0f0f0', minHeight: '100vh', fontFamily: 'var(--font-sans)' }}>
 
-      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-4" style={{ background: 'rgba(9,9,11,0.8)', backdropFilter: 'blur(12px)', borderBottom: '1px solid var(--border-subtle)' }}>
-        <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'var(--accent)' }}>
-            <BarChart2 size={14} className="text-[var(--bg)]" strokeWidth={3} />
+      <nav style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 40px', height: 60, background: 'rgba(8,8,12,0.9)', backdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ width: 28, height: 28, borderRadius: 8, background: '#c8f135', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#08080c" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+            </svg>
           </div>
-          <span className="text-sm font-bold tracking-tight" style={{ fontFamily: 'var(--font-head)' }}>RepOptimizer</span>
+          <span style={{ fontFamily: 'var(--font-head)', fontWeight: 800, fontSize: 14, letterSpacing: '-0.02em' }}>RepOptimizer</span>
         </div>
-        <div className="flex items-center gap-5">
-          <a href="#how" className="text-[13px] text-[var(--text-muted)] hover:text-[var(--text)] transition-colors hidden sm:block">How it works</a>
-          <button onClick={handleDemo} className="btn-accent px-4 py-2 text-[13px] flex items-center gap-1.5" style={{ fontFamily: 'var(--font-head)' }}>
-            Try Demo <ArrowRight size={14} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+          <a href="#connect" style={{ fontSize: 13, color: 'rgba(240,240,240,0.5)', textDecoration: 'none', transition: 'color 0.2s' }}
+            onMouseEnter={e => (e.currentTarget.style.color = '#f0f0f0')}
+            onMouseLeave={e => (e.currentTarget.style.color = 'rgba(240,240,240,0.5)')}>
+            Connect Store
+          </a>
+          <button onClick={handleDemo}
+            style={{ background: '#c8f135', color: '#08080c', border: 'none', borderRadius: 8, padding: '8px 16px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-head)', display: 'flex', alignItems: 'center', gap: 6 }}
+            onMouseEnter={e => (e.currentTarget.style.opacity = '0.85')}
+            onMouseLeave={e => (e.currentTarget.style.opacity = '1')}>
+            Try Demo <ArrowRight size={13} />
           </button>
         </div>
       </nav>
 
-      <div ref={heroRef} className="relative overflow-hidden" style={{ background: `radial-gradient(800px circle at var(--mx, 50%) var(--my, 30%), rgba(200,241,53,0.06), transparent 60%)` }}>
+      <div ref={heroRef} style={{ paddingTop: 120, paddingBottom: 80, textAlign: 'center', maxWidth: 760, margin: '0 auto', padding: '120px 32px 80px', position: 'relative', background: 'radial-gradient(800px circle at var(--mx, 50%) var(--my, 40%), rgba(200,241,53,0.04), transparent 60%)' }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 14px', borderRadius: 999, border: '1px solid rgba(200,241,53,0.25)', background: 'rgba(200,241,53,0.06)', marginBottom: 32 }}>
+          <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#c8f135', display: 'inline-block' }} />
+          <span style={{ fontSize: 11, fontWeight: 600, color: '#c8f135', fontFamily: 'var(--font-head)', letterSpacing: '0.04em' }}>AI STORE HEALTH CHECK</span>
+        </div>
 
-        <div className="glow-blob" style={{ width: 500, height: 500, top: -120, left: '15%', background: 'rgba(200,241,53,0.035)' }} />
-        <div className="glow-blob" style={{ width: 400, height: 400, top: 100, right: '-5%', background: 'rgba(56,189,248,0.02)' }} />
+        <h1 style={{ fontFamily: 'var(--font-head)', fontSize: 'clamp(2.8rem, 6vw, 4.5rem)', fontWeight: 900, lineHeight: 1.08, letterSpacing: '-0.03em', marginBottom: 24, color: '#f0f0f0' }}>
+          Your store scores <span style={{ color: '#c8f135' }}>{count}/100</span><br />
+          for AI visibility.
+        </h1>
 
-        <main className="relative z-10 max-w-6xl mx-auto px-8 pt-32 pb-24">
-          <div className="grid lg:grid-cols-12 gap-12 items-start">
+        <p style={{ fontSize: 17, lineHeight: 1.65, color: 'rgba(240,240,240,0.55)', maxWidth: 520, margin: '0 auto 40px', fontWeight: 400 }}>
+          When someone asks an AI assistant to find a product, your store might get skipped — even with the perfect match. We find exactly why and fix it in seconds.
+        </p>
 
-            <div className="lg:col-span-5 space-y-8">
-              <div className="space-y-6 anim-fade-up">
-                <div className="pill pill-accent w-fit">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] animate-pulse" />
-                  AI Store Health Check
-                </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+          <button onClick={handleDemo}
+            style={{ background: '#c8f135', color: '#08080c', border: 'none', borderRadius: 10, padding: '14px 28px', fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-head)', display: 'flex', alignItems: 'center', gap: 8, letterSpacing: '-0.01em', boxShadow: '0 0 32px rgba(200,241,53,0.2)' }}
+            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 4px 40px rgba(200,241,53,0.35)'; }}
+            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 0 32px rgba(200,241,53,0.2)'; }}>
+            Check My Store Free <ArrowRight size={16} />
+          </button>
+          <button onClick={handleDemo}
+            style={{ background: 'transparent', color: 'rgba(240,240,240,0.55)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '14px 24px', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-head)', transition: 'all 0.2s' }}
+            onMouseEnter={e => { e.currentTarget.style.color = '#f0f0f0'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; }}
+            onMouseLeave={e => { e.currentTarget.style.color = 'rgba(240,240,240,0.55)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}>
+            See demo first
+          </button>
+        </div>
 
-                <h1 className="text-[3.25rem] md:text-[3.75rem] font-black leading-[1.05] tracking-tight" style={{ fontFamily: 'var(--font-head)' }}>
-                  AI shoppers can't find your{' '}
-                  <span className="relative inline-block">
-                    <span className="relative z-10 text-[var(--accent)]">products</span>
-                    <span className="absolute bottom-1 left-0 w-full h-3 rounded-sm" style={{ background: 'var(--accent-soft)' }} />
-                  </span>
-                </h1>
+        <p style={{ fontSize: 12, color: 'rgba(240,240,240,0.3)', marginTop: 16 }}>Free · No signup · Takes 60 seconds</p>
+      </div>
 
-                <p className="text-[var(--text-secondary)] text-[15px] leading-relaxed max-w-md">
-                  When someone asks ChatGPT or Perplexity to find a product, your store might get skipped — even if you have the perfect match. We show you exactly why, and fix it in seconds.
-                </p>
-              </div>
+      <div style={{ maxWidth: 900, margin: '0 auto', padding: '0 32px 100px' }}>
+        <div style={{ position: 'relative', borderRadius: 20, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.08)', background: '#0e0e14' }}>
+          <div style={{ position: 'absolute', inset: '-1px', borderRadius: 21, background: 'linear-gradient(135deg, rgba(200,241,53,0.12), transparent 40%, rgba(56,189,248,0.06))', pointerEvents: 'none' }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '14px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(0,0,0,0.2)' }}>
+            <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#ef4444' }} />
+            <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#f59e0b' }} />
+            <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#22c55e' }} />
+            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)', marginLeft: 8, fontFamily: 'var(--font-mono)' }}>repoptimizer.ai — store analysis</span>
+          </div>
 
-              <div className="flex flex-wrap items-center gap-3 anim-fade-up anim-d2">
-                <button onClick={handleDemo} className="btn-accent px-6 py-3.5 text-sm flex items-center gap-2" style={{ fontFamily: 'var(--font-head)' }}>
-                  See a Live Demo <ArrowRight size={15} strokeWidth={2.5} />
-                </button>
-                <span className="text-[13px] text-[var(--text-faint)]">Free &middot; No signup</span>
-              </div>
-
-              <div className="flex items-center gap-6 pt-4 anim-fade-up anim-d3">
+          <div style={{ padding: '32px 36px', display: 'grid', gridTemplateColumns: '1fr 1px 1fr', gap: 0 }}>
+            <div style={{ paddingRight: 36 }}>
+              <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.35)', marginBottom: 12, fontFamily: 'var(--font-head)' }}>Before RepOptimizer</p>
+              <div style={{ fontSize: 64, fontWeight: 900, fontFamily: 'var(--font-head)', color: '#ef4444', lineHeight: 1, marginBottom: 6 }}>58</div>
+              <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', marginBottom: 24 }}>out of 100</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {[
-                  { icon: Check, text: 'Takes under 60 seconds' },
-                  { icon: Check, text: 'Works with any Shopify store' },
-                  { icon: Check, text: 'Read-only — we never change data' },
-                ].map(({ icon: Icon, text }) => (
-                  <div key={text} className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded-full flex items-center justify-center" style={{ background: 'var(--ok-soft)', border: '1px solid var(--ok-border)' }}>
-                      <Icon size={9} style={{ color: 'var(--ok)' }} strokeWidth={3} />
+                  { l: 'Product Quality', v: 45, c: '#ef4444' },
+                  { l: 'FAQ Coverage',    v: 40, c: '#ef4444' },
+                  { l: 'Tag Structure',   v: 50, c: '#f59e0b' },
+                ].map(({ l, v, c }) => (
+                  <div key={l}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
+                      <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>{l}</span>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: c, fontFamily: 'var(--font-mono)' }}>{v}</span>
                     </div>
-                    <span className="text-[12px] text-[var(--text-secondary)]">{text}</span>
+                    <div style={{ height: 5, borderRadius: 99, background: 'rgba(255,255,255,0.06)' }}>
+                      <div style={{ height: '100%', borderRadius: 99, background: c, width: `${v}%`, opacity: 0.7 }} />
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
-
-            <div className="lg:col-span-7 anim-fade-up anim-d3">
-              <div className="relative">
-                <div className="absolute -inset-3 rounded-3xl" style={{ background: 'linear-gradient(135deg, var(--accent-soft), transparent 50%, var(--info-soft))', filter: 'blur(30px)', opacity: 0.5 }} />
-
-                <div className="relative card-flat rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
-
-                  <div className="flex items-center gap-2 px-5 py-3" style={{ borderBottom: '1px solid var(--border)', background: 'var(--bg-surface)' }}>
-                    <div className="flex gap-1.5">
-                      <span className="w-2.5 h-2.5 rounded-full" style={{ background: '#ef4444' }} />
-                      <span className="w-2.5 h-2.5 rounded-full" style={{ background: '#f59e0b' }} />
-                      <span className="w-2.5 h-2.5 rounded-full" style={{ background: '#22c55e' }} />
+            <div style={{ background: 'rgba(255,255,255,0.06)' }} />
+            <div style={{ paddingLeft: 36 }}>
+              <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(200,241,53,0.7)', marginBottom: 12, fontFamily: 'var(--font-head)' }}>After RepOptimizer</p>
+              <div style={{ fontSize: 64, fontWeight: 900, fontFamily: 'var(--font-head)', color: '#22c55e', lineHeight: 1, marginBottom: 6 }}>92</div>
+              <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', marginBottom: 24 }}>out of 100</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {[
+                  { l: 'Product Quality', v: 90, c: '#22c55e' },
+                  { l: 'FAQ Coverage',    v: 88, c: '#22c55e' },
+                  { l: 'Tag Structure',   v: 95, c: '#22c55e' },
+                ].map(({ l, v, c }) => (
+                  <div key={l}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
+                      <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>{l}</span>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: c, fontFamily: 'var(--font-mono)' }}>{v}</span>
                     </div>
-                    <span className="text-[11px] text-[var(--text-faint)] ml-2" style={{ fontFamily: 'var(--font-mono)' }}>store-analysis.repoptimizer.ai</span>
-                  </div>
-
-                  <div className="p-5 space-y-4" style={{ background: 'var(--bg-card)' }}>
-
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-[10px] text-[var(--text-faint)] uppercase tracking-wider mb-1" style={{ fontFamily: 'var(--font-head)' }}>Overall AI Readiness</p>
-                        <div className="flex items-baseline gap-2">
-                          <span className="text-4xl font-black" style={{ fontFamily: 'var(--font-head)', color: 'var(--warn)' }}>58</span>
-                          <span className="text-sm text-[var(--text-faint)]">/100</span>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-[10px] text-[var(--text-faint)] uppercase tracking-wider mb-1" style={{ fontFamily: 'var(--font-head)' }}>After Fixes</p>
-                        <div className="flex items-baseline gap-2">
-                          <span className="text-4xl font-black" style={{ fontFamily: 'var(--font-head)', color: 'var(--ok)' }}>92</span>
-                          <span className="text-sm text-[var(--text-faint)]">/100</span>
-                          <TrendingUp size={14} style={{ color: 'var(--ok)' }} />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2.5">
-                      {DEMO_SCORES.map(({ label, score, color }) => (
-                        <div key={label} className="flex items-center gap-3">
-                          <span className="text-[11px] text-[var(--text-secondary)] w-28 shrink-0" style={{ fontFamily: 'var(--font-head)' }}>{label}</span>
-                          <div className="flex-1 progress-bar">
-                            <div className="progress-bar-fill" style={{ width: `${score}%`, background: color }} />
-                          </div>
-                          <span className="text-[12px] font-bold w-8 text-right" style={{ color, fontFamily: 'var(--font-mono)' }}>{score}</span>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="flex items-center gap-2 pt-2" style={{ borderTop: '1px solid var(--border)' }}>
-                      <AlertTriangle size={12} style={{ color: 'var(--danger)' }} />
-                      <span className="text-[11px] text-[var(--text-secondary)]">2 products need urgent attention</span>
-                      <ChevronRight size={12} className="ml-auto" style={{ color: 'var(--text-faint)' }} />
+                    <div style={{ height: 5, borderRadius: 99, background: 'rgba(255,255,255,0.06)' }}>
+                      <div style={{ height: '100%', borderRadius: 99, background: c, width: `${v}%` }} />
                     </div>
                   </div>
-                </div>
+                ))}
               </div>
             </div>
-
           </div>
-        </main>
+        </div>
       </div>
 
-      <section className="relative border-t border-[var(--border)]" style={{ background: 'var(--bg-surface)' }}>
-        <div className="max-w-6xl mx-auto px-8 py-20 grid lg:grid-cols-2 gap-16 items-start">
+      <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '24px 32px', display: 'flex', justifyContent: 'center', gap: 64, flexWrap: 'wrap', background: 'rgba(255,255,255,0.015)' }}>
+        {[
+          { n: '+142%', l: 'Avg. AI visibility increase' },
+          { n: '< 60s', l: 'Full store audit time' },
+          { n: '5 dims', l: 'Scored & diagnosed' },
+          { n: '100%', l: 'Free to try' },
+        ].map(({ n, l }) => (
+          <div key={l} style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: 26, fontWeight: 900, fontFamily: 'var(--font-head)', color: '#f0f0f0', letterSpacing: '-0.02em' }}>{n}</div>
+            <div style={{ fontSize: 12, color: 'rgba(240,240,240,0.4)', marginTop: 3 }}>{l}</div>
+          </div>
+        ))}
+      </div>
 
-          <div className="space-y-5">
-            <p className="label">Start Your Analysis</p>
-            <h2 className="text-3xl font-black tracking-tight" style={{ fontFamily: 'var(--font-head)' }}>Check your Shopify store</h2>
-            <p className="text-[var(--text-secondary)] text-sm leading-relaxed">
-              Paste your store URL and admin token below. We only read your product data — we never change or store anything.
-            </p>
+      <div id="connect" style={{ maxWidth: 760, margin: '0 auto', padding: '80px 32px' }}>
+        <div style={{ textAlign: 'center', marginBottom: 48 }}>
+          <h2 style={{ fontFamily: 'var(--font-head)', fontSize: 32, fontWeight: 900, letterSpacing: '-0.025em', marginBottom: 12, color: '#f0f0f0' }}>
+            Connect your store
+          </h2>
+          <p style={{ color: 'rgba(240,240,240,0.45)', fontSize: 15 }}>Read-only access. We never change or store your data.</p>
+        </div>
 
-            <form onSubmit={handleStart} className="space-y-4 pt-2">
-              <div className="space-y-1.5">
-                <label className="label">Store Admin URL</label>
-                <input
-                  type="text"
-                  placeholder="your-store.myshopify.com"
-                  className="input-field w-full px-4 py-3 text-sm"
-                  value={storeUrl}
-                  onChange={(e) => setStoreUrl(e.target.value)}
-                  suppressHydrationWarning
-                  required
-                />
+        <div style={{ background: '#0e0e14', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 20, padding: '36px 40px' }}>
+          <form onSubmit={handleStart}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 }}>
+              <div>
+                <label style={{ display: 'block', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'rgba(240,240,240,0.4)', marginBottom: 8, fontFamily: 'var(--font-head)' }}>Store Admin URL</label>
+                <input type="text" placeholder="your-store.myshopify.com"
+                  value={storeUrl} onChange={e => setStoreUrl(e.target.value)}
+                  suppressHydrationWarning required
+                  style={{ width: '100%', background: 'rgba(255,255,255,0.045)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '12px 16px', fontSize: 14, color: '#f0f0f0', outline: 'none', fontFamily: 'var(--font-sans)', boxSizing: 'border-box', transition: 'border-color 0.2s' }}
+                  onFocus={e => (e.target.style.borderColor = 'rgba(200,241,53,0.5)')}
+                  onBlur={e => (e.target.style.borderColor = 'rgba(255,255,255,0.1)')} />
               </div>
-              <div className="space-y-1.5">
-                <label className="label flex items-center gap-1.5">
-                  <Lock size={10} /> Admin API Token
+              <div>
+                <label style={{ display: 'block', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'rgba(240,240,240,0.4)', marginBottom: 8, fontFamily: 'var(--font-head)', display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <Lock size={9} /> Admin API Token
                 </label>
-                <input
-                  type="password"
-                  placeholder="shpat_xxxxxxxxxxxxxxxx"
-                  className="input-field w-full px-4 py-3 text-sm mono"
-                  value={token}
-                  onChange={(e) => setToken(e.target.value)}
-                  suppressHydrationWarning
-                  required
-                />
+                <input type="password" placeholder="shpat_xxxxxxxxxxxx"
+                  value={token} onChange={e => setToken(e.target.value)}
+                  suppressHydrationWarning required
+                  style={{ width: '100%', background: 'rgba(255,255,255,0.045)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '12px 16px', fontSize: 14, color: '#f0f0f0', outline: 'none', fontFamily: 'var(--font-mono)', boxSizing: 'border-box', transition: 'border-color 0.2s' }}
+                  onFocus={e => (e.target.style.borderColor = 'rgba(200,241,53,0.5)')}
+                  onBlur={e => (e.target.style.borderColor = 'rgba(255,255,255,0.1)')} />
               </div>
-              <button type="submit" disabled={loading} suppressHydrationWarning className="btn-accent w-full py-3.5 text-sm flex items-center justify-center gap-2" style={{ fontFamily: 'var(--font-head)' }}>
-                {loading ? (
-                  <><span className="w-4 h-4 border-2 border-[var(--bg)]/30 border-t-[var(--bg)] rounded-full animate-spin" /> Connecting...</>
-                ) : (
-                  <>Run Store Audit <ArrowRight size={15} /></>
-                )}
+            </div>
+
+            <div style={{ display: 'flex', gap: 12 }}>
+              <button type="submit" disabled={loading} suppressHydrationWarning
+                style={{ flex: 1, background: '#c8f135', color: '#08080c', border: 'none', borderRadius: 10, padding: '14px', fontSize: 14, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'var(--font-head)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: loading ? 0.6 : 1, transition: 'all 0.2s' }}
+                onMouseEnter={e => !loading && (e.currentTarget.style.transform = 'translateY(-1px)')}
+                onMouseLeave={e => (e.currentTarget.style.transform = 'translateY(0)')}>
+                {loading ? <><span style={{ width: 16, height: 16, border: '2px solid rgba(8,8,12,0.3)', borderTop: '2px solid #08080c', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.8s linear infinite' }} /> Connecting...</> : <>Run Store Audit <ArrowRight size={15} /></>}
               </button>
-            </form>
-
-            <div className="flex items-center gap-3">
-              <div className="flex-1 h-px bg-[var(--border)]" />
-              <span className="text-[11px] text-[var(--text-faint)]">or</span>
-              <div className="flex-1 h-px bg-[var(--border)]" />
-            </div>
-
-            <button onClick={handleDemo} className="btn-ghost w-full py-3 text-sm" style={{ fontFamily: 'var(--font-head)' }}>
-              Try with demo store data
-            </button>
-          </div>
-
-          <div className="space-y-4">
-            <p className="label">What You Get</p>
-            <div className="space-y-3">
-              {[
-                { emoji: '🔍', title: 'AI Visibility Score', desc: 'A clear 0-100 score showing how visible your store is to AI shopping assistants like ChatGPT and Perplexity.' },
-                { emoji: '⚠️', title: 'Issue Detection', desc: 'We find missing product details, unclear descriptions, and structural problems that make AI shoppers skip your products.' },
-                { emoji: '✨', title: 'One-Click Fixes', desc: 'Get improved descriptions, better tags, and structured data — all ready to paste directly into your Shopify admin.' },
-                { emoji: '📊', title: 'Before & After Comparison', desc: 'See exactly how your AI visibility score improves after applying our suggested fixes.' },
-              ].map(({ emoji, title, desc }) => (
-                <div key={title} className="card p-4 flex gap-4 cursor-default">
-                  <span className="text-2xl mt-0.5">{emoji}</span>
-                  <div>
-                    <p className="font-semibold text-sm mb-0.5" style={{ fontFamily: 'var(--font-head)' }}>{title}</p>
-                    <p className="text-[13px] text-[var(--text-secondary)] leading-relaxed">{desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-      <section id="how" className="border-t border-[var(--border)]">
-        <div className="max-w-6xl mx-auto px-8 py-20">
-          <div className="text-center mb-14">
-            <p className="label mb-3">How It Works</p>
-            <h2 className="text-3xl md:text-4xl font-black tracking-tight" style={{ fontFamily: 'var(--font-head)' }}>
-              Four simple steps. Zero technical knowledge needed.
-            </h2>
-          </div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {FEATURES.map(({ icon: Icon, label, desc }, i) => (
-              <div key={label} className="card p-6 flex flex-col gap-4 group">
-                <div className="flex items-center justify-between">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'var(--accent-soft)', border: '1px solid var(--accent-border)' }}>
-                    <Icon size={18} style={{ color: 'var(--accent)' }} strokeWidth={2} />
-                  </div>
-                  <span className="text-xs font-bold text-[var(--text-faint)]" style={{ fontFamily: 'var(--font-head)' }}>0{i + 1}</span>
-                </div>
-                <div>
-                  <p className="font-bold text-[14px] mb-1" style={{ fontFamily: 'var(--font-head)' }}>{label}</p>
-                  <p className="text-[13px] text-[var(--text-muted)] leading-relaxed">{desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="border-t border-[var(--border)]">
-        <div className="max-w-6xl mx-auto px-8 py-16">
-          <div className="card p-8 md:p-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-8 relative overflow-hidden">
-            <div className="glow-blob" style={{ width: 300, height: 300, top: -100, right: -50, background: 'var(--accent-glow)' }} />
-            <div className="relative z-10">
-              <h3 className="text-2xl font-black tracking-tight" style={{ fontFamily: 'var(--font-head)' }}>
-                Want to see it in action?
-              </h3>
-              <p className="text-[var(--text-secondary)] mt-1 text-sm">Try the demo — no sign up, no credit card, takes under a minute.</p>
-            </div>
-            <div className="relative z-10 flex items-center gap-3 flex-shrink-0">
-              <button onClick={handleDemo} className="btn-accent px-6 py-3 text-sm flex items-center gap-2" style={{ fontFamily: 'var(--font-head)' }}>
-                Start Free Demo <ArrowRight size={14} />
+              <button type="button" onClick={handleDemo}
+                style={{ background: 'transparent', color: 'rgba(240,240,240,0.5)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '14px 24px', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-head)', whiteSpace: 'nowrap', transition: 'all 0.2s' }}
+                onMouseEnter={e => { e.currentTarget.style.color = '#f0f0f0'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; }}
+                onMouseLeave={e => { e.currentTarget.style.color = 'rgba(240,240,240,0.5)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}>
+                Try demo
               </button>
             </div>
-          </div>
+          </form>
         </div>
-      </section>
+      </div>
 
-      <footer className="border-t border-[var(--border-subtle)] px-8 py-6">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <p className="text-[11px] text-[var(--text-faint)]">RepOptimizer — Kasparro Hackathon 2026</p>
-          <p className="text-[11px] text-[var(--text-faint)]">Track 5: AI Representation Optimizer</p>
-        </div>
-      </footer>
+      <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', padding: '24px 48px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <p style={{ fontSize: 12, color: 'rgba(240,240,240,0.2)' }}>RepOptimizer — Kasparro Hackathon 2026</p>
+        <p style={{ fontSize: 12, color: 'rgba(240,240,240,0.2)' }}>Track 5: AI Representation Optimizer</p>
+      </div>
+
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+      `}</style>
     </div>
   );
 }
