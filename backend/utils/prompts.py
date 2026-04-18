@@ -1,12 +1,19 @@
 from typing import Dict, List, Any
 
 # GLOBAL PROMPT RULES
-GLOBAL_RULES = """Return ONLY valid JSON.
-Do not include explanations.
-Do not include markdown or code blocks.
-All fields must be present.
+GLOBAL_RULES = """Provide concise but meaningful explanations (2-3 lines max).
+Clearly describe the issue and its impact on AI understanding.
+Keep each explanation under 40-50 words.
+Avoid repetition and generic statements.
+Avoid filler phrases like "this significantly impacts".
+Use specific terms instead of vague statements.
+Write in a clear, professional tone.
+Keep responses compact. Avoid long sentences.
+Do not exceed 2-3 lines per explanation field.
+Do not repeat the same phrases across different fields.
+Return ONLY valid JSON with all required fields.
+Do NOT include markdown or extra text.
 Use empty arrays [] if no data.
-Keep answers short and precise (1-2 lines max).
 Do NOT use nested arrays."""
 
 # STAGE 2: CONSOLIDATED DEEP AUDIT (Super Audit)
@@ -38,7 +45,7 @@ REQUIRED OUTPUT FORMAT (JSON ONLY):
     "confidence": 0-1 score,
     "recommendation": "yes | no",
     "reason": "Short reason",
-    "detailed_reasoning": "Quick logic"
+    "detailed_reasoning": "Reasoning for AI interpretation (Medium detail, 1-2 lines)"
   }},
   "gaps": {{
     "missing_attributes": ["spec1", "spec2"],
@@ -47,21 +54,21 @@ REQUIRED OUTPUT FORMAT (JSON ONLY):
     "insight": "Short summary",
     "severity": 1-10,
     "impact_level": "low | medium | high",
-    "detailed_explanation": "Deep dive insight"
+    "detailed_explanation": "Detailed explanation of missing data and impact on AI (High detail, 2-3 lines max)"
   }},
   "impact": {{
     "before_score": 0.0-1.0,
     "after_score": 0.0-1.0,
     "improvement_percentage": "+XX%",
     "reason": "Short logic",
-    "detailed_impact": "Ranking effect"
+    "detailed_impact": "Detailed impact on ranking and confidence (High detail, 2-3 lines max)"
   }},
   "fixes": {{
     "improved_description": "New AI-optimized description",
     "added_keywords": ["key1", "key2"],
     "structured_tags": ["Tag1", "Tag2"],
     "faq_suggestions": ["Q&A pair"],
-    "explanation": "Why this works"
+    "explanation": "Explanation of why fixes improve understanding (Medium detail, 1-2 lines)"
   }}
 }}"""
     }

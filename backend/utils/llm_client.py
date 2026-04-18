@@ -47,7 +47,7 @@ async def safe_llm_call(prompt_data: Dict[str, str], task_type="default") -> Dic
                     ],
                     model=model,
                     temperature=0.1, # Lower temp for better JSON consistency
-                    max_tokens=800, # Increased tokens for consolidated output
+                    max_tokens=600, # Optimized limit to balance structure completeness and reduced latency
                     response_format={"type": "json_object"}
                 ),
                 timeout=30 # Increased to 30s for consolidated 3-in-1 task
