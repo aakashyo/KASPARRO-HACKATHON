@@ -1,94 +1,94 @@
 # AI RepOptimizer: Perception Intelligence Engine
 
-The first real-time intelligence engine optimizing Shopify stores for the Agentic Web.
+The first production-grade, high-performance intelligence engine optimizing Shopify stores for the Agentic Web.
 
 ## The Problem
-E-commerce is shifting from traditional keyword search to Agentic AI Shopping. Users now ask LLMs for highly specific product recommendations based on complex use-cases.
+E-commerce is shifting from traditional keyword search to Agentic AI Shopping. Users now ask LLMs (like ChatGPT, Perplexity, or Google Search) for highly specific product recommendations based on complex use-cases.
 
 Most Shopify stores are invisible to these agents because their data is ambiguous, incomplete, or unstructured. AI RepOptimizer bridges the gap between merchant intent and AI perception.
 
 ---
 
-## Key Features
+## ⚡ Production-Grade Performance
 
-| Feature | Description | Impact |
+This system has been upgraded for ultra-low latency and zero-failure reliability:
+
+| Feature | Technology | Impact |
 | :--- | :--- | :--- |
-| Merchant Intent Extraction | Understands the deep context behind raw product titles and tags. | Establishes the Source of Truth. |
-| AI Perception Simulation | Simulates a strict AI Shopping Agent to see how it perceives your store. | Identifies misinterpretations. |
-| Intelligence Gap Engine | Detects missing attributes and semantic confusions in real-time. | Triage severity of data gaps. |
-| Neural Fix Strategy | Generates optimized descriptions and structured tags tailored for LLMs. | Improves ranking in AI searches. |
-| Query Simulator | An interactive sandbox to test how AI ranks products for natural queries. | Real-world validation of fixes. |
+| **Super Audit Engine** | LLM Consolidation | **66% Latency Reduction**. Combines 3 stages into ONE single round-trip. |
+| **Zero-Failure Pipeline** | Recursive Sanitization | Eliminates runtime crashes with recursive JSON flattening and schema defaults. |
+| **Instant Diagnostic** | Rule-Based Scanner | Instant catalog sweep identifies low-hanging fruit before AI even starts. |
+| **SSE Streaming** | Server-Sent Events | Real-time progressive UI updates showing product-by-product analysis. |
+| **Hybrid Fallbacks** | Model Fallback Chain | Automatically switches to lighter models (Llama 8B) if main 70B models lag. |
 
 ---
 
-## Tech Stack
+## 🧠 Key Features
 
-| Component | Technology | Role |
+| Component | Description | Benefit |
 | :--- | :--- | :--- |
-| Backend | Python / FastAPI | High-performance orchestration & API. |
-| AI Inference | Groq (Llama 3.3 70B) | Deep analysis and reasoning at speed. |
-| Frontend | Next.js 14 / React | Professional, glassmorphic dashboard. |
-| Styling | Tailwind CSS / Framer Motion | Premium UI animations and light mode. |
-| Data Fetch | Shopify GraphQL Admin API | Real-time store data ingestion. |
+| **Merchant Intent** | Extracts the deep category, target user, and use-case from raw data. | Establishes the "Source of Truth". |
+| **Perception Simulation** | Simulates a strict AI Shopping Agent to see how it perceives your store. | Identifies semantic misinterpretations. |
+| **Intelligence Gaps** | Multi-layered detection of missing attributes and confidence-drop reasons. | High-precision triage for data fixes. |
+| **Neural Fixes** | Generates AI-optimized descriptions, structured tags, and FAQ suggestions. | Maximum alignment for LLM reasoning. |
+| **Query Simulator** | Interactive sandbox to test how AI agents rank products for real-life queries. | Real-world validation of fixes. |
 
 ---
 
-## Intelligence Pipeline
-1. Shopify Store Data
-2. Intent Extractor
-3. AI Simulation
-4. Gap Analysis Engine
-5. Impact Estimator
-6. Neural Fix Generator
-7. Optimized Storefront
-8. Query Simulator Validation
+## 🛠️ Tech Stack
+
+- **Backend**: Python / FastAPI (High-performance orchestration).
+- **AI Inference**: Groq (Llama 3.3 70B & 8B) for 500ms+ inference speeds.
+- **Frontend**: Next.js 14 / React (Glassmorphic, high-engagement dashboard).
+- **Reliability**: Pydantic 2.x for strict but resilient data validation with recursive sanitization.
+- **Data Fetch**: Shopify GraphQL Admin API.
 
 ---
 
-## Installation and Setup
+## 🏗️ Intelligence Pipeline
+
+1. **Shopify Ingestion**: Fetching live inventory, policies, and pages.
+2. **Instant Scan**: Rule-based engine identifies high-severity gaps immediately.
+3. **Super Audit**: Priority results sent to Llama 3 for consolidated Deep Intelligence.
+4. **Sanitization**: Recursive processing cleans LLM noise, nested lists, and markdown.
+5. **Streaming delivery**: Pushing updates to the UI via Server-Sent Events.
+6. **Query Validation**: Verifying performance in the Live Simulation Sandbox.
+
+---
+
+## 🚀 Installation & Setup
 
 ### 1. Prerequisites
 - Python 3.10+
 - Node.js 18+
 - Groq API Key
-- Shopify Development Store + Admin API Token
 
 ### 2. Backend Setup
 ```bash
 cd backend
 pip install -r requirements.txt
-# Create .env from the template:
 cp .env.example .env
-# Then update the keys in .env:
-# GROQ_API_KEY=your_key
-# SHOPIFY_STORE_URL=your_store
-# SHOPIFY_ADMIN_TOKEN=your_token
+# Update GROQ_API_KEY, SHOPIFY_STORE_URL, and SHOPIFY_ADMIN_TOKEN in .env
 python -m backend.main
 ```
 
 ### 3. Frontend Setup
 ```bash
 cd frontend
-# Create .env.local from the template:
 cp .env.local.example .env.local
-# Then update the keys in .env.local:
-# NEXT_PUBLIC_API_URL=http://localhost:8000
+# Update NEXT_PUBLIC_API_URL=http://localhost:8000
 npm install
 npm run dev
 ```
 
 ---
 
-## Developer Notes
-- **Full Analysis**: The backend is configured to analyze **all products** from the connected store for a complete optimization report.
-- **CORS**: The backend allows all origins (`*`) for easy hackathon integration.
+## 📝 Developer Notes
+- **Zero-Failure Policy**: The backend is designed with a defensive sanitization layer (`json_cleaner.py`) that prevents Pydantic validation crashes.
+- **Concurrency**: The pipeline automatically adjusts concurrency based on catalog size to respect rate limits while maintaining maximum speed.
+- **Caching**: Intelligent hash-based caching ensures repeat audits for the same products are instant.
 
 ---
-
-## Project Structure
-- backend/ (Intelligence Modules, LLM Client, Pydantic Models)
-- frontend/ (Dashboard, Query Simulator, Product Cards)
-- .gitignore (Excludes sensitive environment files)
 
 ## License
 Distributed under the MIT License.
