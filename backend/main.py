@@ -83,10 +83,8 @@ async def analyze_store(request: AnalyzeRequest):
                 progress_pct = 10 + (i / total_products * 40) # Quick scan counts for 40% of progress
                 yield f"data: {json.dumps({'type': 'progress', 'status': 'scanning', 'processed': i+1, 'total': total_products, 'progress_percent': progress_pct})}\n\n"
 
-            # 2. Prioritize & Setup Super Audit
-            top_priority = sorted(all_analyzed, key=lambda x: x.scan_quick.severity, reverse=True)
-            TOP_N = 5 if total_products <= 30 else 3
-            to_audit = top_priority[:TOP_N]
+            # 2. Process Full Catalog Super Audit
+            to_audit = all_analyzed
             
             # Strict Concurrency to stay under rate limits
             semaphore = asyncio.Semaphore(1)
