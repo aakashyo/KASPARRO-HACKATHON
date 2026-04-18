@@ -65,10 +65,16 @@ This system has been upgraded for ultra-low latency and zero-failure reliability
 
 ### 2. Backend Setup
 ```bash
-cd backend
-pip install -r requirements.txt
-cp .env.example .env
-# Update GROQ_API_KEY, SHOPIFY_STORE_URL, and SHOPIFY_ADMIN_TOKEN in .env
+# Keep your terminal in the project root folder
+pip install -r backend/requirements.txt
+cp backend/.env.example backend/.env
+
+# Open backend/.env and update:
+# - GROQ_API_KEY (and optionally GROQ_KEYS for comma-separated rotation)
+# - SHOPIFY_STORE_URL
+# - SHOPIFY_ADMIN_TOKEN
+
+# Start the server from the project root:
 python -m backend.main
 ```
 
