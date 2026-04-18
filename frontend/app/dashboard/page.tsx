@@ -4,11 +4,9 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { analyzeStore } from '@/lib/api';
 import { demoData } from '@/lib/demoData';
-import ScoreCard from './components/ScoreCard';
 import ProductCard from './components/ProductCard';
 import QuerySimulator from './components/QuerySimulator';
-import StoreHealthCharts from './components/StoreHealthCharts';
-import { RefreshCcw, AlertTriangle, TrendingUp, Search, Brain, Loader2, CheckCircle2 } from 'lucide-react';
+import { RefreshCcw, AlertTriangle, Search, Brain, Loader2 } from 'lucide-react';
 
 export default function Dashboard() {
   const router = useRouter();
@@ -49,16 +47,15 @@ export default function Dashboard() {
     try {
       setStatus('initializing');
       await analyzeStore(url, token, (update: any) => {
-        const { type, status: updateStatus, data, message: updateMsg, total, processed, audited, store_score } = update;
+        const { type, status: updateStatus, data, message: updateMsg, total, processed, progress_percent, store_score } = update;
 
         if (type === 'progress') {
           setStatus(updateStatus);
-          if (updateStatus === 'scanning' && total) {
-            setProgress({ current: 0, total });
-          }
-          if (processed && total) {
+          if (progress_percent !== undefined) {
+            setProgress({ current: Math.floor(progress_percent), total: 100 });
+          } else if (processed && total) {
             setProgress({ current: processed, total });
-            setTimeSaved(processed * 2.1); // Est. 2.1s saved per rule-based scan
+            setTimeSaved(processed * 2.1); 
           }
           setMessage(updateMsg);
         } else if (type === 'product') {
@@ -71,6 +68,7 @@ export default function Dashboard() {
           setStatus('complete');
           setStoreScore(store_score);
           setMessage(updateMsg);
+          setProgress({ current: 100, total: 100 });
         } else if (type === 'error') {
           setStatus('error');
           setError(updateMsg);

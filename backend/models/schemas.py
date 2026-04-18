@@ -16,12 +16,12 @@ class MerchantIntent(BaseModel):
     important_keywords: List[str] = []
 
 class AIPerception(BaseModel):
-    summary: Optional[str] = ""
+    summary: Optional[str] = "Product information partially parsed."
     target_user: Optional[str] = "AI Agents"
     key_benefits: List[str] = []
     confidence: Optional[float] = 0.5
     recommendation: Optional[str] = "yes"
-    reason: Optional[str] = ""
+    reason: Optional[str] = "Standard indexing applied."
     detailed_reasoning: Optional[str] = ""
 
 class GapAnalysis(BaseModel):
@@ -49,10 +49,10 @@ class OptimizedFixes(BaseModel):
 
 # Stage-specific models
 class QuickScanResult(BaseModel):
-    quick_score: int
-    severity: int
-    basic_gap: str
-    priority: Literal["low", "medium", "high"]
+    quick_score: int = 50
+    severity: int = 5
+    basic_gap: str = "Analysis pending"
+    priority: Literal["low", "medium", "high"] = "medium"
 
 class DeepAuditResult(BaseModel):
     intent: Optional[MerchantIntent] = Field(default_factory=MerchantIntent)
@@ -67,12 +67,13 @@ class ProductAnalysis(BaseModel):
     id: str
     title: str
     handle: str
-    original_data: Dict
-    scan_quick: QuickScanResult
+    original_data: Dict = {}
+    scan_quick: QuickScanResult = Field(default_factory=QuickScanResult)
     audit_deep: Optional[DeepAuditResult] = None
     
     # Audit status for UI
     is_audited: bool = False
+    scan_mode: str = "⚡ Quick Scan" # Default to quick scan
 
 class DimensionScoreDetails(BaseModel):
     score: int
