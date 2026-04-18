@@ -3,7 +3,7 @@ from typing import Dict, List, Any
 # STAGE 1: FAST SCAN
 def get_fast_scan_prompt(title: str, description: str, tags: str) -> Dict[str, str]:
     return {
-        "system": "You are a high-speed AI diagnostic engine. Quickly assess a product's search visibility for AI agents. Return ONLY valid JSON.",
+        "system": "You are a high-speed AI diagnostic engine. Quickly assess a product's search visibility for AI agents.\nReturn ONLY valid JSON.\nNo markdown, no explanation.\nAll fields are required.\nUse empty arrays [] if no data.\nDo NOT return nested arrays.\nDo not use code fences.",
         "user": f"""Quickly scan this product for AI recommendation readiness:
 TITLE: {title}
 DESCRIPTION: {description}
@@ -18,87 +18,72 @@ Format:
 }}"""
     }
 
-# STAGE 2: DEEP AUDIT (Merged Call 1: Intent + Perception)
-def get_intent_and_perception_prompt(title: str, description: str, tags: str) -> Dict[str, str]:
+# STAGE 2: CONSOLIDATED DEEP AUDIT (Super Audit)
+def get_super_audit_prompt(title: str, description: str, tags: str) -> Dict[str, str]:
     return {
-        "system": "You are a senior AI product architect. Step 1: Extract deep merchant intent. Step 2: Simulate strict AI agent perception. Return ONLY valid JSON.",
-        "user": f"""DEEP ANALYSIS for:
+        "system": """You are an elite AI Systems Auditor. Perform a 360-degree deep audit of a product's representation for AI recommendation engines (like ChatGPT, Google Search, etc.).
+Return ONLY valid JSON.
+No markdown, No code fences, No preamble.
+All fields are required.
+Use empty arrays [] if no data.
+Do NOT return nested arrays.""",
+        "user": f"""DEEP AUDIT TASK:
+Analyze this product across 5 dimensions: Intent, Perception, Gaps, Impact, and Fixes.
+
+PRODUCT DATA:
 TITLE: {title}
 DESCRIPTION: {description}
 TAGS: {tags}
 
-Format:
+REQUIRED OUTPUT FORMAT (JSON ONLY):
 {{
   "intent": {{
-    "category": "",
-    "target_user": "",
-    "use_case": "",
-    "price_segment": "",
-    "key_attributes": [],
-    "important_keywords": []
+    "category": "E-commerce category",
+    "target_user": "Specific demographic",
+    "use_case": "Primary utility",
+    "price_segment": "budget | mid-range | luxury",
+    "key_attributes": ["attribute1", "attribute2"],
+    "important_keywords": ["keyword1", "keyword2"]
   }},
   "ai_perception": {{
-    "summary": "",
-    "target_user": "",
-    "key_benefits": [],
-    "confidence": 0-1,
+    "summary": "How an AI agent 'sees' this product in 1 sentence",
+    "target_user": "Who the AI thinks this is for",
+    "key_benefits": ["benefit1", "benefit2"],
+    "confidence": 0-1 score,
     "recommendation": "yes | no",
-    "reason": "Immediate answer",
-    "detailed_reasoning": "Step-by-step reasoning logs (3-4 lines)"
-  }}
-}}"""
-    }
-
-# STAGE 2: DEEP AUDIT (Merged Call 2: Gap + Impact)
-def get_gap_and_impact_prompt(intent_json: str, perception_json: str) -> Dict[str, str]:
-    return {
-        "system": "You are an AI logic engine. Compare Intent vs Perception to find gaps, then estimate the impact of fixing them. Return ONLY valid JSON.",
-        "user": f"""DATA:
-INTENT: {intent_json}
-PERCEPTION: {perception_json}
-
-Format:
-{{
+    "reason": "Why the AI would recommend this",
+    "detailed_reasoning": "Step-by-step logic of the AI's matching process"
+  }},
   "gaps": {{
-    "missing_attributes": [],
-    "misinterpretations": [],
-    "confidence_drop_reasons": [],
-    "insight": "Executive summary",
+    "missing_attributes": ["technical spec 1", "usage context 1"],
+    "misinterpretations": ["potential AI hallucination/confusion 1"],
+    "confidence_drop_reasons": ["vague description", "missing size info"],
+    "insight": "Executive summary of the alignment gap",
     "severity": 1-10,
     "impact_level": "low | medium | high",
-    "detailed_explanation": "WHY this gap affects AI recommendations (2-3 lines)"
+    "detailed_explanation": "Deep dive into the perception-intent mismatch"
   }},
   "impact": {{
-    "before_score": 0-1,
-    "after_score": 0-1,
-    "improvement_percentage": "",
-    "reason": "Short logic",
-    "detailed_impact": "Explain HOW fixes improve ranking confidence (2-3 lines)"
+    "before_score": 0.0-1.0,
+    "after_score": 0.0-1.0,
+    "improvement_percentage": "+XX%",
+    "reason": "Logic for improvement",
+    "detailed_impact": "How fixes affect semantic ranking"
+  }},
+  "fixes": {{
+    "improved_description": "New AI-optimized description text",
+    "added_keywords": ["SEO key 1", "SEO key 2"],
+    "structured_tags": ["Tag1", "Tag2"],
+    "faq_suggestions": [{{ "question": "Q1", "answer": "A1" }}],
+    "explanation": "Why these fixes work for AI"
   }}
 }}"""
     }
 
-# STAGE 2: DEEP AUDIT (Call 3: Fix Generator)
-def get_fix_prompt(title: str, description: str, gap_json: str) -> Dict[str, str]:
-    return {
-        "system": "You are an AI SEO copywriter. Generate technical fixes to optimize for AI agents. Return ONLY valid JSON.",
-        "user": f"""PRODUCT: {title}
-GAPS: {gap_json}
-
-Format:
-{{
-  "improved_description": "",
-  "added_keywords": [],
-  "structured_tags": [],
-  "faq_suggestions": [{{ "question": "", "answer": "" }}],
-  "explanation": "WHY these fixes improve AI understanding"
-}}"""
-    }
-
-# Global Query Simulator (Remains similar)
+# Global Query Simulator
 def get_query_prompt(query: str, products_json: str) -> Dict[str, str]:
     return {
-        "system": "You are an AI shopping agent. Rank products by query relevance. Return ONLY valid JSON.",
+        "system": "You are an AI shopping agent. Rank products by query relevance.\nReturn ONLY valid JSON.\nNo markdown, no explanation.\nAll fields are required.\nUse empty arrays [] if no data.\nDo NOT return nested arrays.\nDo not use code fences.",
         "user": f"""QUERY: {query}
 PRODUCTS: {products_json}
 

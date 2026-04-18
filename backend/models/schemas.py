@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List, Optional, Dict, Literal
+from typing import List, Optional, Dict, Literal, Any
 
 # Requests
 class AnalyzeRequest(BaseModel):
@@ -8,44 +8,44 @@ class AnalyzeRequest(BaseModel):
 
 # Intelligence Models
 class MerchantIntent(BaseModel):
-    category: str
-    target_user: str
-    use_case: str
-    price_segment: str
-    key_attributes: List[str]
-    important_keywords: List[str]
+    category: Optional[str] = "General"
+    target_user: Optional[str] = "General Consumer"
+    use_case: Optional[str] = "General Usage"
+    price_segment: Optional[str] = "Mid-range"
+    key_attributes: List[str] = []
+    important_keywords: List[str] = []
 
 class AIPerception(BaseModel):
-    summary: str
-    target_user: str
-    key_benefits: List[str]
-    confidence: float
-    recommendation: Literal["yes", "no"]
-    reason: str
-    detailed_reasoning: Optional[str] = None
+    summary: Optional[str] = ""
+    target_user: Optional[str] = "AI Agents"
+    key_benefits: List[str] = []
+    confidence: Optional[float] = 0.5
+    recommendation: Optional[str] = "yes"
+    reason: Optional[str] = ""
+    detailed_reasoning: Optional[str] = ""
 
 class GapAnalysis(BaseModel):
-    missing_attributes: List[str]
-    misinterpretations: List[str]
-    confidence_drop_reasons: List[str]
-    insight: str
-    severity: int
-    impact_level: Literal["low", "medium", "high"]
-    detailed_explanation: Optional[str] = None
+    missing_attributes: List[str] = []
+    misinterpretations: List[str] = []
+    confidence_drop_reasons: List[str] = []
+    insight: Optional[str] = "Analysis complete."
+    severity: Optional[int] = 5
+    impact_level: Optional[str] = "medium"
+    detailed_explanation: Optional[str] = ""
 
 class ImpactEstimate(BaseModel):
-    before_score: float
-    after_score: float
-    improvement_percentage: str
-    reason: str
-    detailed_impact: Optional[str] = None
+    before_score: Optional[float] = 0.4
+    after_score: Optional[float] = 0.7
+    improvement_percentage: Optional[str] = "0%"
+    reason: Optional[str] = "Product utility clarified for AI agents."
+    detailed_impact: Optional[str] = ""
 
 class OptimizedFixes(BaseModel):
-    improved_description: str
-    added_keywords: List[str]
-    structured_tags: List[str]
-    faq_suggestions: List[Dict[str, str]]
-    explanation: Optional[str] = None
+    improved_description: Optional[str] = ""
+    added_keywords: List[str] = []
+    structured_tags: List[Any] = []
+    faq_suggestions: List[Any] = []
+    explanation: Optional[str] = ""
 
 # Stage-specific models
 class QuickScanResult(BaseModel):
@@ -55,11 +55,11 @@ class QuickScanResult(BaseModel):
     priority: Literal["low", "medium", "high"]
 
 class DeepAuditResult(BaseModel):
-    intent: Optional[MerchantIntent] = None
-    ai_perception: Optional[AIPerception] = None
-    gaps: Optional[GapAnalysis] = None
-    impact: Optional[ImpactEstimate] = None
-    fixes: Optional[OptimizedFixes] = None
+    intent: Optional[MerchantIntent] = Field(default_factory=MerchantIntent)
+    ai_perception: Optional[AIPerception] = Field(default_factory=AIPerception)
+    gaps: Optional[GapAnalysis] = Field(default_factory=GapAnalysis)
+    impact: Optional[ImpactEstimate] = Field(default_factory=ImpactEstimate)
+    fixes: Optional[OptimizedFixes] = Field(default_factory=OptimizedFixes)
     stage: Optional[str] = "queued"
 
 # Main Response

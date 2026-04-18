@@ -20,6 +20,7 @@ export default function Dashboard() {
   const [isDemo, setIsDemo] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [timeSaved, setTimeSaved] = useState(0);
 
   const run = async (forceDemo = false) => {
     setProducts({});
@@ -47,30 +48,32 @@ export default function Dashboard() {
     
     try {
       setStatus('initializing');
-      await analyzeStore(url, token, (update) => {
-        if (update.status === 'initializing') {
-          setStatus('initializing');
-          setMessage(update.message);
-        } else if (update.status === 'scanning') {
-          setStatus('scanning');
-          setProgress({ current: 0, total: update.total });
-          setMessage(update.message);
-        } else if (update.status === 'product_update') {
+      await analyzeStore(url, token, (update: any) => {
+        const { type, status: updateStatus, data, message: updateMsg, total, processed, audited, store_score } = update;
+
+        if (type === 'progress') {
+          setStatus(updateStatus);
+          if (updateStatus === 'scanning' && total) {
+            setProgress({ current: 0, total });
+          }
+          if (processed && total) {
+            setProgress({ current: processed, total });
+            setTimeSaved(processed * 2.1); // Est. 2.1s saved per rule-based scan
+          }
+          setMessage(updateMsg);
+        } else if (type === 'product') {
+          const product = data;
           setProducts(prev => ({
             ...prev,
-            [update.product.id]: update.product
+            [product.id]: product
           }));
-          if (update.message) setMessage(update.message);
-        } else if (update.status === 'auditing') {
-          setStatus('auditing');
-          setMessage(update.message);
-        } else if (update.status === 'complete') {
+        } else if (type === 'complete') {
           setStatus('complete');
-          setStoreScore(update.store_score);
-          setMessage(update.message);
-        } else if (update.status === 'error') {
+          setStoreScore(store_score);
+          setMessage(updateMsg);
+        } else if (type === 'error') {
           setStatus('error');
-          setError(update.message);
+          setError(updateMsg);
         }
       });
     } catch (e: any) {
@@ -165,6 +168,11 @@ export default function Dashboard() {
               <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', fontWeight: 600 }}>{stat.sub}</p>
             </div>
           ))}
+          <div style={{ background: 'rgba(200,241,53,0.03)', border: '1px solid rgba(200,241,53,0.1)', borderRadius: 24, padding: '32px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <p style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#c8f135', marginBottom: 12 }}>Time Saved</p>
+            <p style={{ fontSize: 40, fontWeight: 900, fontFamily: 'var(--font-head)', color: '#c8f135', marginBottom: 4 }}>{Math.floor(timeSaved)}<span style={{ fontSize: 16 }}>s</span></p>
+            <p style={{ fontSize: 12, color: 'rgba(200,241,53,0.4)', fontWeight: 600 }}>via Rule-Based Scanner</p>
+          </div>
         </div>
 
         {/* Action Bar */}
@@ -186,9 +194,9 @@ export default function Dashboard() {
              {status !== 'complete' && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                   <div style={{ width: 120, height: 4, borderRadius: 99, background: 'rgba(255,255,255,0.05)', overflow: 'hidden' }}>
-                    <div style={{ height: '100%', background: '#c8f135', width: `${analyzedCount > 0 ? (auditedCount / 10) * 100 : 0}%`, transition: 'width 0.5s' }} />
+                    <div style={{ height: '100%', background: '#c8f135', width: `${progress.total > 0 ? (progress.current / progress.total) * 100 : 0}%`, transition: 'width 0.5s' }} />
                   </div>
-                  <span style={{ fontSize: 11, fontWeight: 800, color: 'rgba(255,255,255,0.3)', fontFamily: 'var(--font-mono)' }}>{auditedCount}/10 AUDITED</span>
+                  <span style={{ fontSize: 11, fontWeight: 800, color: 'rgba(255,255,255,0.3)', fontFamily: 'var(--font-mono)' }}>{progress.current}/{progress.total} ANALYZED</span>
                 </div>
              )}
         </div>

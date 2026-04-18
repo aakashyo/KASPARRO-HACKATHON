@@ -49,9 +49,10 @@ export default function FixSuggestions({ fixes }: FixSuggestionsProps) {
         <div>
           <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'rgba(240,240,240,0.3)', marginBottom: 8, fontFamily: 'var(--font-head)' }}>Structured Tags</p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-            {tags.map((tag: string, i: number) => (
-              <span key={i} style={{ fontSize: 11, padding: '4px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#c8f135', fontFamily: 'var(--font-mono)' }}>{tag}</span>
-            ))}
+            {tags.map((tag: any, i: number) => {
+              const label = typeof tag === 'object' ? `${tag.name}: ${tag.value}` : tag;
+              return <span key={i} style={{ fontSize: 11, padding: '4px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#c8f135', fontFamily: 'var(--font-mono)' }}>{label}</span>
+            })}
           </div>
         </div>
       )}

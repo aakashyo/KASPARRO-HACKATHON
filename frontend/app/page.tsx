@@ -63,6 +63,7 @@ export default function LandingPage() {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
           <button onClick={handleDemo}
+            suppressHydrationWarning={true}
             style={{ background: 'transparent', color: '#a1a1aa', border: 'none', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-sans)', transition: 'color 0.2s' }}
             onMouseEnter={e => (e.currentTarget.style.color = '#fafafa')}
             onMouseLeave={e => (e.currentTarget.style.color = '#a1a1aa')}>
@@ -113,6 +114,7 @@ export default function LandingPage() {
                 <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: '#a1a1aa', marginBottom: 6 }}>Shopify URL</label>
                 <div style={{ position: 'relative' }}>
                   <input type="text" placeholder="store.myshopify.com"
+                    suppressHydrationWarning={true}
                     value={storeUrl} onChange={e => setStoreUrl(e.target.value)}
                     required
                     style={{ width: '100%', background: '#09090b', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, padding: '10px 12px', fontSize: 14, color: '#fafafa', outline: 'none', transition: 'border-color 0.2s', boxSizing: 'border-box' }}
@@ -126,6 +128,7 @@ export default function LandingPage() {
                   <Lock size={12} /> Admin API Token
                 </label>
                 <input type="password" placeholder="shpat_..."
+                  suppressHydrationWarning={true}
                   value={token} onChange={e => setToken(e.target.value)}
                   required
                   style={{ width: '100%', background: '#09090b', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, padding: '10px 12px', fontSize: 14, color: '#fafafa', outline: 'none', transition: 'border-color 0.2s', boxSizing: 'border-box', fontFamily: 'var(--font-mono)' }}
@@ -134,6 +137,7 @@ export default function LandingPage() {
               </div>
 
               <button type="submit" disabled={loading}
+                suppressHydrationWarning={true}
                 style={{ width: '100%', background: '#fafafa', color: '#09090b', border: 'none', borderRadius: 8, padding: '12px', fontSize: 14, fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 8, transition: 'all 0.2s' }}
                 onMouseEnter={e => !loading && (e.currentTarget.style.transform = 'translateY(-1px)', e.currentTarget.style.boxShadow = '0 4px 12px rgba(255,255,255,0.1)')}
                 onMouseLeave={e => (e.currentTarget.style.transform = 'translateY(0)', e.currentTarget.style.boxShadow = 'none')}>
@@ -142,7 +146,7 @@ export default function LandingPage() {
 
               <div style={{ textAlign: 'center', marginTop: 4 }}>
                 <span style={{ fontSize: 12, color: '#71717a' }}>or </span>
-                <button type="button" onClick={handleDemo} style={{ background: 'none', border: 'none', padding: 0, fontSize: 12, color: '#c8f135', cursor: 'pointer', fontWeight: 500, textDecoration: 'underline' }}>
+                <button type="button" onClick={handleDemo} suppressHydrationWarning={true} style={{ background: 'none', border: 'none', padding: 0, fontSize: 12, color: '#c8f135', cursor: 'pointer', fontWeight: 500, textDecoration: 'underline' }}>
                   use demo data
                 </button>
               </div>

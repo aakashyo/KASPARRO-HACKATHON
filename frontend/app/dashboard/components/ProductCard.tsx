@@ -18,7 +18,7 @@ export default function ProductCard({ product, highlighted = false }: ProductCar
   const audit = product.audit_deep;
   const isAudited = product.is_audited;
 
-  const severity = isAudited ? audit.gaps.severity : scan.severity;
+  const severity = isAudited ? (audit?.gaps?.severity ?? scan?.severity ?? 0) : (scan?.severity ?? 0);
   
   const status = severity >= 7
     ? { label: 'CRITICAL', color: '#ef4444', bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.2)' }
@@ -26,8 +26,8 @@ export default function ProductCard({ product, highlighted = false }: ProductCar
     ? { label: 'WARNING', color: '#f59e0b', bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.2)' }
     : { label: 'OPTIMIZED', color: '#22c55e', bg: 'rgba(34,197,94,0.1)', border: 'rgba(34,197,94,0.2)' };
 
-  const currentScore = isAudited ? Math.round(audit.impact.before_score * 100) : scan.quick_score;
-  const targetScore = isAudited ? Math.round(audit.impact.after_score * 100) : 100;
+  const currentScore = isAudited ? Math.round((audit?.impact?.before_score ?? (scan?.quick_score / 100)) * 100) : scan?.quick_score;
+  const targetScore = isAudited ? Math.round((audit?.impact?.after_score ?? 1) * 100) : 100;
 
   return (
     <div style={{
@@ -62,7 +62,7 @@ export default function ProductCard({ product, highlighted = false }: ProductCar
               <span style={{ fontSize: 9, fontWeight: 900, padding: '2px 8px', borderRadius: 6, background: status.bg, border: `1px solid ${status.border}`, color: status.color, letterSpacing: '0.05em' }}>{status.label}</span>
             </div>
             <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {isAudited ? audit.gaps.insight : scan.basic_gap}
+              {isAudited ? (audit?.gaps?.insight || scan?.basic_gap) : scan?.basic_gap}
             </p>
           </div>
         </div>
@@ -129,24 +129,24 @@ export default function ProductCard({ product, highlighted = false }: ProductCar
                            <div style={{ display: 'grid', gap: 10 }}>
                              <div>
                                <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)', marginBottom: 2 }}>Target Demographic</p>
-                               <p style={{ fontSize: 12, fontWeight: 600, color: '#f0f0f0' }}>{audit.intent.target_user}</p>
+                               <p style={{ fontSize: 12, fontWeight: 600, color: '#f0f0f0' }}>{audit?.intent?.target_user || 'Detecting...'}</p>
                              </div>
                              <div>
                                <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)', marginBottom: 2 }}>Primary Use Case</p>
-                               <p style={{ fontSize: 12, fontWeight: 600, color: '#f0f0f0' }}>{audit.intent.use_case}</p>
+                               <p style={{ fontSize: 12, fontWeight: 600, color: '#f0f0f0' }}>{audit?.intent?.use_case || 'Analyzing...'}</p>
                              </div>
                            </div>
                         </div>
                         <div style={{ padding: '16px', borderRadius: 16, background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
                            <p style={{ fontSize: 10, fontWeight: 800, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}><Info size={12} /> Impact Analysis</p>
-                           <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', lineHeight: 1.5 }}>{audit.impact.detailed_impact}</p>
+                           <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', lineHeight: 1.5 }}>{audit?.impact?.detailed_impact || 'Calculating impact trajectory...'}</p>
                         </div>
                      </div>
                      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                        <GapView gaps={audit.gaps} />
+                        <GapView gaps={audit?.gaps} />
                         <div style={{ padding: '16px', borderRadius: 16, background: status.bg, border: `1px solid ${status.border}` }}>
                            <p style={{ fontSize: 10, fontWeight: 800, color: status.color, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>DIAGNOSTIC INSIGHT</p>
-                           <p style={{ fontSize: 12, fontWeight: 600, color: '#f0f0f0', lineHeight: 1.5 }}>{audit.gaps.detailed_explanation}</p>
+                           <p style={{ fontSize: 12, fontWeight: 600, color: '#f0f0f0', lineHeight: 1.5 }}>{audit?.gaps?.detailed_explanation || audit?.gaps?.insight || 'Preparing diagnostic report...'}</p>
                         </div>
                      </div>
                    </div>
@@ -164,17 +164,17 @@ export default function ProductCard({ product, highlighted = false }: ProductCar
                       </div>
                       <div style={{ padding: '20px', fontFamily: 'var(--font-mono)', fontSize: 11, lineHeight: 1.7, color: '#c8f135', background: 'rgba(200,241,53,0.02)' }}>
                         <p style={{ color: 'rgba(255,255,255,0.3)' }}>// Simulating AI Agent reasoning process...</p>
-                        <p style={{ marginTop: 8 }}>{audit.ai_perception.detailed_reasoning}</p>
+                        <p style={{ marginTop: 8 }}>{audit?.ai_perception?.detailed_reasoning || 'Processing perception model logs...'}</p>
                         <p style={{ marginTop: 12, color: 'rgba(255,255,255,0.3)' }}>// Evaluation Conclusion:</p>
-                        <p style={{ color: audit.ai_perception.recommendation === 'yes' ? '#22c55e' : '#ef4444' }}>
-                           &gt; Recommendation: {audit.ai_perception.recommendation.toUpperCase()} ({Math.round(audit.ai_perception.confidence * 100)}% Confidence)
+                        <p style={{ color: audit?.ai_perception?.recommendation === 'yes' ? '#22c55e' : '#ef4444' }}>
+                           &gt; Recommendation: {audit?.ai_perception?.recommendation?.toUpperCase() || 'EVALUATING'} ({Math.round((audit?.ai_perception?.confidence || 0) * 100)}% Confidence)
                         </p>
-                        <p style={{ color: 'rgba(255,255,255,0.4)', marginTop: 4 }}>&gt; Reason: {audit.ai_perception.reason}</p>
+                        <p style={{ color: 'rgba(255,255,255,0.4)', marginTop: 4 }}>&gt; Reason: {audit?.ai_perception?.reason || 'Synthesizing final verdict...'}</p>
                       </div>
                    </div>
                  )}
 
-                 {tab === 'fixes' && <FixSuggestions fixes={audit.fixes} />}
+                 {tab === 'fixes' && <FixSuggestions fixes={audit?.fixes} />}
               </div>
             </>
           )}

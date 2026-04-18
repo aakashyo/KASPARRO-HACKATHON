@@ -4,10 +4,12 @@ import time
 from groq import Groq
 from typing import Dict, Any, Optional, List
 
+# Optimized for Llama 3.3 and latest Groq models
 MODELS = [
     "llama-3.3-70b-versatile",
-    "llama-3.1-70b-versatile",
-    "mixtral-8x7b-32768"
+    "llama-3.1-8b-instant",
+    "llama3-70b-8192",
+    "llama3-8b-8192"
 ]
 
 class LLMClient:
@@ -21,8 +23,6 @@ class LLMClient:
             
         current_model = MODELS[model_idx]
         try:
-            # We use synchronous call in Groq but we can wrap it if needed. 
-            # For simplicity in this hackathon, we'll stick to the current pattern.
             completion = self.client.chat.completions.create(
                 messages=[
                     {"role": "system", "content": system_prompt},
@@ -30,15 +30,34 @@ class LLMClient:
                 ],
                 model=current_model,
                 temperature=0.2,
+                max_tokens=1000,
                 response_format={"type": "json_object"}
             )
             
             content = completion.choices[0].message.content
+            # Pre-clean known issues like code fences
+            from backend.utils.json_cleaner import strip_code_fences
+            content = strip_code_fences(content)
             return json.loads(content)
         except Exception as e:
-            print(f"[LLM Fallback] Model {current_model} failed: {str(e)}. Trying next...")
-            # Automatically try next model
+            # Check for rate limit or specific decommission errors
+            error_msg = str(e)
+            print(f"[LLM Fallback] Model {current_model} failed: {error_msg}. Trying next...")
+            
+            # If it's a rate limit or decommissioning error, move to next model immediately
             return await self.generate_json_response(system_prompt, user_prompt, model_idx + 1)
+
+import asyncio
+async def safe_llm_call(coro, timeout=15):
+    """Executes an LLM call with a strict timeout and fallback."""
+    try:
+        return await asyncio.wait_for(coro, timeout)
+    except asyncio.TimeoutError:
+        print("[LLM Timeout] Call exceeded 15s. Using fallback.")
+        return {"fallback": True}
+    except Exception as e:
+        print(f"[LLM Error] {str(e)}")
+        return {"fallback": True}
 
 # Global instance for easy access
 _client: Optional[LLMClient] = None
