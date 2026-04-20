@@ -17,6 +17,7 @@ from backend.services.shopify_client import ShopifyClient
 from backend.services.pipeline import AnalysisPipeline
 from backend.services.analyzer import Scorer
 from backend.utils.llm_client import get_llm_client
+from backend.utils.policy_guardrail import validate_fixes_against_policies
 
 app = FastAPI(title="Ultra-Low Latency AI Audit Platform")
 
@@ -89,22 +90,31 @@ async def analyze_store(request: AnalyzeRequest):
             # Strict Concurrency to stay under rate limits
             semaphore = asyncio.Semaphore(1)
 
-            async def run_super_audit(pa: ProductAnalysis) -> ProductAnalysis:
+            async def run_super_audit(pa: ProductAnalysis, store_policies: list) -> ProductAnalysis:
                 cache_key = get_cache_key(pa.original_data, "super_deep")
                 if cache_key in ANALYSIS_CACHE:
                     audit_data = ANALYSIS_CACHE[cache_key]
                     pa.audit_deep = DeepAuditResult(**audit_data)
                     pa.is_audited = True
-                    pa.scan_mode = "🧠 Deep Audit"
+                    pa.scan_mode = "Deep Audit"
                     return pa
                 else:
                     async with semaphore:
                         try:
-                            # 3-in-1 consolidated AI call
                             audit_data = await pipeline.execute_super_audit(pa.original_data)
-                            pa.audit_deep = DeepAuditResult(**audit_data)
+                            
+                            fixes = audit_data.get("fixes", {})
+                            guardrail = validate_fixes_against_policies(
+                                fixes.get("improved_description", ""),
+                                fixes.get("structured_tags", []),
+                                store_policies
+                            )
+                            audit_data["guardrail"] = guardrail
+                            
+                            pa.audit_deep = DeepAuditResult(**{k: v for k, v in audit_data.items() if k != "guardrail"})
                             pa.is_audited = True
-                            pa.scan_mode = "🧠 Deep Audit"
+                            pa.scan_mode = "Deep Audit"
+                            pa.guardrail = guardrail
                             ANALYSIS_CACHE[cache_key] = pa.audit_deep.model_dump()
                             return pa
                         except Exception as e:
@@ -114,7 +124,7 @@ async def analyze_store(request: AnalyzeRequest):
             yield f"data: {json.dumps({'type': 'progress', 'status': 'auditing', 'total': len(to_audit), 'message': f'Accelerating audit for {len(to_audit)} priority products...', 'progress_percent': 55})}\n\n"
 
             # Start deep audits as a gathering task
-            audit_tasks = [run_super_audit(pa) for pa in to_audit]
+            audit_tasks = [run_super_audit(pa, policies) for pa in to_audit]
             
             # Process deep audits and stream updates as they complete
             completed_audits = 0

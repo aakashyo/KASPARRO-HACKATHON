@@ -81,10 +81,9 @@ class ProductAnalysis(BaseModel):
     original_data: Dict = {}
     scan_quick: QuickScanResult = Field(default_factory=QuickScanResult)
     audit_deep: Optional[DeepAuditResult] = None
-    
-    # Audit status for UI
     is_audited: bool = False
-    scan_mode: str = "⚡ Quick Scan" # Default to quick scan
+    scan_mode: str = "Quick Scan"
+    guardrail: Optional[Dict[str, Any]] = None
 
 class DimensionScoreDetails(BaseModel):
     score: int
