@@ -7,7 +7,9 @@ import { demoData } from '@/lib/demoData';
 import ProductCard from './components/ProductCard';
 import QuerySimulator from './components/QuerySimulator';
 import StoreHealthCharts from './components/StoreHealthCharts';
-import { RefreshCcw, AlertTriangle, Search, Brain, Loader2, Download } from 'lucide-react';
+import ScoreCard from './components/ScoreCard';
+import { RefreshCcw, AlertTriangle, Search, Brain, Loader2, Download, Filter } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export default function Dashboard() {
   const router = useRouter();
@@ -20,6 +22,7 @@ export default function Dashboard() {
   const [mounted, setMounted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [timeSaved, setTimeSaved] = useState(0);
+  const [filter, setFilter] = useState<'all' | 'critical' | 'warning' | 'optimized'>('all');
 
   const run = async (forceDemo = false) => {
     setProducts({});
@@ -99,8 +102,13 @@ export default function Dashboard() {
   const productList = useMemo(() => Object.values(products), [products]);
 
   const sorted = useMemo(() => {
-    return [...productList].sort((a, b) => (b.scan_quick?.severity || 0) - (a.scan_quick?.severity || 0));
-  }, [productList]);
+    let list = [...productList];
+    if (filter === 'critical') list = list.filter(p => (p.scan_quick?.severity || 0) >= 7);
+    if (filter === 'warning') list = list.filter(p => { const s = p.scan_quick?.severity || 0; return s >= 4 && s < 7; });
+    if (filter === 'optimized') list = list.filter(p => (p.scan_quick?.severity || 0) < 4);
+    
+    return list.sort((a, b) => (b.scan_quick?.severity || 0) - (a.scan_quick?.severity || 0));
+  }, [productList, filter]);
 
   const stats = useMemo(() => {
     return productList.reduce((acc: any, p: any) => {
@@ -191,8 +199,13 @@ export default function Dashboard() {
           <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16, marginBottom: 24 }}>
             <div style={{ background: '#0e0e14', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 20, padding: '24px' }}>
               <p style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.25)', marginBottom: 20 }}>Dimension Scores</p>
-              <div style={{ height: 180 }}>
+              <div style={{ height: 180, marginBottom: 24 }}>
                 <StoreHealthCharts type="bar" data={storeScore.dimension_scores} />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 12 }}>
+                {storeScore.dimension_scores.map((d: any) => (
+                  <ScoreCard key={d.dimension} label={d.dimension} score={d.score} reason={d.reason} />
+                ))}
               </div>
             </div>
             <div style={{ background: '#0e0e14', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 20, padding: '24px' }}>
@@ -221,17 +234,18 @@ export default function Dashboard() {
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, paddingBottom: 16, borderBottom: '1px solid rgba(255,255,255,0.06)', flexWrap: 'wrap', gap: 12 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
-            <div style={{ display: 'flex', gap: 4, padding: 4, background: 'rgba(255,255,255,0.03)', borderRadius: 10, border: '1px solid rgba(255,255,255,0.06)' }}>
-              <button style={{ padding: '6px 16px', fontSize: 12, fontWeight: 700, borderRadius: 7, border: 'none', background: status === 'scanning' ? 'rgba(255,255,255,0.1)' : 'transparent', color: status === 'scanning' ? '#fff' : 'rgba(255,255,255,0.4)', cursor: 'default', transition: 'all 0.2s' }}>Fast Scan</button>
-              <button style={{ padding: '6px 16px', fontSize: 12, fontWeight: 700, borderRadius: 7, border: 'none', background: status === 'auditing' || status === 'complete' ? 'rgba(255,255,255,0.1)' : 'transparent', color: status === 'auditing' || status === 'complete' ? '#fff' : 'rgba(255,255,255,0.4)', cursor: 'default', transition: 'all 0.2s' }}>Deep Audit</button>
-            </div>
-            <div style={{ display: 'flex', gap: 12 }}>
-              <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', gap: 6 }}>
-                <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#ef4444' }} /> {stats.critical} Critical
-              </span>
-              <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', gap: 6 }}>
-                <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#f59e0b' }} /> {stats.warning} Warning
-              </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Filter size={14} color="rgba(255,255,255,0.3)" />
+              <div style={{ display: 'flex', gap: 4, padding: 4, background: 'rgba(255,255,255,0.03)', borderRadius: 10, border: '1px solid rgba(255,255,255,0.06)' }}>
+                {[
+                  { id: 'all', label: 'All' },
+                  { id: 'critical', label: 'Critical' },
+                  { id: 'warning', label: 'Warning' },
+                  { id: 'optimized', label: 'Optimized' }
+                ].map(f => (
+                  <button key={f.id} onClick={() => setFilter(f.id as any)} style={{ padding: '6px 12px', fontSize: 11, fontWeight: 700, borderRadius: 7, border: 'none', background: filter === f.id ? 'rgba(255,255,255,0.1)' : 'transparent', color: filter === f.id ? '#fff' : 'rgba(255,255,255,0.4)', cursor: 'pointer', transition: 'all 0.2s', fontFamily: 'var(--font-head)' }}>{f.label}</button>
+                ))}
+              </div>
             </div>
           </div>
           {isProcessing && (
@@ -252,14 +266,24 @@ export default function Dashboard() {
           </div>
         )}
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <motion.div 
+          initial="hidden" 
+          animate="show" 
+          variants={{
+            hidden: { opacity: 0 },
+            show: { opacity: 1, transition: { staggerChildren: 0.05 } }
+          }}
+          style={{ display: 'flex', flexDirection: 'column', gap: 10 }}
+        >
           {sorted.length === 0 && Array.from({ length: 3 }).map((_, i) => (
             <div key={i} style={{ height: 76, borderRadius: 18, background: '#0e0e14', border: '1px solid rgba(255,255,255,0.04)', animation: 'pulse 1.5s infinite ease-in-out' }} />
           ))}
           {sorted.map(p => (
-            <ProductCard key={p.id} product={p} highlighted={p.scan_quick.severity >= 7} isDemo={isDemo} />
+            <motion.div key={p.id} variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0 } }}>
+              <ProductCard product={p} highlighted={p.scan_quick.severity >= 7} isDemo={isDemo} />
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
 
         {status === 'complete' && (
           <div style={{ marginTop: 48 }}>

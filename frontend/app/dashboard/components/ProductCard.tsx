@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { ChevronDown, ChevronUp, ArrowRight, ShieldCheck, AlertCircle, Zap, Target, MessageSquare, Info, Loader2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import GapView from './GapView';
 import FixSuggestions from './FixSuggestions';
 
@@ -30,13 +31,17 @@ export default function ProductCard({ product, highlighted = false, isDemo = fal
   const currentScore = isAudited ? Math.round((audit?.impact?.before_score ?? (scan?.quick_score / 100)) * 100) : scan?.quick_score;
   const targetScore = isAudited ? Math.round((audit?.impact?.after_score ?? 1) * 100) : 100;
 
+  const gapsData = audit?.gaps || product.gaps || {};
+
   return (
-    <div style={{
+    <motion.div 
+      layout
+      style={{
       background: '#0e0e14',
       border: `1px solid ${highlighted ? 'rgba(239,68,68,0.3)' : 'rgba(255,255,255,0.07)'}`,
       borderRadius: 18,
       overflow: 'hidden',
-      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      transition: 'border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
       ...(open && { boxShadow: '0 20px 40px -20px rgba(0,0,0,0.5), 0 0 20px rgba(200,241,53,0.03)' })
     }}>
       {/* Header Bar */}
@@ -72,10 +77,14 @@ export default function ProductCard({ product, highlighted = false, isDemo = fal
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ textAlign: 'right' }}>
               <p style={{ fontSize: 9, fontWeight: 800, color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', marginBottom: 2 }}>Current Readiness</p>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
                 <span style={{ fontSize: 13, fontWeight: 800, color: currentScore < 50 ? '#ef4444' : '#f59e0b', fontFamily: 'var(--font-mono)' }}>{currentScore}%</span>
                 <ArrowRight size={10} color="rgba(255,255,255,0.1)" />
                 <span style={{ fontSize: 13, fontWeight: 800, color: '#22c55e', fontFamily: 'var(--font-mono)' }}>{targetScore}%</span>
+              </div>
+              <div style={{ width: '100%', height: 4, background: 'rgba(255,255,255,0.06)', borderRadius: 99, display: 'flex', overflow: 'hidden' }}>
+                <div style={{ width: `${currentScore}%`, background: currentScore < 50 ? '#ef4444' : '#f59e0b', transition: 'width 1s ease' }} />
+                <div style={{ width: `${targetScore - currentScore}%`, background: '#22c55e', opacity: 0.8, transition: 'width 1s ease', animation: 'pulse-glow 2s infinite' }} />
               </div>
             </div>
           </div>
@@ -86,8 +95,14 @@ export default function ProductCard({ product, highlighted = false, isDemo = fal
       </div>
 
       {/* Expanded Content */}
-      {open && (
-        <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', animation: 'slideDown 0.3s ease' }}>
+      <AnimatePresence>
+        {open && (
+          <motion.div 
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            style={{ borderTop: '1px solid rgba(255,255,255,0.06)', overflow: 'hidden' }}
+          >
           {!isAudited ? (
             <div style={{ padding: '24px', textAlign: 'center', background: 'rgba(0,0,0,0.1)' }}>
                <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(255,255,255,0.03)', margin: '0 auto 12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -144,7 +159,7 @@ export default function ProductCard({ product, highlighted = false, isDemo = fal
                         </div>
                      </div>
                      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                        <GapView gaps={audit?.gaps} />
+                        <GapView gaps={gapsData} />
                         <div style={{ padding: '16px', borderRadius: 16, background: status.bg, border: `1px solid ${status.border}` }}>
                            <p style={{ fontSize: 10, fontWeight: 800, color: status.color, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>DIAGNOSTIC INSIGHT</p>
                            <p style={{ fontSize: 12, fontWeight: 600, color: '#f0f0f0', lineHeight: 1.5 }}>{audit?.gaps?.detailed_explanation || audit?.gaps?.insight || 'Preparing diagnostic report...'}</p>
@@ -179,13 +194,13 @@ export default function ProductCard({ product, highlighted = false, isDemo = fal
               </div>
             </>
           )}
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <style>{`
-        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
         .animate-spin { animation: spin 1s linear infinite; }
       `}</style>
-    </div>
+    </motion.div>
   );
 }
