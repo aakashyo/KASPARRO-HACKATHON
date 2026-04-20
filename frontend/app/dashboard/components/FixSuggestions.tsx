@@ -26,6 +26,19 @@ export default function FixSuggestions({ fixes, productId, isDemo }: FixSuggesti
   const keywords = fixes?.added_keywords || [];
   const faqs     = fixes?.faq_suggestions || [];
 
+  const tagStrings = tags.map((t: any) => (typeof t === 'object' ? `${t.name}: ${t.value}` : t));
+
+  const rawMutation = `{
+  "query": "mutation productUpdate($input: ProductInput!) { productUpdate(input: $input) { product { id title descriptionHtml tags } } }",
+  "variables": {
+    "input": {
+      "id": "gid://shopify/Product/${productId || 'DEMO_ID'}",
+      "descriptionHtml": ${JSON.stringify(desc)},
+      "tags": ${JSON.stringify(tagStrings.join(', '))}
+    }
+  }
+}`;
+
   const [pushing, setPushing] = useState(false);
   const [pushStatus, setPushStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [pushMessage, setPushMessage] = useState('');
@@ -40,7 +53,6 @@ export default function FixSuggestions({ fixes, productId, isDemo }: FixSuggesti
     setPushing(true);
     setPushStatus('idle');
     try {
-      const tagStrings = tags.map((t: any) => (typeof t === 'object' ? `${t.name}: ${t.value}` : t));
       await pushFixes(productId, desc, tagStrings);
       setPushStatus('success');
       setPushMessage('Changes applied to your Shopify store successfully.');
@@ -99,6 +111,16 @@ export default function FixSuggestions({ fixes, productId, isDemo }: FixSuggesti
           </div>
         </div>
       )}
+
+      <div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+          <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#c8f135', fontFamily: 'var(--font-head)' }}>GraphQL Mutation Payload</p>
+          <CopyBtn text={rawMutation} />
+        </div>
+        <pre style={{ margin: 0, padding: '12px', borderRadius: 10, background: '#08080c', border: '1px solid rgba(200,241,53,0.15)', color: 'rgba(240,240,240,0.6)', fontSize: 11, fontFamily: 'var(--font-mono)', overflowX: 'auto', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
+          {rawMutation}
+        </pre>
+      </div>
 
       {pushStatus === 'success' && (
         <div style={{ padding: '10px 14px', borderRadius: 10, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)', color: '#22c55e', fontSize: 12, fontWeight: 600 }}>

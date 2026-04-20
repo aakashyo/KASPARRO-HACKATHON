@@ -33,13 +33,13 @@ The system runs a high-performance, multi-layered audit on your entire Shopify c
 
 When you log into the AI RepOptimizer, you'll be greeted by an interactive dashboard that provides deep insights:
 
-| Feature Area | What it Tells You | Why it Matters |
+| Feature Area | What it Tells You | Why it wins Track 5 |
 | :--- | :--- | :--- |
+| **Hybrid Deterministic Engine** | Structural data (materials, dimensions, size) is extracted via hard-coded Python boundary logic *before* hitting the LLM. | Proves we know exactly when to use an expensive LLM vs when to use cheap deterministic code. |
+| **Fail-Safe Policy Guardrails** | A post-processing validation layer that checks AI-generated fixes against the merchant's real Shopify policies (Refund/Shipping). | Eliminates legal liability by catching LLM hallucination and failing safely, a core requirement of enterprise AI. |
+| **1-Click GraphQL Execution** | Generates and exposes the raw Shopify `productUpdate` JSON payload, allowing 1-click execution. | Moves the tool from being an "advisor" to an automated "executor" that closes the loop. |
+| **Multi-Persona Simulation** | Tests products concurrently against 3 distinct AI Agents: The Budget Optimizer, The Tech-Spec Critic, and The Gift Recommender. | Proves that "AI perception" isn't a monolith, providing nuanced insights into different buyer segments. |
 | **Merchant Intent vs. AI Perception** | Compares what the store *thinks* it is selling vs. what the *AI thinks* the store is selling. | Exposes semantic misinterpretations that kill product visibility. |
-| **The AI Confidence Score** | A detailed score (0-100) reflecting how confidently an AI can recommend this product. | Gives you a tangible metric to track optimization progress. |
-| **Intelligence Gaps & Triage** | Highlights exact missing attributes (e.g., "Missing Material Type," "Ambiguous Sizing"). | Tells you exactly what data you need to add to your Shopify backend. |
-| **Actionable Neural Fixes** | Auto-generates AI-optimized product copy, structured tags, and FAQ suggestions. | Provides copy-and-paste solutions to immediately boost your AI score. |
-| **The Query Simulator Sandbox** | An interactive chat interface to test how AI agents rank your store's products. | Validates that your fixes actually work in a real-world shopping scenario. |
 
 ---
 
