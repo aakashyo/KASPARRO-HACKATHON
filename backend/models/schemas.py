@@ -6,6 +6,17 @@ class AnalyzeRequest(BaseModel):
     store_url: Optional[str] = None
     access_token: Optional[str] = None
 
+class QueryRequest(BaseModel):
+    query: str
+    products: List[Dict[str, Any]]
+
+class PushFixesRequest(BaseModel):
+    product_id: str
+    description: str
+    tags: List[str]
+    store_url: Optional[str] = None
+    access_token: Optional[str] = None
+
 # Intelligence Models
 class MerchantIntent(BaseModel):
     category: Optional[str] = "General"

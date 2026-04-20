@@ -94,7 +94,6 @@ class ShopifyClient:
             return pages
 
     async def fetch_policies(self) -> List[Dict[str, Any]]:
-        # REST API for policies
         async with httpx.AsyncClient() as client:
             try:
                 response = await client.get(
@@ -105,3 +104,43 @@ class ShopifyClient:
                 return data.get("policies", [])
             except:
                 return []
+
+    async def update_product(self, product_id: str, description: str, tags: List[str]) -> Dict[str, Any]:
+        clean_id = product_id if product_id.startswith("gid://") else f"gid://shopify/Product/{product_id}"
+        tags_str = ", ".join(tags)
+        mutation = """
+        mutation productUpdate($input: ProductInput!) {
+          productUpdate(input: $input) {
+            product {
+              id
+              title
+              descriptionHtml
+              tags
+            }
+            userErrors {
+              field
+              message
+            }
+          }
+        }
+        """
+        variables = {
+            "input": {
+                "id": clean_id,
+                "descriptionHtml": description,
+                "tags": tags_str
+            }
+        }
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"{self.store_url}/admin/api/2024-01/graphql.json",
+                json={"query": mutation, "variables": variables},
+                headers=self.headers
+            )
+            data = response.json()
+            if "errors" in data:
+                raise Exception(f"Shopify mutation error: {data['errors']}")
+            user_errors = data.get("data", {}).get("productUpdate", {}).get("userErrors", [])
+            if user_errors:
+                raise Exception(f"Shopify userErrors: {user_errors}")
+            return data.get("data", {}).get("productUpdate", {}).get("product", {})

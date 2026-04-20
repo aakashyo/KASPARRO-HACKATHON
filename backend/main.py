@@ -12,7 +12,7 @@ from fastapi import FastAPI, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.models.schemas import AnalyzeRequest, StoreScore, ProductAnalysis, QuickScanResult, DeepAuditResult
+from backend.models.schemas import AnalyzeRequest, StoreScore, ProductAnalysis, QuickScanResult, DeepAuditResult, QueryRequest, PushFixesRequest
 from backend.services.shopify_client import ShopifyClient
 from backend.services.pipeline import AnalysisPipeline
 from backend.services.analyzer import Scorer
@@ -140,6 +140,36 @@ async def analyze_store(request: AnalyzeRequest):
             yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")
+
+@app.post("/query")
+async def simulate_query(request: QueryRequest):
+    if not request.query or not request.products:
+        raise HTTPException(status_code=400, detail="Query and products are required.")
+    
+    from backend.services.query_simulator import QuerySimulator
+    from backend.utils.llm_client import LLMClient
+    
+    simulator = QuerySimulator(client=LLMClient(api_key=""))
+    try:
+        results = await simulator.simulate(request.query, request.products)
+        return results
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/push-fixes")
+async def push_fixes(request: PushFixesRequest):
+    store_url = request.store_url or os.getenv("SHOPIFY_STORE_URL")
+    access_token = request.access_token or os.getenv("SHOPIFY_ADMIN_TOKEN")
+    if not store_url or not access_token:
+        raise HTTPException(status_code=400, detail="Store credentials are required.")
+    shopify = ShopifyClient(store_url, access_token)
+    try:
+        result = await shopify.update_product(request.product_id, request.description, request.tags)
+        return {"success": True, "product": result}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     import uvicorn
