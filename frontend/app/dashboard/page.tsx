@@ -203,8 +203,8 @@ export default function Dashboard() {
                 <StoreHealthCharts type="bar" data={storeScore.dimension_scores} />
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 12 }}>
-                {storeScore.dimension_scores.map((d: any) => (
-                  <ScoreCard key={d.dimension} label={d.dimension} score={d.score} reason={d.reason} />
+                {Object.entries(storeScore.dimension_scores).map(([key, val]: any) => (
+                  <ScoreCard key={key} label={key.replace('_', ' ')} score={val.score} reason={val.reason} />
                 ))}
               </div>
             </div>
