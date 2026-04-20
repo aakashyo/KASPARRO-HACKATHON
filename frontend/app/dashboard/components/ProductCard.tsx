@@ -8,9 +8,10 @@ import FixSuggestions from './FixSuggestions';
 interface ProductCardProps {
   product: any;
   highlighted?: boolean;
+  isDemo?: boolean;
 }
 
-export default function ProductCard({ product, highlighted = false }: ProductCardProps) {
+export default function ProductCard({ product, highlighted = false, isDemo = false }: ProductCardProps) {
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<'audit' | 'logs' | 'fixes'>('audit');
   
@@ -174,7 +175,7 @@ export default function ProductCard({ product, highlighted = false }: ProductCar
                    </div>
                  )}
 
-                 {tab === 'fixes' && <FixSuggestions fixes={audit?.fixes} />}
+                 {tab === 'fixes' && <FixSuggestions fixes={audit?.fixes} productId={product.id} isDemo={isDemo} />}
               </div>
             </>
           )}
