@@ -23,6 +23,9 @@ class ShopifyClient:
                 description
                 tags
                 vendor
+                featuredImage {
+                  url
+                }
                 variants(first: 1) {
                   edges {
                     node {
@@ -55,6 +58,7 @@ class ShopifyClient:
                     "description": node["description"],
                     "tags": node["tags"],
                     "vendor": node["vendor"],
+                    "image": node["featuredImage"]["url"] if node.get("featuredImage") else None,
                     "price": node["variants"]["edges"][0]["node"]["price"] if node["variants"]["edges"] else "0.00"
                 })
             return products

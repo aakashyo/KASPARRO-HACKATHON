@@ -65,7 +65,7 @@ Ensure you have the following installed on your machine:
 - **Node.js** (version 18 or higher)
 - A highly capable IDE (e.g., VS Code)
 - A free **Groq API Key** (Get one at [console.groq.com](https://console.groq.com))
-- A **Shopify Custom App Admin Token** (Must have read access to products/inventory)
+- A **Shopify Custom App Admin Token** (Must have `read_products` AND `write_products` scopes to execute fixes)
 
 ### 2. Backend Setup (The Engine)
 
