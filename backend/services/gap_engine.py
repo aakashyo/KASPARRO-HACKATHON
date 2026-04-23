@@ -8,11 +8,20 @@ class GapEngine:
     def __init__(self, client=None):
         self.client = client
 
-    async def analyze(self, intent: dict, perception: dict):
+    async def analyze(self, intent: dict, perception: dict, original_product: dict = None):
         """
-        Runs Gap + Impact analysis with total sanitization and zero-failure flow.
+        Runs Gap + Impact analysis using a Hybrid Deterministic + LLM approach for zero-failure flow.
         """
-        prompts = get_gap_and_impact_prompt(json.dumps(intent), json.dumps(perception))
+        deterministic_gaps = []
+        if original_product:
+            if not original_product.get("vendor"): deterministic_gaps.append("Missing Vendor")
+            if not original_product.get("tags"): deterministic_gaps.append("Missing Tags")
+            desc = original_product.get("description", "")
+            if len(desc) < 50: deterministic_gaps.append("Extremely short description")
+        
+        hybrid_context = f"Deterministic Gaps Found: {', '.join(deterministic_gaps)}\n\n" if deterministic_gaps else ""
+        
+        prompts = get_gap_and_impact_prompt(json.dumps(intent), hybrid_context + json.dumps(perception))
         
         # Mandatory Sanitization Pipeline
         raw_json = await safe_llm_call(prompts, task_type="default")

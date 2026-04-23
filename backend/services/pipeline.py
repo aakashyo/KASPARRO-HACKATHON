@@ -22,9 +22,16 @@ class AnalysisPipeline:
         """
         Consolidated 3-in-1 Deep Audit with mandatory sanitization pipeline.
         """
+        deterministic_gaps = []
+        if not product.get("vendor"): deterministic_gaps.append("Missing Vendor")
+        if not product.get("tags"): deterministic_gaps.append("Missing Tags")
+        if len(product.get("description", "")) < 50: deterministic_gaps.append("Extremely short description")
+        
+        hybrid_context = f"DETERMINISTIC GAPS FOUND (MUST INCLUDE IN ANALYSIS): {', '.join(deterministic_gaps)}\n\n" if deterministic_gaps else ""
+
         prompt_data = get_super_audit_prompt(
             product.get("title", ""),
-            product.get("description", ""),
+            hybrid_context + product.get("description", ""),
             ", ".join(product.get("tags", [])) if isinstance(product.get("tags"), list) else str(product.get("tags", ""))
         )
         

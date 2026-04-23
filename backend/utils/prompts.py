@@ -86,3 +86,36 @@ Format:
   "rejected_products": [{{ "product_id": "", "reason": "" }}]
 }}"""
     }
+
+PERSONAS = {
+    "budget": {
+        "name": "Budget Optimizer AI",
+        "description": "Prioritizes price-to-value ratio, discounts, and affordability signals",
+        "focus": "price, value, affordable, budget, cost per use, bang for buck"
+    },
+    "techspec": {
+        "name": "Tech-Spec AI",
+        "description": "Demands exact measurements, compatibility info, and technical certifications",
+        "focus": "specifications, measurements, compatibility, certifications, materials, dimensions"
+    },
+    "gift": {
+        "name": "Gift Recommendation AI",
+        "description": "Prioritizes presentation quality, brand story, and recipient-friendliness",
+        "focus": "gift-ready, premium feel, packaging, brand trust, occasion suitability"
+    }
+}
+
+def get_persona_query_prompt(persona_key: str, query: str, products_json: str) -> Dict[str, str]:
+    p = PERSONAS.get(persona_key, PERSONAS["budget"])
+    return {
+        "system": f"You are the {p['name']}: an AI shopping agent that {p['description']}. You ONLY care about: {p['focus']}. Ignore factors outside your persona's priorities.\n{GLOBAL_RULES}",
+        "user": f"""QUERY: {query}
+PRODUCTS: {products_json}
+
+Rank from your persona's strict perspective. Format:
+{{
+  "ranked_results": [{{ "rank": 1, "product_id": "", "match_score": 0, "reason": "" }}],
+  "rejected_products": [{{ "product_id": "", "reason": "" }}]
+}}"""
+    }
+
