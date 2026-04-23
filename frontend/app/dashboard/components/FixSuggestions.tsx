@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Copy, Check, ArrowUpRight, Loader2 } from 'lucide-react';
 import { pushFixes } from '@/lib/api';
+import PreviewModal from './PreviewModal';
 
 interface FixSuggestionsProps {
   fixes: any;
@@ -31,13 +32,9 @@ export default function FixSuggestions({ fixes, productId, isDemo }: FixSuggesti
   const [pushing, setPushing] = useState(false);
   const [pushStatus, setPushStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [pushMessage, setPushMessage] = useState('');
+  const [showPreview, setShowPreview] = useState(false);
 
-  const handlePush = async () => {
-    if (isDemo) {
-      setPushStatus('success');
-      setPushMessage('Demo mode — changes would be applied to your live store.');
-      return;
-    }
+  const confirmPush = async () => {
     if (!productId) return;
     setPushing(true);
     setPushStatus('idle');
@@ -45,12 +42,22 @@ export default function FixSuggestions({ fixes, productId, isDemo }: FixSuggesti
       await pushFixes(productId, desc, tagStrings);
       setPushStatus('success');
       setPushMessage('Changes applied to your Shopify store successfully.');
+      setShowPreview(false);
     } catch (e: any) {
       setPushStatus('error');
       setPushMessage(e.message || 'Push failed. Check backend logs.');
     } finally {
       setPushing(false);
     }
+  };
+
+  const handlePush = async () => {
+    if (isDemo) {
+      setPushStatus('success');
+      setPushMessage('Demo mode — changes would be applied to your live store.');
+      return;
+    }
+    setShowPreview(true);
   };
 
   return (
@@ -93,8 +100,12 @@ export default function FixSuggestions({ fixes, productId, isDemo }: FixSuggesti
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {faqs.map((faq: any, i: number) => (
               <div key={i} style={{ padding: '12px 14px', borderRadius: 10, background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
-                <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)', marginBottom: 4, fontFamily: 'var(--font-head)' }}>{faq.question}</p>
-                <p style={{ fontSize: 11, lineHeight: 1.5, color: 'var(--text-secondary)' }}>{faq.answer}</p>
+                <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)', marginBottom: 4, fontFamily: 'var(--font-head)' }}>
+                  {typeof faq === 'string' ? faq : faq.question}
+                </p>
+                <p style={{ fontSize: 11, lineHeight: 1.5, color: 'var(--text-secondary)' }}>
+                  {typeof faq === 'string' ? 'See product details for more information.' : faq.answer}
+                </p>
               </div>
             ))}
           </div>
@@ -146,6 +157,20 @@ export default function FixSuggestions({ fixes, productId, isDemo }: FixSuggesti
       >
         {pushing ? <><Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> Pushing to Shopify...</> : pushStatus === 'success' ? <>Applied to Shopify <Check size={15} /></> : <>Push All Fixes to Shopify <ArrowUpRight size={15} /></>}
       </button>
+
+      {showPreview && (
+        <PreviewModal 
+          isOpen={showPreview}
+          onClose={() => setShowPreview(false)}
+          onConfirm={confirmPush}
+          title="Review AI Product Fixes"
+          description="You are about to update this product's description and tags on Shopify."
+          contentType="single_fix"
+          content={{ description: desc, tags: tagStrings }}
+          loading={pushing}
+        />
+      )}
+
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );

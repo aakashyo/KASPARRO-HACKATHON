@@ -8,6 +8,8 @@ import ProductCard from './components/ProductCard';
 import QuerySimulator from './components/QuerySimulator';
 import StoreHealthCharts from './components/StoreHealthCharts';
 import ScoreCard from './components/ScoreCard';
+import StrategicRoadmap from './components/StrategicRoadmap';
+import DimensionDetailModal from './components/DimensionDetailModal';
 import { RefreshCcw, AlertTriangle, Search, Brain, Loader2, Download, Filter, RefreshCw, CheckCircle2, Sun, Moon } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -26,6 +28,7 @@ export default function Dashboard() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncComplete, setSyncComplete] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+  const [selectedDimension, setSelectedDimension] = useState<any>(null);
 
   const toggleTheme = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
@@ -77,6 +80,7 @@ export default function Dashboard() {
           setStatus(updateStatus);
           if (progress_percent !== undefined) {
             setProgress({ current: Math.floor(progress_percent), total: 100 });
+            if (processed) setTimeSaved(processed * 2.1);
           } else if (processed && total) {
             setProgress({ current: processed, total });
             setTimeSaved(processed * 2.1);
@@ -114,24 +118,34 @@ export default function Dashboard() {
   const handleMegaSync = async () => {
     if (isDemo) return alert("Mega-Sync is disabled in Demo Mode. Connect your store to push real fixes.");
     setIsSyncing(true);
+    setSyncComplete(false);
     
-    // Auto-gather all deep audited fixes
-    const fixes = productList
-      .filter(p => p.audit_deep && p.audit_deep.fixes)
-      .map(p => ({
+    // Auto-gather all deep audited fixes that passed the policy guardrail
+    const allFixable = productList.filter(p => p.audit_deep && p.audit_deep.fixes);
+    const safeFixes = allFixable.filter(p => !p.guardrail || p.guardrail.is_safe);
+    
+    const skippedCount = allFixable.length - safeFixes.length;
+
+    const fixes = safeFixes.map(p => ({
         product_id: p.id,
         description: p.audit_deep!.fixes!.improved_description || '',
         tags: (p.audit_deep!.fixes!.structured_tags || []).map((t: any) => typeof t === 'string' ? t : `${t.name}:${t.value}`)
-      }));
+    }));
       
     if (fixes.length === 0) {
-      alert("No AI fixes available to sync.");
+      alert(skippedCount > 0 
+        ? `${skippedCount} products were skipped due to policy guardrail violations. No safe fixes available to sync.`
+        : "No AI fixes available to sync.");
       setIsSyncing(false);
       return;
     }
 
     try {
-      await pushBulkFixes(fixes);
+      const result = await pushBulkFixes(fixes);
+      const failed = (result?.results || []).filter((item: any) => !item.success);
+      if (failed.length > 0) {
+        throw new Error(`${failed.length} product update${failed.length === 1 ? '' : 's'} failed during Mega-Sync.`);
+      }
       setSyncComplete(true);
       setTimeout(() => setSyncComplete(false), 5000);
     } catch (err: any) {
@@ -291,7 +305,13 @@ export default function Dashboard() {
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 12 }}>
                 {Object.entries(storeScore.dimension_scores).map(([key, val]: any) => (
-                  <ScoreCard key={key} label={key.replace('_', ' ')} score={val.score} reason={val.reason} />
+                  <ScoreCard 
+                    key={key} 
+                    label={key.replace('_', ' ')} 
+                    score={val.score} 
+                    reason={val.reason} 
+                    onClick={() => setSelectedDimension({ label: key.replace('_', ' '), ...val })}
+                  />
                 ))}
               </div>
             </div>
@@ -317,6 +337,14 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
+        )}
+
+        {showsScores && storeScore.roadmap && (
+          <StrategicRoadmap 
+            roadmap={storeScore.roadmap} 
+            products={productList} 
+            onMegaSync={handleMegaSync} 
+          />
         )}
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, paddingBottom: 16, borderBottom: '1px solid var(--border-subtle)', flexWrap: 'wrap', gap: 12 }}>
@@ -383,6 +411,17 @@ export default function Dashboard() {
         )}
 
       </main>
+
+      {selectedDimension && (
+        <DimensionDetailModal 
+          isOpen={!!selectedDimension}
+          onClose={() => setSelectedDimension(null)}
+          dimension={selectedDimension.label}
+          score={selectedDimension.score}
+          reason={selectedDimension.reason}
+          products={productList}
+        />
+      )}
 
       <style>{`
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }

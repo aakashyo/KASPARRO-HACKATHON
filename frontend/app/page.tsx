@@ -2,13 +2,15 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, Lock, Sparkles, ShieldCheck, Zap, BarChart2 } from 'lucide-react';
+import { ArrowRight, Lock, Sparkles, ShieldCheck, Zap, BarChart2, AlertCircle } from 'lucide-react';
+import { validateCredentials, fetchConfig } from '@/lib/api';
 
 export default function LandingPage() {
   const router = useRouter();
   const [storeUrl, setStoreUrl] = useState('');
   const [token, setToken]       = useState('');
   const [loading, setLoading]   = useState(false);
+  const [error, setError]       = useState<string | null>(null);
   const [count, setCount]       = useState(0);
   const heroRef = useRef<HTMLDivElement>(null);
 
@@ -35,13 +37,36 @@ export default function LandingPage() {
     return () => window.removeEventListener('mousemove', move);
   }, []);
 
-  const handleStart = (e: React.FormEvent) => {
+  // Fetch default config if available
+  useEffect(() => {
+    const loadConfig = async () => {
+      try {
+        const config = await fetchConfig();
+        if (config.store_url) setStoreUrl(config.store_url);
+        if (config.access_token) setToken(config.access_token);
+      } catch (err) {
+        console.warn('Could not fetch default config:', err);
+      }
+    };
+    loadConfig();
+  }, []);
+
+  const handleStart = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    localStorage.setItem('shopify_url', storeUrl);
-    localStorage.setItem('shopify_token', token);
-    localStorage.removeItem('demo_mode');
-    setTimeout(() => router.push('/dashboard'), 700);
+    setError(null);
+    
+    try {
+      const result = await validateCredentials(storeUrl, token);
+      const finalUrl = result.sanitized_url || storeUrl;
+      localStorage.setItem('shopify_url', finalUrl);
+      localStorage.setItem('shopify_token', token);
+      localStorage.removeItem('demo_mode');
+      router.push('/dashboard');
+    } catch (err: any) {
+      setError(err.message || 'Connection failed. Please check your credentials.');
+      setLoading(false);
+    }
   };
 
   const handleDemo = () => {
@@ -162,6 +187,13 @@ export default function LandingPage() {
                   onFocus={e => (e.target.style.borderColor = 'rgba(200,241,53,0.5)')}
                   onBlur={e => (e.target.style.borderColor = 'rgba(255,255,255,0.1)')} />
               </div>
+              
+              {error && (
+                <div style={{ padding: '10px 14px', borderRadius: 10, background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <AlertCircle size={13} color="#ef4444" />
+                  <span style={{ fontSize: 11, color: '#fca5a5', fontWeight: 500 }}>{error}</span>
+                </div>
+              )}
 
               <div style={{ padding: '10px 14px', borderRadius: 10, background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: 8 }}>
                 <ShieldCheck size={13} color="#22c55e" />

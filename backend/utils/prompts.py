@@ -1,16 +1,14 @@
 from typing import Dict, List, Any
 
 # GLOBAL PROMPT RULES
-GLOBAL_RULES = """Provide concise but meaningful explanations (2-3 lines max).
+GLOBAL_RULES = """Provide meaningful, descriptive, and actionable explanations.
 Clearly describe the issue and its impact on AI understanding.
-Keep each explanation under 40-50 words.
+Be thorough where detailed reasoning is required.
 Avoid repetition and generic statements.
 Avoid filler phrases like "this significantly impacts".
 Use specific terms instead of vague statements.
 Write in a clear, professional tone.
-Keep responses compact. Avoid long sentences.
-Do not exceed 2-3 lines per explanation field.
-Do not repeat the same phrases across different fields.
+For fix suggestions, provide complete, production-ready content.
 Return ONLY valid JSON with all required fields.
 Do NOT include markdown or extra text.
 Use empty arrays [] if no data.
@@ -32,43 +30,46 @@ REQUIRED OUTPUT FORMAT (JSON ONLY):
 {{
   "intent": {{
     "category": "E-commerce category",
-    "target_user": "Specific demographic",
-    "use_case": "Primary utility",
+    "target_user": "Detailed target demographic",
+    "use_case": "Primary and secondary utility",
     "price_segment": "budget | mid-range | luxury",
     "key_attributes": ["attribute1", "attribute2"],
     "important_keywords": ["keyword1", "keyword2"]
   }},
   "ai_perception": {{
     "summary": "1-sentence summary",
-    "target_user": "Persona",
+    "target_user": "Specific Persona",
     "key_benefits": ["benefit1", "benefit2"],
     "confidence": 0-1 score,
     "recommendation": "yes | no",
-    "reason": "Short reason",
-    "detailed_reasoning": "Reasoning for AI interpretation (Medium detail, 1-2 lines)"
+    "reason": "Detailed reasoning for the recommendation",
+    "detailed_reasoning": "Thorough analysis of how an AI agent interprets this product (3-4 sentences)"
   }},
   "gaps": {{
     "missing_attributes": ["spec1", "spec2"],
     "misinterpretations": ["hallucination1"],
     "confidence_drop_reasons": ["vague1"],
-    "insight": "Short summary",
+    "insight": "High-level strategic insight",
     "severity": 1-10,
     "impact_level": "low | medium | high",
-    "detailed_explanation": "Detailed explanation of missing data and impact on AI (High detail, 2-3 lines max)"
+    "detailed_explanation": "Comprehensive breakdown of missing data and its exact impact on AI discoverability (4-5 sentences)"
   }},
   "impact": {{
     "before_score": 0.0-1.0,
     "after_score": 0.0-1.0,
     "improvement_percentage": "+XX%",
-    "reason": "Short logic",
-    "detailed_impact": "Detailed impact on ranking and confidence (High detail, 2-3 lines max)"
+    "reason": "Strategic logic for improvement",
+    "detailed_impact": "Detailed projection of how these changes affect search ranking and AI recommendation volume (3-4 sentences)"
   }},
   "fixes": {{
-    "improved_description": "New AI-optimized description",
+    "improved_description": "A comprehensive, high-quality, AI-optimized product description (100-200 words). Focus on semantic clarity, technical specs, and solving user objections.",
     "added_keywords": ["key1", "key2"],
     "structured_tags": ["Tag1", "Tag2"],
-    "faq_suggestions": ["Q&A pair"],
-    "explanation": "Explanation of why fixes improve understanding (Medium detail, 1-2 lines)"
+    "faq_suggestions": [
+      {{"question": "Critical Question 1?", "answer": "Comprehensive, detailed answer that provides technical or usage clarity for AI agents."}},
+      {{"question": "Critical Question 2?", "answer": "Comprehensive, detailed answer that provides technical or usage clarity for AI agents."}}
+    ],
+    "explanation": "Detailed explanation of why these specific fixes bridge the AI gap (3-4 sentences)"
   }}
 }}"""
     }

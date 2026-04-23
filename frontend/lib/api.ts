@@ -1,5 +1,10 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
+const getStoredCredentials = () => ({
+  store_url: typeof window !== 'undefined' ? localStorage.getItem('shopify_url') : null,
+  access_token: typeof window !== 'undefined' ? localStorage.getItem('shopify_token') : null,
+});
+
 export const analyzeStore = async (
   storeUrl: string, 
   accessToken: string,
@@ -57,10 +62,11 @@ export const pushFixes = async (
   description: string,
   tags: string[]
 ) => {
+  const credentials = getStoredCredentials();
   const response = await fetch(`${API_BASE_URL}/push-fixes`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ product_id: productId, description, tags }),
+    body: JSON.stringify({ product_id: productId, description, tags, ...credentials }),
   });
 
   if (!response.ok) {
@@ -72,10 +78,11 @@ export const pushFixes = async (
 };
 
 export async function pushBulkFixes(fixes: { product_id: string, description: string, tags: string[] }[]): Promise<any> {
+  const credentials = getStoredCredentials();
   const response = await fetch(`${API_BASE_URL}/push-bulk`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ fixes }),
+    body: JSON.stringify({ fixes, ...credentials }),
   });
 
   if (!response.ok) {
@@ -110,3 +117,52 @@ export const exportReportCSV = (products: any[]) => {
   URL.revokeObjectURL(url);
 };
 
+export const validateCredentials = async (storeUrl: string, accessToken: string) => {
+  const response = await fetch(`${API_BASE_URL}/validate-credentials`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ store_url: storeUrl, access_token: accessToken }),
+  });
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({ detail: 'Validation failed' }));
+    throw new Error(err.detail || 'Invalid Store URL or API Token');
+  }
+
+  return response.json();
+};
+
+export const previewFAQPage = async (products: any[]) => {
+  const credentials = getStoredCredentials();
+  const response = await fetch(`${API_BASE_URL}/preview-faq-page`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ products, ...credentials }),
+  });
+  if (!response.ok) throw new Error('Failed to preview FAQ page');
+  return response.json();
+};
+
+export const pushFAQPage = async (products: any[]) => {
+  const credentials = getStoredCredentials();
+
+  const response = await fetch(`${API_BASE_URL}/push-faq-page`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ products, ...credentials }),
+  });
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({ detail: 'FAQ push failed' }));
+    throw new Error(err.detail || 'Failed to push FAQ page');
+  }
+
+  return response.json();
+};
+
+
+export const fetchConfig = async () => {
+  const response = await fetch(`${API_BASE_URL}/config`);
+  if (!response.ok) throw new Error('Failed to fetch config');
+  return response.json();
+};

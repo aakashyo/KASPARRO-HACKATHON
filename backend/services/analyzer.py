@@ -46,12 +46,41 @@ class Scorer:
         # We assign generic conservative dollar values per product fixed for hackathon demo purposes.
         est_recovery = (critical_count * 185) + (warning_count * 45)
 
+        # Strategic Roadmap Logic
+        roadmap = [
+            {
+                "phase": 1,
+                "title": "Trust Foundation",
+                "status": "critical" if policy_score < 50 or faq_score < 50 else "warning" if policy_score < 75 or faq_score < 75 else "optimized",
+                "task": "Generate AI Discovery Guide & Policies",
+                "impact": "High (Legal & Agent Safety)",
+                "action_type": "push_faq"
+            },
+            {
+                "phase": 2,
+                "title": "Search Visibility",
+                "status": "critical" if critical_count > 0 else "optimized",
+                "task": f"Mega-Sync {critical_count + warning_count} Product Tags",
+                "impact": "Medium (Ranking Volume)",
+                "action_type": "mega_sync"
+            },
+            {
+                "phase": 3,
+                "title": "Conversion Optimization",
+                "status": "warning" if any(not p.get("is_audited") for p in products_data[:5]) else "optimized",
+                "task": "Semantic Description Deep Audit",
+                "impact": "High (Recommendation Confidence)",
+                "action_type": "deep_audit"
+            }
+        ]
+
         return {
             "overall_score": overall,
             "business_impact": {
                 "recoverable_revenue": est_recovery,
                 "critical_fixes_needed": critical_count
             },
+            "roadmap": roadmap,
             "dimension_scores": {
                 "Product_Quality": {"score": prod_quality, "reason": prod_reason},
                 "Policy_Clarity": {"score": policy_score, "reason": policy_reason},

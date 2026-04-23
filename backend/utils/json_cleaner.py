@@ -89,6 +89,61 @@ def flatten_to_strings(v):
         return out
     return []
 
+def normalize_structured_tags(v):
+    """Preserves object tags when the model returns name/value pairs."""
+    if not isinstance(v, list):
+        return []
+
+    out = []
+    for item in v:
+        if isinstance(item, dict):
+            name = safe_str(item.get("name")).strip()
+            value = safe_str(item.get("value")).strip()
+            if name and value:
+                out.append({"name": name, "value": value})
+            elif name:
+                out.append(name)
+            elif value:
+                out.append(value)
+        elif item is not None:
+            text = safe_str(item).strip()
+            if text:
+                out.append(text)
+    return out
+
+def normalize_faq_suggestions(v):
+    """Preserves FAQ objects and coerces raw text into stable Q&A objects."""
+    if not isinstance(v, list):
+        return []
+
+    out = []
+    for item in v:
+        if isinstance(item, dict):
+            question = safe_str(item.get("question")).strip()
+            answer = safe_str(item.get("answer")).strip()
+            if question:
+                out.append({
+                    "question": question,
+                    "answer": answer or "See product details for more information."
+                })
+            continue
+
+        text = safe_str(item).strip()
+        if not text:
+            continue
+
+        if "A:" in text:
+            question_part, answer_part = text.split("A:", 1)
+            question = question_part.replace("Q:", "").strip()
+            answer = answer_part.strip()
+        else:
+            question = text.replace("Q:", "").strip()
+            answer = "See product details for more information."
+
+        if question:
+            out.append({"question": question, "answer": answer})
+    return out
+
 def safe_int(value, default=5):
     try:
         if isinstance(value, str) and value.isdigit():
@@ -183,7 +238,7 @@ def clean_fix_response(data: dict) -> dict:
         return DEFAULT_AUDIT["fixes"]
     data.setdefault("improved_description", "Updated description for AI clarity.")
     data["added_keywords"] = flatten_to_strings(data.get("added_keywords", []))
-    data["structured_tags"] = flatten_to_strings(data.get("structured_tags", []))
-    data["faq_suggestions"] = flatten_to_strings(data.get("faq_suggestions", []))
+    data["structured_tags"] = normalize_structured_tags(data.get("structured_tags", []))
+    data["faq_suggestions"] = normalize_faq_suggestions(data.get("faq_suggestions", []))
     data.setdefault("explanation", "Standard optimization applied.")
     return data

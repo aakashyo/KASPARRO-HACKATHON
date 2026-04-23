@@ -2,6 +2,7 @@ import asyncio
 import json
 import os
 import hashlib
+import re
 from typing import AsyncGenerator
 
 from dotenv import load_dotenv
@@ -12,7 +13,7 @@ from fastapi import FastAPI, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.models.schemas import AnalyzeRequest, StoreScore, ProductAnalysis, QuickScanResult, DeepAuditResult, QueryRequest, PushFixesRequest, PushBulkFixesRequest
+from backend.models.schemas import AnalyzeRequest, StoreScore, ProductAnalysis, QuickScanResult, DeepAuditResult, QueryRequest, PushFixesRequest, PushBulkFixesRequest, PushFAQRequest, ConfigResponse
 from backend.services.shopify_client import ShopifyClient
 from backend.services.pipeline import AnalysisPipeline
 from backend.services.analyzer import Scorer
@@ -38,6 +39,38 @@ def get_cache_key(p: dict, mode: str = "quick") -> str:
     content = f"{p.get('id', '')}{p.get('title', '')}{p.get('updated_at', '')}{mode}"
     return hashlib.md5(content.encode()).hexdigest()
 
+def _normalize_faq_entry(item):
+    if isinstance(item, dict):
+        question = str(item.get("question", "")).strip()
+        answer = str(item.get("answer", "")).strip()
+        if question:
+            return {
+                "question": question,
+                "answer": answer or "See product details for more information."
+            }
+        return None
+
+    if isinstance(item, str):
+        text = item.strip()
+        if not text:
+            return None
+
+        if "A:" in text:
+            question_part, answer_part = text.split("A:", 1)
+            question = question_part.replace("Q:", "").strip()
+            answer = answer_part.strip()
+        else:
+            question = text.replace("Q:", "").strip()
+            answer = "See product details for more information."
+
+        if question:
+            return {"question": question, "answer": answer}
+
+    return None
+
+def _faq_signature(question: str) -> str:
+    return re.sub(r"[^a-z0-9]+", " ", question.lower()).strip()
+
 @app.post("/analyze")
 async def analyze_store(request: AnalyzeRequest):
     store_url = request.store_url or os.getenv("SHOPIFY_STORE_URL")
@@ -58,6 +91,10 @@ async def analyze_store(request: AnalyzeRequest):
             pages = await shopify.fetch_pages()
             
             total_products = len(products_raw)
+            if total_products == 0:
+                yield f"data: {json.dumps({'type': 'complete', 'store_score': {}, 'processed': 0, 'audited': 0, 'progress_percent': 100, 'message': 'No products found in store catalog.'})}\n\n"
+                return
+
             yield f"data: {json.dumps({'type': 'progress', 'status': 'scanning', 'total': total_products, 'message': f'Inventory found. Running high-speed diagnostic...', 'progress_percent': 10})}\n\n"
             
             # --- STAGE 1: INSTANT RULE-BASED SCAN ---
@@ -93,7 +130,12 @@ async def analyze_store(request: AnalyzeRequest):
             async def run_super_audit(pa: ProductAnalysis, store_policies: list) -> ProductAnalysis:
                 cache_key = get_cache_key(pa.original_data, "super_deep")
                 if cache_key in ANALYSIS_CACHE:
-                    audit_data = ANALYSIS_CACHE[cache_key]
+                    cached_data = ANALYSIS_CACHE[cache_key]
+                    if isinstance(cached_data, dict) and "audit" in cached_data:
+                        audit_data = cached_data.get("audit", {})
+                        pa.guardrail = cached_data.get("guardrail")
+                    else:
+                        audit_data = cached_data
                     pa.audit_deep = DeepAuditResult(**audit_data)
                     pa.is_audited = True
                     pa.scan_mode = "Deep Audit"
@@ -115,7 +157,11 @@ async def analyze_store(request: AnalyzeRequest):
                             pa.is_audited = True
                             pa.scan_mode = "Deep Audit"
                             pa.guardrail = guardrail
-                            ANALYSIS_CACHE[cache_key] = pa.audit_deep.model_dump()
+                            # Cache audit + guardrail together so cache hits restore full data
+                            ANALYSIS_CACHE[cache_key] = {
+                                "audit": pa.audit_deep.model_dump(),
+                                "guardrail": guardrail
+                            }
                             return pa
                         except Exception as e:
                             print(f"[Super Audit Error] {pa.title}: {str(e)}")
@@ -159,7 +205,7 @@ async def simulate_query(request: QueryRequest):
     from backend.services.query_simulator import QuerySimulator
     from backend.utils.llm_client import LLMClient
     
-    simulator = QuerySimulator(client=LLMClient(api_key=""))
+    simulator = QuerySimulator(client=LLMClient(api_key=os.getenv("GROQ_API_KEY", "")))
     try:
         results = await simulator.simulate(request.query, request.products)
         return results
@@ -209,6 +255,120 @@ async def push_bulk_fixes(request: PushBulkFixesRequest):
         "total_success": success_count,
         "results": results
     }
+
+@app.post("/validate-credentials")
+async def validate_credentials(request: AnalyzeRequest):
+    store_url = request.store_url or os.getenv("SHOPIFY_STORE_URL")
+    access_token = request.access_token or os.getenv("SHOPIFY_ADMIN_TOKEN")
+    
+    if not store_url or not access_token:
+        raise HTTPException(status_code=400, detail="Store URL and Access Token are required.")
+    
+    shopify = ShopifyClient(store_url, access_token)
+    try:
+        # Quick test call to verify permissions and connectivity
+        await shopify.fetch_products()
+        return {"success": True, "message": "Credentials validated successfully.", "sanitized_url": shopify.store_url}
+    except Exception as e:
+        import traceback
+        print(traceback.format_exc())
+        raise HTTPException(status_code=401, detail=f"Failed to connect to Shopify: {str(e)}")
+
+@app.get("/config", response_model=ConfigResponse)
+async def get_config():
+    """Returns default credentials from .env for easy demo setup."""
+    return {
+        "store_url": os.getenv("SHOPIFY_STORE_URL"),
+        "access_token": os.getenv("SHOPIFY_ADMIN_TOKEN")
+    }
+
+@app.post("/preview-faq-page")
+async def preview_faq_page(request: PushFAQRequest):
+    """Generates the HTML content of the AI Discovery Guide for preview."""
+    all_faqs = []
+    for p in request.products:
+        audit = p.get("audit_deep")
+        if audit and audit.get("fixes") and audit["fixes"].get("faq_suggestions"):
+            all_faqs.extend(audit["fixes"]["faq_suggestions"])
+    
+    if not all_faqs:
+        return {"html": "<p>No FAQs generated yet. Audit your products first.</p>", "count": 0}
+
+    html = "<h2>AI Discovery & Shopping Guide</h2>"
+    html += "<p>This guide is optimized for AI agents (like ChatGPT and Llama) to help them represent our products accurately.</p>"
+    
+    seen_q = set()
+    unique_faqs = []
+    for f in all_faqs:
+        normalized = _normalize_faq_entry(f)
+        if not normalized: continue
+        signature = _faq_signature(normalized["question"])
+        if signature and signature not in seen_q:
+            seen_q.add(signature)
+            unique_faqs.append(normalized)
+            if len(unique_faqs) >= 15: break
+            
+    for f in unique_faqs:
+        html += f"<div style='margin-bottom: 20px;'><strong>Q: {f['question']}</strong><br/>A: {f['answer']}</div>"
+        
+    html += "<hr/><p><small>Generated by Kasparro RepOptimizer &mdash; AI Integrity Layer</small></p>"
+    return {"html": html, "count": len(unique_faqs)}
+
+@app.post("/push-faq-page")
+async def push_faq_page(request: PushFAQRequest):
+    store_url = request.store_url or os.getenv("SHOPIFY_STORE_URL")
+    access_token = request.access_token or os.getenv("SHOPIFY_ADMIN_TOKEN")
+    
+    if not store_url or not access_token:
+        raise HTTPException(status_code=400, detail="Store credentials are required.")
+        
+    shopify = ShopifyClient(store_url, access_token)
+    
+    # 1. Consolidate FAQs from all audited products
+    all_faqs = []
+    for p in request.products:
+        audit = p.get("audit_deep")
+        if audit and audit.get("fixes") and audit["fixes"].get("faq_suggestions"):
+            all_faqs.extend(audit["fixes"]["faq_suggestions"])
+    
+    if not all_faqs:
+        raise HTTPException(status_code=400, detail="No AI-generated FAQs found in the analyzed products.")
+
+    # 2. Format HTML content
+    html = "<h2>AI Discovery & Shopping Guide</h2>"
+    html += "<p>This guide is optimized for AI agents (like ChatGPT and Llama) to help them represent our products accurately.</p>"
+    
+    # Use only top 15 unique FAQs to keep page clean
+    seen_q = set()
+    unique_faqs = []
+    for f in all_faqs:
+        normalized = _normalize_faq_entry(f)
+        if not normalized:
+            continue
+
+        signature = _faq_signature(normalized["question"])
+        if signature and signature not in seen_q:
+            seen_q.add(signature)
+            unique_faqs.append(normalized)
+            if len(unique_faqs) >= 15: break
+            
+    for f in unique_faqs:
+        html += f"<div style='margin-bottom: 20px;'><strong>Q: {f['question']}</strong><br/>A: {f['answer']}</div>"
+        
+    html += "<hr/><p><small>Generated by Kasparro RepOptimizer &mdash; AI Integrity Layer</small></p>"
+    
+    # 3. Push to Shopify
+    try:
+        result = await shopify.upsert_page(
+            title="AI Shopping Assistant Guide",
+            content_html=html,
+            handle="ai-shopping-guide"
+        )
+        if not result.get("success"):
+            raise Exception(str(result.get("error")))
+        return {"success": True, "page": result.get("page")}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to create Shopify page: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn

@@ -6,16 +6,41 @@ interface ScoreCardProps {
   reason: string;
 }
 
-export default function ScoreCard({ label, score, reason }: ScoreCardProps) {
+export default function ScoreCard({ label, score, reason, onClick }: ScoreCardProps & { onClick?: () => void }) {
   const isGood = score > 80;
   const isOk   = score > 50;
   const color  = isGood ? 'var(--ok)' : isOk ? 'var(--warn)' : 'var(--danger)';
 
   return (
     <div
-      style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 16, padding: '20px 20px 18px', display: 'flex', flexDirection: 'column', gap: 10, transition: 'border-color 0.2s', cursor: 'default' }}
-      onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--border-strong, var(--border))')}
-      onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border)')}
+      onClick={onClick}
+      style={{ 
+        background: 'var(--bg-card)', 
+        border: '1px solid var(--border)', 
+        borderRadius: 16, 
+        padding: '20px 20px 18px', 
+        display: 'flex', 
+        flexDirection: 'column', 
+        gap: 10, 
+        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)', 
+        cursor: onClick ? 'pointer' : 'default',
+        position: 'relative',
+        overflow: 'hidden'
+      }}
+      onMouseEnter={e => {
+        if (onClick) {
+          e.currentTarget.style.borderColor = color;
+          e.currentTarget.style.transform = 'translateY(-2px)';
+          e.currentTarget.style.boxShadow = `0 8px 24px -12px ${color}`;
+        }
+      }}
+      onMouseLeave={e => {
+        if (onClick) {
+          e.currentTarget.style.borderColor = 'var(--border)';
+          e.currentTarget.style.transform = 'translateY(0)';
+          e.currentTarget.style.boxShadow = 'none';
+        }
+      }}
     >
       <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-secondary)', fontFamily: 'var(--font-head)', lineHeight: 1.3 }}>
         {label}

@@ -9,9 +9,35 @@ export const demoData = {
       "Structured_Data": { score: 35, reason: "Fragmented or missing tags hinder agent categorization across catalog." }
     },
     business_impact: {
-      recoverable_revenue: 825,
+      recoverable_revenue: 12500,
       critical_fixes_needed: 4
-    }
+    },
+    roadmap: [
+      {
+        phase: 1,
+        title: "Trust Foundation",
+        status: "critical",
+        task: "Generate AI Discovery Guide & Policies",
+        impact: "High (Legal & Agent Safety)",
+        action_type: "push_faq"
+      },
+      {
+        phase: 2,
+        title: "Search Visibility",
+        status: "critical",
+        task: "Mega-Sync 4 Product Tags",
+        impact: "Medium (Ranking Volume)",
+        action_type: "mega_sync"
+      },
+      {
+        phase: 3,
+        title: "Conversion Optimization",
+        status: "warning",
+        task: "Semantic Description Deep Audit",
+        impact: "High (Recommendation Confidence)",
+        action_type: "deep_audit"
+      }
+    ]
   },
   products: [
     {

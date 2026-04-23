@@ -27,6 +27,15 @@ class PushBulkFixesRequest(BaseModel):
     store_url: Optional[str] = None
     access_token: Optional[str] = None
 
+class PushFAQRequest(BaseModel):
+    products: List[Dict[str, Any]]
+    store_url: Optional[str] = None
+    access_token: Optional[str] = None
+
+class ConfigResponse(BaseModel):
+    store_url: Optional[str] = None
+    access_token: Optional[str] = None
+
 # Intelligence Models
 class MerchantIntent(BaseModel):
     category: Optional[str] = "General"

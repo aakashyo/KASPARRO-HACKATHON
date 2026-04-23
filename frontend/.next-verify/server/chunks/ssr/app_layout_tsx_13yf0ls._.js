@@ -1,0 +1,3 @@
+module.exports=[33290,a=>{"use strict";var b=a.i(7997);a.s(["default",0,function({children:a}){return(0,b.jsx)("html",{lang:"en",children:(0,b.jsx)("body",{className:"min-h-screen bg-[#0e0e0e] text-[#f5f5f5] antialiased",children:a})})},"metadata",0,{title:"RepOptimizer — AI Perception Intelligence for Shopify",description:"See how AI shopping agents perceive your store. Diagnose intelligence gaps and fix your product data to rank higher in the agentic commerce era."}])},70864,a=>{a.n(a.i(33290))}];
+
+//# sourceMappingURL=app_layout_tsx_13yf0ls._.js.map
