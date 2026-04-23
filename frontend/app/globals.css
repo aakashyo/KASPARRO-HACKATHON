@@ -1,24 +1,25 @@
 @import "tailwindcss";
 
+/* Light Theme (Default) */
 :root {
-  --bg: #09090b;
-  --bg-surface: #111113;
-  --bg-card: #151518;
-  --bg-card-hover: #1a1a1f;
-  --bg-elevated: #1f1f24;
+  --bg: #fafafa;
+  --bg-surface: #f4f4f5;
+  --bg-card: #ffffff;
+  --bg-card-hover: #fafafa;
+  --bg-elevated: #e4e4e7;
 
-  --text: #fafafa;
-  --text-secondary: #a1a1aa;
+  --text: #09090b;
+  --text-secondary: #52525b;
   --text-muted: #71717a;
-  --text-faint: #3f3f46;
+  --text-faint: #d4d4d8;
 
-  --border: #27272a;
-  --border-subtle: #1c1c1f;
+  --border: #e4e4e7;
+  --border-subtle: #f4f4f5;
 
-  --accent: #c8f135;
-  --accent-soft: rgba(200, 241, 53, 0.12);
-  --accent-border: rgba(200, 241, 53, 0.28);
-  --accent-glow: rgba(200, 241, 53, 0.08);
+  --accent: #a3e635; /* Slightly darker lime for light mode contrast */
+  --accent-soft: rgba(163, 230, 53, 0.15);
+  --accent-border: rgba(163, 230, 53, 0.3);
+  --accent-glow: rgba(163, 230, 53, 0.1);
 
   --danger: #ef4444;
   --danger-soft: rgba(239, 68, 68, 0.10);
@@ -40,6 +41,44 @@
   --radius-md: 14px;
   --radius-lg: 20px;
   --radius-xl: 28px;
+}
+
+/* Dark Theme */
+[data-theme="dark"] {
+  --bg: #08080c;
+  --bg-surface: #0e0e14;
+  --bg-card: #0c0c10;
+  --bg-card-hover: #121218;
+  --bg-elevated: #1a1a24;
+
+  --text: #fafafa;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
+  --text-faint: #3f3f46;
+
+  --border: rgba(255,255,255,0.08);
+  --border-subtle: rgba(255,255,255,0.04);
+
+  --accent: #c8f135;
+  --accent-soft: rgba(200, 241, 53, 0.12);
+  --accent-border: rgba(200, 241, 53, 0.28);
+  --accent-glow: rgba(200, 241, 53, 0.08);
+
+  --danger: #ef4444;
+  --danger-soft: rgba(239, 68, 68, 0.10);
+  --danger-border: rgba(239, 68, 68, 0.22);
+
+  --warn: #f59e0b;
+  --warn-soft: rgba(245, 158, 11, 0.10);
+  --warn-border: rgba(245, 158, 11, 0.22);
+
+  --ok: #22c55e;
+  --ok-soft: rgba(34, 197, 94, 0.10);
+  --ok-border: rgba(34, 197, 94, 0.22);
+
+  --info: #38bdf8;
+  --info-soft: rgba(56, 189, 248, 0.10);
+  --info-border: rgba(56, 189, 248, 0.22);
 }
 
 @theme {

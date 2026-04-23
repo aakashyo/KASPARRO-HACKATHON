@@ -65,7 +65,6 @@ export default function QuerySimulator({ products }: { products: any[] }) {
       setResults(parsedPersonas);
     } catch (e) {
       console.error('Simulation Failed:', e);
-      // Fallback
       setResults([{
         key: 'default',
         name: 'Demo Fallback AI',
@@ -78,22 +77,22 @@ export default function QuerySimulator({ products }: { products: any[] }) {
   };
 
   return (
-    <div style={{ background: '#0e0e14', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 18, padding: '28px 32px' }}>
+    <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 18, padding: '28px 32px' }}>
       <div style={{ marginBottom: 20 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-          <p style={{ fontFamily: 'var(--font-head)', fontWeight: 800, fontSize: 16, color: '#f0f0f0' }}>
+          <p style={{ fontFamily: 'var(--font-head)', fontWeight: 800, fontSize: 16, color: 'var(--text)' }}>
             Multi-Persona Query Simulation
           </p>
-          <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 99, background: 'rgba(200,241,53,0.1)', color: '#c8f135', border: '1px solid rgba(200,241,53,0.2)', fontWeight: 700 }}>NEW</span>
+          <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 99, background: 'var(--accent-glow)', color: 'var(--accent)', border: '1px solid var(--accent-border)', fontWeight: 700 }}>NEW</span>
         </div>
-        <p style={{ fontSize: 13, color: 'rgba(240,240,240,0.45)', lineHeight: 1.6, maxWidth: 600 }}>
+        <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6, maxWidth: 600 }}>
           AI shoppers aren't a monolith. Test your store's visibility against three distinct LLM architectures: Budget limits, Technical specs, and Gift/Brand bias.
         </p>
       </div>
 
       <div style={{ marginBottom: 16 }}>
         <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-          <Search size={14} style={{ position: 'absolute', left: 14, color: 'rgba(240,240,240,0.3)', pointerEvents: 'none' }} />
+          <Search size={14} style={{ position: 'absolute', left: 14, color: 'var(--text-muted)', pointerEvents: 'none' }} />
           <input
             type="text"
             placeholder="e.g. cheap resistance bands for home rehab"
@@ -101,15 +100,15 @@ export default function QuerySimulator({ products }: { products: any[] }) {
             onChange={e => setQuery(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && simulate()}
             suppressHydrationWarning
-            style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '11px 120px 11px 40px', fontSize: 13, color: '#f0f0f0', outline: 'none', transition: 'border-color 0.2s', fontFamily: 'var(--font-sans)', boxSizing: 'border-box' }}
-            onFocus={e => (e.target.style.borderColor = 'rgba(200,241,53,0.4)')}
-            onBlur={e => (e.target.style.borderColor = 'rgba(255,255,255,0.1)')}
+            style={{ width: '100%', background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 10, padding: '11px 120px 11px 40px', fontSize: 13, color: 'var(--text)', outline: 'none', transition: 'border-color 0.2s', fontFamily: 'var(--font-sans)', boxSizing: 'border-box' }}
+            onFocus={e => (e.target.style.borderColor = 'var(--accent)')}
+            onBlur={e => (e.target.style.borderColor = 'var(--border)')}
           />
           <button
             onClick={simulate}
             disabled={!query.trim() || loading}
             suppressHydrationWarning
-            style={{ position: 'absolute', right: 6, background: query.trim() && !loading ? '#c8f135' : 'rgba(200,241,53,0.15)', color: query.trim() && !loading ? '#08080c' : 'rgba(200,241,53,0.5)', border: 'none', borderRadius: 8, padding: '7px 14px', fontSize: 12, fontWeight: 700, cursor: query.trim() && !loading ? 'pointer' : 'not-allowed', fontFamily: 'var(--font-head)', display: 'flex', alignItems: 'center', gap: 5, transition: 'all 0.2s' }}
+            style={{ position: 'absolute', right: 6, background: query.trim() && !loading ? 'var(--accent)' : 'var(--bg-elevated)', color: query.trim() && !loading ? '#08080c' : 'var(--text-muted)', border: 'none', borderRadius: 8, padding: '7px 14px', fontSize: 12, fontWeight: 700, cursor: query.trim() && !loading ? 'pointer' : 'not-allowed', fontFamily: 'var(--font-head)', display: 'flex', alignItems: 'center', gap: 5, transition: 'all 0.2s' }}
           >
             {loading ? <Loader2 size={13} style={{ animation: 'spin 1s linear infinite' }} /> : <><span>Simulate 3 AIs</span><ArrowRight size={12} /></>}
           </button>
@@ -118,9 +117,9 @@ export default function QuerySimulator({ products }: { products: any[] }) {
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 10 }}>
           {EXAMPLES.map(q => (
             <button key={q} onClick={() => setQuery(q)}
-              style={{ fontSize: 11, padding: '5px 12px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(240,240,240,0.4)', background: 'transparent', cursor: 'pointer', fontFamily: 'var(--font-head)', transition: 'all 0.15s' }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(200,241,53,0.3)'; e.currentTarget.style.color = '#c8f135'; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = 'rgba(240,240,240,0.4)'; }}
+              style={{ fontSize: 11, padding: '5px 12px', borderRadius: 99, border: '1px solid var(--border)', color: 'var(--text-secondary)', background: 'transparent', cursor: 'pointer', fontFamily: 'var(--font-head)', transition: 'all 0.15s' }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.color = 'var(--text)'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
             >
               {q}
             </button>
@@ -129,12 +128,12 @@ export default function QuerySimulator({ products }: { products: any[] }) {
       </div>
 
       {results && (
-        <div style={{ marginTop: 24, paddingTop: 24, borderTop: '1px solid rgba(255,255,255,0.06)', animation: 'fadeIn 0.3s ease' }}>
+        <div style={{ marginTop: 24, paddingTop: 24, borderTop: '1px solid var(--border)', animation: 'fadeIn 0.3s ease' }}>
           
           <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
             {results.map((res: any, idx: number) => (
               <button key={res.key} onClick={() => setActiveTab(idx)}
-                style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 99, border: '1px solid', borderColor: activeTab === idx ? 'rgba(255,255,255,0.2)' : 'transparent', background: activeTab === idx ? 'rgba(255,255,255,0.06)' : 'transparent', color: activeTab === idx ? '#fff' : 'rgba(240,240,240,0.4)', cursor: 'pointer', fontWeight: 600, fontSize: 12, transition: 'all 0.2s' }}>
+                style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 99, border: '1px solid', borderColor: activeTab === idx ? 'var(--accent-border)' : 'transparent', background: activeTab === idx ? 'var(--accent-glow)' : 'transparent', color: activeTab === idx ? 'var(--text)' : 'var(--text-muted)', cursor: 'pointer', fontWeight: 600, fontSize: 12, transition: 'all 0.2s' }}>
                 {ICONS[res.key] || ICONS['default']}
                 {res.name}
               </button>
@@ -144,21 +143,21 @@ export default function QuerySimulator({ products }: { products: any[] }) {
           <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.2fr) minmax(0, 1fr)', gap: 20 }}>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e' }} />
-                <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#22c55e', fontFamily: 'var(--font-head)' }}>Strong Recommendation</p>
+                <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--ok)' }} />
+                <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ok)', fontFamily: 'var(--font-head)' }}>Strong Recommendation</p>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {results[activeTab].top.length === 0 ? (
-                  <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', padding: '16px', background: 'rgba(255,255,255,0.02)', borderRadius: 12, border: '1px solid rgba(255,255,255,0.04)' }}>This AI found no relevant matches in your catalog.</p>
+                  <p style={{ fontSize: 12, color: 'var(--text-muted)', padding: '16px', background: 'var(--bg-surface)', borderRadius: 12, border: '1px solid var(--border)' }}>This AI found no relevant matches in your catalog.</p>
                 ) : (
                   results[activeTab].top.map((p: any) => (
-                    <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: 12, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
-                      <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(240,240,240,0.3)', width: 20, flexShrink: 0, fontFamily: 'var(--font-mono)' }}>#{p.rank}</span>
+                    <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: 12, background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', width: 20, flexShrink: 0, fontFamily: 'var(--font-mono)' }}>#{p.rank}</span>
                       <div style={{ minWidth: 0, flex: 1 }}>
-                        <p style={{ fontSize: 12, fontWeight: 600, color: '#f0f0f0', fontFamily: 'var(--font-head)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: 2 }}>{p.title}</p>
-                        <p style={{ fontSize: 11, color: 'rgba(240,240,240,0.35)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.match_reason}</p>
+                        <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)', fontFamily: 'var(--font-head)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: 2 }}>{p.title}</p>
+                        <p style={{ fontSize: 11, color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.match_reason}</p>
                       </div>
-                      <span style={{ fontSize: 13, fontWeight: 800, color: '#22c55e', flexShrink: 0, fontFamily: 'var(--font-head)' }}>{p.match_score}%</span>
+                      <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--ok)', flexShrink: 0, fontFamily: 'var(--font-head)' }}>{p.match_score}%</span>
                     </div>
                   ))
                 )}
@@ -167,18 +166,18 @@ export default function QuerySimulator({ products }: { products: any[] }) {
 
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#ef4444' }} />
-                <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#ef4444', fontFamily: 'var(--font-head)' }}>Rejected Products</p>
+                <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--danger)' }} />
+                <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--danger)', fontFamily: 'var(--font-head)' }}>Rejected Products</p>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {results[activeTab].rejected.length === 0 ? (
-                  <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>None</p>
+                  <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>None</p>
                 ) : (
                   results[activeTab].rejected.map((p: any) => (
-                    <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: 12, background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: 12, background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
                       <div style={{ minWidth: 0, flex: 1 }}>
-                        <p style={{ fontSize: 12, fontWeight: 600, color: '#f0f0f0', fontFamily: 'var(--font-head)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: 2 }}>{p.title}</p>
-                        <p style={{ fontSize: 11, color: 'rgba(240,240,240,0.35)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.rejection_reason}</p>
+                        <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)', fontFamily: 'var(--font-head)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: 2 }}>{p.title}</p>
+                        <p style={{ fontSize: 11, color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.rejection_reason}</p>
                       </div>
                     </div>
                   ))
