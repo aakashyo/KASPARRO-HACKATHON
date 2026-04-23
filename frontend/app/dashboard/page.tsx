@@ -103,6 +103,36 @@ export default function Dashboard() {
 
   const productList = useMemo(() => Object.values(products), [products]);
 
+  const handleMegaSync = async () => {
+    if (isDemo) return alert("Mega-Sync is disabled in Demo Mode. Connect your store to push real fixes.");
+    setIsSyncing(true);
+    
+    // Auto-gather all deep audited fixes
+    const fixes = productList
+      .filter(p => p.audit_deep && p.audit_deep.fixes)
+      .map(p => ({
+        product_id: p.id,
+        description: p.audit_deep!.fixes!.improved_description || '',
+        tags: (p.audit_deep!.fixes!.structured_tags || []).map((t: any) => typeof t === 'string' ? t : `${t.name}:${t.value}`)
+      }));
+      
+    if (fixes.length === 0) {
+      alert("No AI fixes available to sync.");
+      setIsSyncing(false);
+      return;
+    }
+
+    try {
+      await pushBulkFixes(fixes);
+      setSyncComplete(true);
+      setTimeout(() => setSyncComplete(false), 5000);
+    } catch (err: any) {
+      alert("Mega-Sync Failed: " + err.message);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   const sorted = useMemo(() => {
     let list = [...productList];
     if (filter === 'critical') list = list.filter(p => (p.scan_quick?.severity || 0) >= 7);
