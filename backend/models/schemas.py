@@ -17,6 +17,16 @@ class PushFixesRequest(BaseModel):
     store_url: Optional[str] = None
     access_token: Optional[str] = None
 
+class BulkFixItem(BaseModel):
+    product_id: str
+    description: str
+    tags: List[str]
+
+class PushBulkFixesRequest(BaseModel):
+    fixes: List[BulkFixItem]
+    store_url: Optional[str] = None
+    access_token: Optional[str] = None
+
 # Intelligence Models
 class MerchantIntent(BaseModel):
     category: Optional[str] = "General"

@@ -12,7 +12,7 @@ from fastapi import FastAPI, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.models.schemas import AnalyzeRequest, StoreScore, ProductAnalysis, QuickScanResult, DeepAuditResult, QueryRequest, PushFixesRequest
+from backend.models.schemas import AnalyzeRequest, StoreScore, ProductAnalysis, QuickScanResult, DeepAuditResult, QueryRequest, PushFixesRequest, PushBulkFixesRequest
 from backend.services.shopify_client import ShopifyClient
 from backend.services.pipeline import AnalysisPipeline
 from backend.services.analyzer import Scorer
@@ -180,6 +180,35 @@ async def push_fixes(request: PushFixesRequest):
         return {"success": True, "product": result}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/push-bulk")
+async def push_bulk_fixes(request: PushBulkFixesRequest):
+    store_url = request.store_url or os.getenv("SHOPIFY_STORE_URL")
+    access_token = request.access_token or os.getenv("SHOPIFY_ADMIN_TOKEN")
+    
+    if not store_url or not access_token:
+        raise HTTPException(status_code=400, detail="Store credentials are required.")
+        
+    shopify = ShopifyClient(store_url, access_token)
+    
+    async def process_single_fix(fix, index):
+        try:
+            res = await shopify.update_product(fix.product_id, fix.description, fix.tags)
+            return {"index": index, "success": True, "id": fix.product_id}
+        except Exception as e:
+            return {"index": index, "success": False, "id": fix.product_id, "error": str(e)}
+
+    # Run mutations concurrently
+    tasks = [process_single_fix(f, i) for i, f in enumerate(request.fixes)]
+    results = await asyncio.gather(*tasks)
+    
+    success_count = sum(1 for r in results if r["success"])
+    return {
+        "success": True, 
+        "total_attempted": len(request.fixes),
+        "total_success": success_count,
+        "results": results
+    }
 
 if __name__ == "__main__":
     import uvicorn

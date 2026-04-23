@@ -2,13 +2,13 @@
 
 import React, { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { analyzeStore, exportReportCSV } from '@/lib/api';
+import { analyzeStore, exportReportCSV, pushBulkFixes } from '@/lib/api';
 import { demoData } from '@/lib/demoData';
 import ProductCard from './components/ProductCard';
 import QuerySimulator from './components/QuerySimulator';
 import StoreHealthCharts from './components/StoreHealthCharts';
 import ScoreCard from './components/ScoreCard';
-import { RefreshCcw, AlertTriangle, Search, Brain, Loader2, Download, Filter } from 'lucide-react';
+import { RefreshCcw, AlertTriangle, Search, Brain, Loader2, Download, Filter, RefreshCw, CheckCircle2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function Dashboard() {
@@ -23,6 +23,8 @@ export default function Dashboard() {
   const [error, setError] = useState<string | null>(null);
   const [timeSaved, setTimeSaved] = useState(0);
   const [filter, setFilter] = useState<'all' | 'critical' | 'warning' | 'optimized'>('all');
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncComplete, setSyncComplete] = useState(false);
 
   const run = async (forceDemo = false) => {
     setProducts({});
@@ -208,17 +210,34 @@ export default function Dashboard() {
                 Based on analyzing {analyzedCount} products, we estimate a direct revenue leakage from {storeScore.business_impact.critical_fixes_needed} critical AI perception gaps. Fixing these structural deficits unlocks immediate recommendation volume in Llama and ChatGPT searches.
               </p>
             </div>
-            <button
-               onClick={() => {
-                 setFilter('critical');
-                 window.scrollTo({ top: 800, behavior: 'smooth' });
-               }}
-               style={{ background: '#09090b', color: '#fafafa', border: 'none', padding: '14px 28px', borderRadius: 10, fontSize: 14, fontWeight: 800, fontFamily: 'var(--font-head)', cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 4px 14px rgba(0,0,0,0.2)' }}
-               onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.3)'; }}
-               onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(0,0,0,0.2)'; }}
-            >
-              Fix Critical Leaks
-            </button>
+            <div style={{ display: 'flex', gap: 12 }}>
+              <button
+                 onClick={() => {
+                   setFilter('critical');
+                   window.scrollTo({ top: 800, behavior: 'smooth' });
+                 }}
+                 style={{ background: 'transparent', color: '#09090b', border: '1px solid rgba(9,9,11,0.2)', padding: '14px 24px', borderRadius: 10, fontSize: 13, fontWeight: 800, fontFamily: 'var(--font-head)', cursor: 'pointer', transition: 'all 0.2s' }}
+                 onMouseEnter={e => { e.currentTarget.style.background = 'rgba(9,9,11,0.05)'; }}
+                 onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+              >
+                View Gaps
+              </button>
+              <button
+                 onClick={handleMegaSync}
+                 disabled={isSyncing || syncComplete}
+                 style={{ background: '#09090b', color: syncComplete ? '#22c55e' : '#fafafa', border: 'none', padding: '14px 28px', borderRadius: 10, fontSize: 14, fontWeight: 800, fontFamily: 'var(--font-head)', cursor: isSyncing ? 'not-allowed' : 'pointer', transition: 'all 0.2s', boxShadow: '0 4px 14px rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', gap: 8 }}
+                 onMouseEnter={e => { if(!isSyncing && !syncComplete) { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.3)'; } }}
+                 onMouseLeave={e => { if(!isSyncing && !syncComplete) { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(0,0,0,0.2)'; } }}
+              >
+                {isSyncing ? (
+                  <><RefreshCw size={16} className="spin" /> Syncing Catalog...</>
+                ) : syncComplete ? (
+                  <><CheckCircle2 size={16} /> Sync Complete</>
+                ) : (
+                  <>Mega-Sync: Auto-Fix All</>
+                )}
+              </button>
+            </div>
           </div>
         )}
 

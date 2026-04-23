@@ -71,6 +71,20 @@ export const pushFixes = async (
   return response.json();
 };
 
+export async function pushBulkFixes(fixes: { product_id: string, description: string, tags: string[] }[]): Promise<any> {
+  const response = await fetch(`${API_BASE_URL}/push-bulk`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ fixes }),
+  });
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({ detail: 'Unknown error' }));
+    throw new Error(err.detail || 'Failed to push bulk fixes');
+  }
+  return response.json();
+}
+
 export const exportReportCSV = (products: any[]) => {
   const headers = ['Product', 'Severity', 'AI Score Before', 'AI Score After', 'Gap Insight', 'Improved Description'];
   const rows = products.map((p: any) => {
