@@ -195,6 +195,33 @@ export default function Dashboard() {
           ))}
         </div>
 
+        {showsScores && storeScore.business_impact && (
+          <div style={{ background: '#c8f135', borderRadius: 16, padding: '28px 36px', marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 24, color: '#09090b' }}>
+            <div>
+              <p style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8, color: 'rgba(9,9,11,0.7)' }}>Est. Recoverable Revenue</p>
+              <h2 style={{ fontSize: 46, fontWeight: 900, fontFamily: 'var(--font-head)', letterSpacing: '-0.04em', lineHeight: 1 }}>
+                ${storeScore.business_impact.recoverable_revenue.toLocaleString()}<span style={{ fontSize: 20, color: 'rgba(9,9,11,0.5)', fontWeight: 700 }}>/mo</span>
+              </h2>
+            </div>
+            <div style={{ flex: 1, minWidth: 280, maxWidth: 500, borderLeft: '2px solid rgba(9,9,11,0.1)', paddingLeft: 24 }}>
+              <p style={{ fontSize: 14, fontWeight: 600, lineHeight: 1.6, color: 'rgba(9,9,11,0.8)' }}>
+                Based on analyzing {analyzedCount} products, we estimate a direct revenue leakage from {storeScore.business_impact.critical_fixes_needed} critical AI perception gaps. Fixing these structural deficits unlocks immediate recommendation volume in Llama and ChatGPT searches.
+              </p>
+            </div>
+            <button
+               onClick={() => {
+                 setFilter('critical');
+                 window.scrollTo({ top: 800, behavior: 'smooth' });
+               }}
+               style={{ background: '#09090b', color: '#fafafa', border: 'none', padding: '14px 28px', borderRadius: 10, fontSize: 14, fontWeight: 800, fontFamily: 'var(--font-head)', cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 4px 14px rgba(0,0,0,0.2)' }}
+               onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.3)'; }}
+               onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(0,0,0,0.2)'; }}
+            >
+              Fix Critical Leaks
+            </button>
+          </div>
+        )}
+
         {showsScores && storeScore.dimension_scores && (
           <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16, marginBottom: 24 }}>
             <div style={{ background: '#0e0e14', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 20, padding: '24px' }}>

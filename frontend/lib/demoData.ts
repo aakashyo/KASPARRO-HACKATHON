@@ -7,6 +7,10 @@ export const demoData = {
       "FAQ_Coverage":    { score: 38, reason: "Missing explicit FAQs, forcing AI to guess on edge cases." },
       "Trust_Signals":   { score: 72, reason: "Multiple trust markers (Refund, TOS) are clearly accessible." },
       "Structured_Data": { score: 35, reason: "Fragmented or missing tags hinder agent categorization across catalog." }
+    },
+    business_impact: {
+      recoverable_revenue: 825,
+      critical_fixes_needed: 4
     }
   },
   products: [

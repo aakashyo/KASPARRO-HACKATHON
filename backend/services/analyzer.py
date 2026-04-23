@@ -38,8 +38,20 @@ class Scorer:
 
         overall = int((prod_quality + policy_score + faq_score + trust_score + struct_score) / 5)
         
+        # Calculate Algorithmic Revenue Recovery Impact
+        critical_count = sum(1 for p in products_data if p.get("scan_quick", {}).get("severity", 0) >= 7)
+        warning_count = sum(1 for p in products_data if 4 <= p.get("scan_quick", {}).get("severity", 0) < 7)
+        
+        # Base assumption: An AI-ready store gains ~5% organic conversion bump per critical fix. 
+        # We assign generic conservative dollar values per product fixed for hackathon demo purposes.
+        est_recovery = (critical_count * 185) + (warning_count * 45)
+
         return {
             "overall_score": overall,
+            "business_impact": {
+                "recoverable_revenue": est_recovery,
+                "critical_fixes_needed": critical_count
+            },
             "dimension_scores": {
                 "Product_Quality": {"score": prod_quality, "reason": prod_reason},
                 "Policy_Clarity": {"score": policy_score, "reason": policy_reason},
