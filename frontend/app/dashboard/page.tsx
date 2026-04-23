@@ -198,8 +198,8 @@ export default function Dashboard() {
 
       <main style={{ maxWidth: 1200, margin: '0 auto', padding: '32px 20px' }}>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 24 }}>
-          <div style={{ background: 'linear-gradient(135deg, #0e0e14 0%, #08080c 100%)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 20, padding: '28px', position: 'relative', overflow: 'hidden', gridColumn: 'span 2' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, marginBottom: 24 }}>
+          <div style={{ flex: '2 1 320px', background: 'linear-gradient(135deg, #0e0e14 0%, #08080c 100%)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 24, padding: '28px', position: 'relative', overflow: 'hidden' }}>
             <div style={{ position: 'absolute', top: -80, right: -80, width: 240, height: 240, borderRadius: '50%', background: 'radial-gradient(circle, rgba(200,241,53,0.06) 0%, transparent 70%)', pointerEvents: 'none' }} />
             <p style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.25)', marginBottom: 12 }}>AI Readiness Score</p>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 6 }}>
@@ -218,8 +218,8 @@ export default function Dashboard() {
             { label: 'Critical', value: stats.critical, sub: 'Urgent Gaps', color: '#ef4444' },
             { label: 'Audited', value: auditedCount, sub: 'AI Analyzed', color: '#c8f135' },
             { label: 'Time Saved', value: `${Math.floor(timeSaved)}s`, sub: 'Rule-Based Engine', color: '#a78bfa' },
-          ].map(stat => (
-            <div key={stat.label} style={{ background: '#0e0e14', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 20, padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          ].map((stat, i) => (
+            <div key={stat.label} style={{ flex: '1 1 140px', background: '#0e0e14', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 24, padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
               <p style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.2)', marginBottom: 10 }}>{stat.label}</p>
               <p style={{ fontSize: 36, fontWeight: 900, fontFamily: 'var(--font-head)', color: stat.color, marginBottom: 4 }}>{stat.value}</p>
               <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', fontWeight: 600 }}>{stat.sub}</p>
@@ -228,26 +228,26 @@ export default function Dashboard() {
         </div>
 
         {showsScores && storeScore.business_impact && (
-          <div style={{ background: '#c8f135', borderRadius: 16, padding: '28px 36px', marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 24, color: '#09090b' }}>
+          <div style={{ background: '#0c0c10', backgroundImage: 'linear-gradient(to right, rgba(200,241,53,0.04), transparent)', border: '1px solid rgba(200,241,53,0.15)', borderRadius: 24, padding: '32px 40px', marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 32, boxShadow: '0 12px 40px rgba(0,0,0,0.5)' }}>
             <div>
-              <p style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8, color: 'rgba(9,9,11,0.7)' }}>Est. Recoverable Revenue</p>
-              <h2 style={{ fontSize: 46, fontWeight: 900, fontFamily: 'var(--font-head)', letterSpacing: '-0.04em', lineHeight: 1 }}>
-                ${storeScore.business_impact.recoverable_revenue.toLocaleString()}<span style={{ fontSize: 20, color: 'rgba(9,9,11,0.5)', fontWeight: 700 }}>/mo</span>
+              <p style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 10, color: '#a1a1aa' }}>Est. Recoverable Revenue</p>
+              <h2 style={{ fontSize: 48, fontWeight: 900, fontFamily: 'var(--font-head)', letterSpacing: '-0.04em', lineHeight: 1, color: '#fafafa' }}>
+                <span style={{ color: '#c8f135' }}>$</span>{storeScore.business_impact.recoverable_revenue.toLocaleString()}<span style={{ fontSize: 20, color: '#52525b', fontWeight: 700 }}>/mo</span>
               </h2>
             </div>
-            <div style={{ flex: 1, minWidth: 280, maxWidth: 500, borderLeft: '2px solid rgba(9,9,11,0.1)', paddingLeft: 24 }}>
-              <p style={{ fontSize: 14, fontWeight: 600, lineHeight: 1.6, color: 'rgba(9,9,11,0.8)' }}>
-                Based on analyzing {analyzedCount} products, we estimate a direct revenue leakage from {storeScore.business_impact.critical_fixes_needed} critical AI perception gaps. Fixing these structural deficits unlocks immediate recommendation volume in Llama and ChatGPT searches.
+            <div style={{ flex: 1, minWidth: 280, maxWidth: 500, borderLeft: '1px solid rgba(255,255,255,0.06)', paddingLeft: 32 }}>
+              <p style={{ fontSize: 14, fontWeight: 500, lineHeight: 1.6, color: '#a1a1aa' }}>
+                Based on analyzing {analyzedCount} products, we estimate a direct revenue leakage from <strong style={{ color: '#ef4444' }}>{storeScore.business_impact.critical_fixes_needed} critical AI perception gaps</strong>. Fixing these structural deficits unlocks immediate recommendation volume in Llama and ChatGPT searches.
               </p>
             </div>
-            <div style={{ display: 'flex', gap: 12 }}>
+            <div style={{ display: 'flex', gap: 14 }}>
               <button
                  onClick={() => {
                    setFilter('critical');
                    window.scrollTo({ top: 800, behavior: 'smooth' });
                  }}
-                 style={{ background: 'transparent', color: '#09090b', border: '1px solid rgba(9,9,11,0.2)', padding: '14px 24px', borderRadius: 10, fontSize: 13, fontWeight: 800, fontFamily: 'var(--font-head)', cursor: 'pointer', transition: 'all 0.2s' }}
-                 onMouseEnter={e => { e.currentTarget.style.background = 'rgba(9,9,11,0.05)'; }}
+                 style={{ background: 'transparent', color: '#fafafa', border: '1px solid rgba(255,255,255,0.1)', padding: '14px 24px', borderRadius: 12, fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-head)', cursor: 'pointer', transition: 'all 0.2s' }}
+                 onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
               >
                 View Gaps
@@ -255,14 +255,14 @@ export default function Dashboard() {
               <button
                  onClick={handleMegaSync}
                  disabled={isSyncing || syncComplete}
-                 style={{ background: '#09090b', color: syncComplete ? '#22c55e' : '#fafafa', border: 'none', padding: '14px 28px', borderRadius: 10, fontSize: 14, fontWeight: 800, fontFamily: 'var(--font-head)', cursor: isSyncing ? 'not-allowed' : 'pointer', transition: 'all 0.2s', boxShadow: '0 4px 14px rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', gap: 8 }}
-                 onMouseEnter={e => { if(!isSyncing && !syncComplete) { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.3)'; } }}
-                 onMouseLeave={e => { if(!isSyncing && !syncComplete) { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(0,0,0,0.2)'; } }}
+                 style={{ background: syncComplete ? '#166534' : '#c8f135', color: syncComplete ? '#4ade80' : '#09090b', border: 'none', padding: '14px 28px', borderRadius: 12, fontSize: 14, fontWeight: 800, fontFamily: 'var(--font-head)', cursor: isSyncing ? 'not-allowed' : 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 8 }}
+                 onMouseEnter={e => { if(!isSyncing && !syncComplete) { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(200,241,53,0.2)'; } }}
+                 onMouseLeave={e => { if(!isSyncing && !syncComplete) { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; } }}
               >
                 {isSyncing ? (
-                  <><RefreshCw size={16} className="spin" /> Syncing Catalog...</>
+                  <><RefreshCw size={18} color="#09090b" className="spin" /> Syncing Catalog...</>
                 ) : syncComplete ? (
-                  <><CheckCircle2 size={16} /> Sync Complete</>
+                  <><CheckCircle2 size={18} /> Sync Complete</>
                 ) : (
                   <>Mega-Sync: Auto-Fix All</>
                 )}
