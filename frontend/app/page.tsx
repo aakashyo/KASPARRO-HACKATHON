@@ -89,7 +89,7 @@ export default function LandingPage() {
 
       <div ref={heroRef} style={{ paddingTop: 120, paddingBottom: 80, maxWidth: 1100, margin: '0 auto', padding: '120px 32px 80px', position: 'relative', background: 'radial-gradient(900px circle at var(--mx, 50%) var(--my, 40%), rgba(200,241,53,0.04), transparent 60%)' }}>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 14px', borderRadius: 999, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.03)', marginBottom: 28, display: 'inline-flex' }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '5px 14px', borderRadius: 999, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.03)', marginBottom: 28 }}>
           <Sparkles size={12} fill="#c8f135" color="#c8f135" />
           <span style={{ fontSize: 12, fontWeight: 600, color: '#e4e4e7' }}>Kasparro Hackathon 2026 &mdash; Track 5</span>
         </div>

@@ -97,6 +97,7 @@ export default function ProductCard({ product, highlighted = false, isDemo = fal
           </div>
         </div>
       </div>
+    </div>
 
       {/* Expanded Content */}
       <AnimatePresence>
@@ -219,9 +220,7 @@ export default function ProductCard({ product, highlighted = false, isDemo = fal
         )}
       </AnimatePresence>
 
-      <style>{`
-        .animate-spin { animation: spin 1s linear infinite; }
-      `}</style>
+      <style dangerouslySetInnerHTML={{ __html: ".animate-spin { animation: spin 1s linear infinite; }" }} />
     </motion.div>
   );
 }

@@ -2,9 +2,11 @@ import React from 'react';
 
 interface GapViewProps {
   gaps: any;
+  severity?: number;
+  isAudited?: boolean;
 }
 
-export default function GapView({ gaps }: GapViewProps) {
+export default function GapView({ gaps, severity, isAudited }: GapViewProps) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       {gaps.missing_attributes?.length > 0 && (
