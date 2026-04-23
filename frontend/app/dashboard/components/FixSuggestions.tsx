@@ -114,12 +114,27 @@ export default function FixSuggestions({ fixes, productId, isDemo }: FixSuggesti
 
       <div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-          <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#c8f135', fontFamily: 'var(--font-head)' }}>GraphQL Mutation Payload</p>
-          <CopyBtn text={rawMutation} />
+          <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#c8f135', fontFamily: 'var(--font-head)' }}>Shopify Storefront Preview</p>
+          <span style={{ fontSize: 10, color: 'rgba(240,240,240,0.3)', fontWeight: 600 }}>Simulated Next.js App Route</span>
         </div>
-        <pre style={{ margin: 0, padding: '12px', borderRadius: 10, background: '#08080c', border: '1px solid rgba(200,241,53,0.15)', color: 'rgba(240,240,240,0.6)', fontSize: 11, fontFamily: 'var(--font-mono)', overflowX: 'auto', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
-          {rawMutation}
-        </pre>
+        
+        <div style={{ background: '#fafafa', borderRadius: 12, border: '1px solid rgba(255,255,255,0.1)', padding: '20px', color: '#18181b', fontFamily: 'var(--font-sans)', boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.05)' }}>
+           <div style={{ display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' }}>
+             <span style={{ fontSize: 10, padding: '4px 8px', background: '#e4e4e7', borderRadius: 6, color: '#52525b', fontWeight: 600 }}>AI Optimized</span>
+             {tags.map((tag: any, i: number) => {
+                const label = typeof tag === 'object' ? `${tag.name}: ${tag.value}` : tag;
+                return <span key={i} style={{ fontSize: 10, padding: '4px 8px', background: '#f4f4f5', borderRadius: 6, color: '#52525b', border: '1px solid #e4e4e7' }}>{label}</span>;
+             })}
+             {keywords.map((kw: string, i: number) => (
+                <span key={'kw'+i} style={{ fontSize: 10, padding: '4px 8px', background: '#ecfdf5', color: '#059669', borderRadius: 6, border: '1px solid #a7f3d0' }}>{kw}</span>
+             ))}
+           </div>
+           
+           <h4 style={{ fontSize: 16, fontWeight: 700, marginBottom: 8, color: '#09090b', letterSpacing: '-0.02em', fontFamily: 'var(--font-head)' }}>Description</h4>
+           <div style={{ fontSize: 13, lineHeight: 1.6, color: '#3f3f46', background: '#fff', padding: '16px', borderRadius: 8, border: '1px solid #e4e4e7', whiteSpace: 'pre-wrap' }}>
+             {desc}
+           </div>
+        </div>
       </div>
 
       {pushStatus === 'success' && (

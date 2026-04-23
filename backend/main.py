@@ -87,8 +87,8 @@ async def analyze_store(request: AnalyzeRequest):
             # 2. Process Full Catalog Super Audit
             to_audit = all_analyzed
             
-            # Strict Concurrency to stay under rate limits
-            semaphore = asyncio.Semaphore(1)
+            # Strict Concurrency to stay under rate limits (bumped to 3 for hackathon performance)
+            semaphore = asyncio.Semaphore(3)
 
             async def run_super_audit(pa: ProductAnalysis, store_policies: list) -> ProductAnalysis:
                 cache_key = get_cache_key(pa.original_data, "super_deep")
