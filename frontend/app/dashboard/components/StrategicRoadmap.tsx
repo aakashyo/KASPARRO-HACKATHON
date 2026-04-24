@@ -37,6 +37,13 @@ export default function StrategicRoadmap({ roadmap, products, onMegaSync }: { ro
   };
 
   const handleAction = async (type: string) => {
+    if (products.length > 0 && products[0].id.startsWith('demo-')) {
+      alert("Demo Mode: This action is simulated. Connect your live store to publish to Shopify.");
+      if (type === 'push_faq') setCompletedActions(prev => [...prev, 'push_faq']);
+      if (type === 'mega_sync') setCompletedActions(prev => [...prev, 'mega_sync']);
+      return;
+    }
+
     if (type === 'push_faq') {
       setLoadingAction('preview_faq');
       try {

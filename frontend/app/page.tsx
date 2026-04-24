@@ -133,16 +133,17 @@ export default function LandingPage() {
     setError(null);
 
     try {
-      const result = await validateCredentials(storeUrl, token);
-      const finalUrl = result.sanitized_url || storeUrl;
+      const result = await validateCredentials(storeUrl.trim(), token.trim());
+      const finalUrl = result.sanitized_url || storeUrl.trim();
 
-      localStorage.setItem('shopify_url', finalUrl);
-      localStorage.setItem('shopify_token', token);
+      // Clear demo artifacts and set live credentials
       localStorage.removeItem('demo_mode');
+      localStorage.setItem('shopify_url', finalUrl);
+      localStorage.setItem('shopify_token', token.trim());
 
       router.push('/dashboard');
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Connection failed. Please check your credentials.';
+    } catch (err: any) {
+      const message = err.message || 'Connection failed. Please check your credentials.';
       setError(message);
       setLoading(false);
     }

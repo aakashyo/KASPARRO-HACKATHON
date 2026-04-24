@@ -16,6 +16,7 @@ import {
   RefreshCw,
   Search,
   Sun,
+  LogOut,
 } from 'lucide-react';
 import { analyzeStore, exportReportCSV, pushBulkFixes } from '@/lib/api';
 import { demoData } from '@/lib/demoData';
@@ -64,6 +65,13 @@ export default function Dashboard() {
     applyTheme(theme === 'dark' ? 'light' : 'dark');
   };
 
+  const handleDisconnect = () => {
+    localStorage.removeItem('shopify_url');
+    localStorage.removeItem('shopify_token');
+    localStorage.removeItem('demo_mode');
+    router.push('/');
+  };
+
   const run = async (forceDemo = false) => {
     setProducts({});
     setStoreScore(null);
@@ -110,9 +118,18 @@ export default function Dashboard() {
     const url = localStorage.getItem('shopify_url') || '';
     const token = localStorage.getItem('shopify_token') || '';
 
-    try {
-      setStatus('initializing');
+    if (!url || !token) {
+        router.push('/');
+        return;
+    }
 
+    startLiveAudit(url, token);
+  };
+
+  const startLiveAudit = async (url: string, token: string) => {
+    setStatus('initializing');
+
+    try {
       await analyzeStore(url, token, (update: any) => {
         const {
           type,
@@ -330,8 +347,11 @@ export default function Dashboard() {
             <button type="button" className="icon-button" onClick={toggleTheme}>
               {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
             </button>
-            <button type="button" className="icon-button" onClick={() => run()}>
+            <button type="button" className="icon-button" onClick={() => run()} title="Refresh Audit">
               <RefreshCcw size={17} />
+            </button>
+            <button type="button" className="icon-button" onClick={handleDisconnect} title="Disconnect Store">
+              <LogOut size={17} />
             </button>
           </div>
         </nav>
@@ -642,7 +662,7 @@ export default function Dashboard() {
                   show: { opacity: 1, y: 0 },
                 }}
               >
-                <ProductCard product={product} highlighted={product.scan_quick.severity >= 7} isDemo={isDemo} />
+                <ProductCard product={product} highlighted={(product.scan_quick?.severity || 0) >= 7} isDemo={isDemo} />
               </motion.div>
             ))}
           </motion.div>
