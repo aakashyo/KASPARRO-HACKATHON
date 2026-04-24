@@ -4,35 +4,61 @@
 import React, { useState } from 'react';
 import { Compass, CheckCircle2, AlertCircle, Clock, Zap, ShieldCheck, TrendingUp, Loader2 } from 'lucide-react';
 import { pushFAQPage, previewFAQPage } from '@/lib/api';
-import PreviewModal from './PreviewModal';
 
-export default function StrategicRoadmap({ roadmap, products, onMegaSync }: { roadmap: any[], products: any[], onMegaSync: () => Promise<void> }) {
+export default function StrategicRoadmap({ 
+  roadmap, 
+  products, 
+  onMegaSync,
+  onShowPreview,
+  onLoading
+}: { 
+  roadmap: any[], 
+  products: any[], 
+  onMegaSync: () => Promise<void>,
+  onShowPreview: (preview: any) => void,
+  onLoading: (loading: boolean) => void
+}) {
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
   const [completedActions, setCompletedActions] = useState<string[]>([]);
-  const [preview, setPreview] = useState<{ isOpen: boolean; title: string; description: string; contentType: 'faq' | 'bulk_fixes'; content: any } | null>(null);
 
   const confirmPushFAQ = async () => {
     setLoadingAction('push_faq');
+    onLoading(true);
     try {
       await pushFAQPage(products);
       setCompletedActions(prev => [...prev, 'push_faq']);
       alert("Success! Your AI Discovery Guide has been published to Shopify.");
-      setPreview(null);
+      onShowPreview(null);
     } catch (err: any) {
       alert("Failed to build FAQ Guide: " + err.message);
     } finally {
       setLoadingAction(null);
+      onLoading(false);
     }
   };
 
   const confirmMegaSync = async () => {
     setLoadingAction('mega_sync');
+    onLoading(true);
     try {
       await onMegaSync();
       setCompletedActions(prev => prev.includes('mega_sync') ? prev : [...prev, 'mega_sync']);
-      setPreview(null);
+      onShowPreview(null);
     } finally {
       setLoadingAction(null);
+      onLoading(false);
+    }
+  };
+
+  const confirmDeepAudit = async () => {
+    setLoadingAction('deep_audit');
+    onLoading(true);
+    try {
+      // For demo/hackathon, we'll simulate a re-audit by refreshing
+      window.location.reload();
+    } finally {
+      setLoadingAction(null);
+      onLoading(false);
     }
   };
 
@@ -41,6 +67,7 @@ export default function StrategicRoadmap({ roadmap, products, onMegaSync }: { ro
       alert("Demo Mode: This action is simulated. Connect your live store to publish to Shopify.");
       if (type === 'push_faq') setCompletedActions(prev => [...prev, 'push_faq']);
       if (type === 'mega_sync') setCompletedActions(prev => [...prev, 'mega_sync']);
+      if (type === 'deep_audit') setCompletedActions(prev => [...prev, 'deep_audit']);
       return;
     }
 
@@ -48,12 +75,13 @@ export default function StrategicRoadmap({ roadmap, products, onMegaSync }: { ro
       setLoadingAction('preview_faq');
       try {
         const { html } = await previewFAQPage(products);
-        setPreview({
+        onShowPreview({
           isOpen: true,
           title: 'Review AI Discovery Guide',
           description: 'This page will be published as "AI Shopping Assistant Guide" in your Shopify pages.',
           contentType: 'faq',
-          content: html
+          content: html,
+          onConfirm: confirmPushFAQ
         });
       } catch (err: any) {
         alert("Failed to generate preview: " + err.message);
@@ -69,7 +97,7 @@ export default function StrategicRoadmap({ roadmap, products, onMegaSync }: { ro
         return;
       }
 
-      setPreview({
+      onShowPreview({
         isOpen: true,
         title: 'Review Mega-Sync Fixes',
         description: `You are about to push AI-optimized descriptions and tags to ${safeFixes.length} products.`,
@@ -78,10 +106,25 @@ export default function StrategicRoadmap({ roadmap, products, onMegaSync }: { ro
           title: p.title,
           description: p.audit_deep!.fixes!.improved_description,
           tags: (p.audit_deep!.fixes!.structured_tags || []).map((t: any) => typeof t === 'string' ? t : `${t.name}:${t.value}`)
-        }))
+        })),
+        onConfirm: confirmMegaSync
       });
     } else if (type === 'deep_audit') {
-      alert("Pro Tip: Start with Phase 1 and 2 to build the foundation before deep auditing all descriptions.");
+      const pendingAudit = products.filter(p => !p.is_audited);
+      const listToShow = pendingAudit.length > 0 ? pendingAudit : products.slice(0, 5);
+
+      onShowPreview({
+        isOpen: true,
+        title: 'Queue Semantic Deep Audit',
+        description: `This will trigger a deep AI analysis of ${pendingAudit.length || products.length} products to identify conversion gaps.`,
+        contentType: 'audit_queue',
+        content: listToShow.map(p => ({
+          title: p.title,
+          handle: p.handle,
+          image: p.original_data?.image?.src || p.original_data?.image
+        })),
+        onConfirm: confirmDeepAudit
+      });
     }
   };
 
@@ -149,18 +192,6 @@ export default function StrategicRoadmap({ roadmap, products, onMegaSync }: { ro
         ))}
       </div>
       
-      {preview && (
-        <PreviewModal 
-          isOpen={preview.isOpen}
-          onClose={() => setPreview(null)}
-          onConfirm={preview.contentType === 'faq' ? confirmPushFAQ : confirmMegaSync}
-          title={preview.title}
-          description={preview.description}
-          contentType={preview.contentType}
-          content={preview.content}
-          loading={loadingAction !== null}
-        />
-      )}
     </div>
   );
 }

@@ -26,6 +26,7 @@ import StoreHealthCharts from './components/StoreHealthCharts';
 import ScoreCard from './components/ScoreCard';
 import StrategicRoadmap from './components/StrategicRoadmap';
 import DimensionDetailModal from './components/DimensionDetailModal';
+import PreviewModal from './components/PreviewModal';
 
 type DashboardStatus = 'idle' | 'initializing' | 'scanning' | 'auditing' | 'complete' | 'error';
 type FilterKey = 'all' | 'critical' | 'warning' | 'optimized';
@@ -54,6 +55,17 @@ export default function Dashboard() {
   const [syncComplete, setSyncComplete] = useState(false);
   const [theme, setTheme] = useState<ThemeKey>('dark');
   const [selectedDimension, setSelectedDimension] = useState<any>(null);
+  
+  // Modal State for Roadmap actions
+  const [preview, setPreview] = useState<{
+    isOpen: boolean;
+    title: string;
+    description: string;
+    contentType: 'faq' | 'bulk_fixes' | 'single_fix';
+    content: any;
+    onConfirm: () => void;
+  } | null>(null);
+  const [modalLoading, setModalLoading] = useState(false);
 
   const applyTheme = (nextTheme: ThemeKey) => {
     setTheme(nextTheme);
@@ -582,7 +594,13 @@ export default function Dashboard() {
           )}
 
           {showsScores && storeScore.roadmap && (
-            <StrategicRoadmap roadmap={storeScore.roadmap} products={productList} onMegaSync={handleMegaSync} />
+            <StrategicRoadmap 
+              roadmap={storeScore.roadmap} 
+              products={productList} 
+              onMegaSync={handleMegaSync} 
+              onShowPreview={setPreview}
+              onLoading={setModalLoading}
+            />
           )}
 
           <section className="panel section-bar">
@@ -709,6 +727,19 @@ export default function Dashboard() {
           score={selectedDimension.score}
           reason={selectedDimension.reason}
           products={productList}
+        />
+      )}
+
+      {preview && (
+        <PreviewModal
+          isOpen={preview.isOpen}
+          onClose={() => setPreview(null)}
+          onConfirm={preview.onConfirm}
+          title={preview.title}
+          description={preview.description}
+          contentType={preview.contentType}
+          content={preview.content}
+          loading={modalLoading}
         />
       )}
     </div>
