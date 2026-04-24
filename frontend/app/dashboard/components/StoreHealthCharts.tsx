@@ -3,7 +3,8 @@
 import React, { useMemo } from 'react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
-  PieChart, Pie
+  PieChart, Pie,
+  RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar
 } from 'recharts';
 
 interface StoreHealthChartsProps {
@@ -68,6 +69,33 @@ export default function StoreHealthCharts({ type, data }: StoreHealthChartsProps
           </Pie>
           <Tooltip content={<DarkTooltip />} />
         </PieChart>
+      </ResponsiveContainer>
+    );
+  }
+  
+  if (type === 'radar') {
+    const chartData = useMemo(() =>
+      Object.entries(data).map(([key, details]: [string, any]) => ({
+        subject: key.replace(/_/g, ' '),
+        A: details.score,
+        fullMark: 100,
+      })), [data]);
+
+    return (
+      <ResponsiveContainer width="100%" height="100%">
+        <RadarChart cx="50%" cy="50%" outerRadius="80%" data={chartData}>
+          <PolarGrid stroke="#27272a" />
+          <PolarAngleAxis dataKey="subject" tick={{ fill: '#71717a', fontSize: 10, fontWeight: 600 }} />
+          <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
+          <Tooltip content={<DarkTooltip />} />
+          <Radar
+            name="AI Perception"
+            dataKey="A"
+            stroke="var(--accent)"
+            fill="var(--accent)"
+            fillOpacity={0.3}
+          />
+        </RadarChart>
       </ResponsiveContainer>
     );
   }

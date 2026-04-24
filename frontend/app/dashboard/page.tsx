@@ -300,8 +300,8 @@ export default function Dashboard() {
           <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16, marginBottom: 24 }}>
             <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 24, padding: '24px' }}>
               <p style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-muted)', marginBottom: 20 }}>Dimension Scores</p>
-              <div style={{ height: 180, marginBottom: 24 }}>
-                <StoreHealthCharts type="bar" data={storeScore.dimension_scores} />
+              <div style={{ height: 260, marginBottom: 24 }}>
+                <StoreHealthCharts type="radar" data={storeScore.dimension_scores} />
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 12 }}>
                 {Object.entries(storeScore.dimension_scores).map(([key, val]: any) => (

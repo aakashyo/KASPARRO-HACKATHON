@@ -212,7 +212,7 @@ export default function ProductCard({ product, highlighted = false, isDemo = fal
                    </div>
                  )}
 
-                 {tab === 'fixes' && <FixSuggestions fixes={audit?.fixes} productId={product.id} isDemo={isDemo} />}
+                 {tab === 'fixes' && <FixSuggestions fixes={audit?.fixes} productId={product.id} isDemo={isDemo} guardrail={product.guardrail} />}
               </div>
             </>
           )}

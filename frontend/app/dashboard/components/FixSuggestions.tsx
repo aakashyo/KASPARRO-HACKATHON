@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Copy, Check, ArrowUpRight, Loader2 } from 'lucide-react';
+import { Copy, Check, ArrowUpRight, Loader2, ShieldCheck } from 'lucide-react';
 import { pushFixes } from '@/lib/api';
 import PreviewModal from './PreviewModal';
 
@@ -21,7 +21,7 @@ function CopyBtn({ text }: { text: string }) {
   );
 }
 
-export default function FixSuggestions({ fixes, productId, isDemo }: FixSuggestionsProps) {
+export default function FixSuggestions({ fixes, productId, isDemo, guardrail }: { fixes: any, productId?: string, isDemo?: boolean, guardrail?: any }) {
   const desc     = fixes?.improved_description || 'No changes needed.';
   const tags     = fixes?.structured_tags || [];
   const keywords = fixes?.added_keywords || [];
@@ -62,6 +62,31 @@ export default function FixSuggestions({ fixes, productId, isDemo }: FixSuggesti
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+      {guardrail && (
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: 10, 
+          padding: '10px 14px', 
+          borderRadius: 12, 
+          background: guardrail.is_safe ? 'rgba(34, 197, 94, 0.08)' : 'rgba(239, 68, 68, 0.08)',
+          border: `1px solid ${guardrail.is_safe ? 'rgba(34, 197, 94, 0.2)' : 'rgba(239, 68, 68, 0.2)'}`,
+          marginBottom: 4
+        }}>
+          <div style={{ padding: 6, borderRadius: 8, background: guardrail.is_safe ? '#22c55e' : '#ef4444', color: '#fff' }}>
+            <ShieldCheck size={14} />
+          </div>
+          <div>
+            <p style={{ fontSize: 11, fontWeight: 800, color: guardrail.is_safe ? '#22c55e' : '#ef4444', textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>
+              AI Policy Guardrail: {guardrail.is_safe ? 'SECURE' : 'ACTION REQUIRED'}
+            </p>
+            <p style={{ fontSize: 10, color: 'var(--text-muted)', margin: '2px 0 0 0' }}>
+              {guardrail.reason || 'Verified against store refund and shipping policies.'}
+            </p>
+          </div>
+        </div>
+      )}
 
       <div style={{ borderRadius: 12, overflow: 'hidden', border: '1px solid var(--border)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: 'var(--ok-soft)', borderBottom: '1px solid var(--ok-border)' }}>

@@ -24,6 +24,7 @@ export default function QuerySimulator({ products }: { products: any[] }) {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<any[] | null>(null);
   const [activeTab, setActiveTab] = useState<number>(0);
+  const [benchmarkMode, setBenchmarkMode] = useState(false);
 
   const simulate = async () => {
     if (!query.trim()) return;
@@ -85,9 +86,23 @@ export default function QuerySimulator({ products }: { products: any[] }) {
           </p>
           <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 99, background: 'var(--accent-glow)', color: 'var(--accent)', border: '1px solid var(--accent-border)', fontWeight: 700 }}>NEW</span>
         </div>
-        <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6, maxWidth: 600 }}>
-          AI shoppers aren't a monolith. Test your store's visibility against three distinct LLM architectures: Budget limits, Technical specs, and Gift/Brand bias.
-        </p>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+          <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6, maxWidth: 600 }}>
+            AI shoppers aren't a monolith. Test your store's visibility against three distinct LLM architectures: Budget limits, Technical specs, and Gift/Brand bias.
+          </p>
+          <button 
+            onClick={() => setBenchmarkMode(!benchmarkMode)}
+            style={{ 
+              display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderRadius: 99, 
+              background: benchmarkMode ? 'var(--accent-glow)' : 'var(--bg-surface)', 
+              border: `1px solid ${benchmarkMode ? 'var(--accent-border)' : 'var(--border)'}`,
+              color: benchmarkMode ? 'var(--accent)' : 'var(--text-muted)',
+              fontSize: 11, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s', fontFamily: 'var(--font-head)'
+            }}
+          >
+            <Bot size={13} /> {benchmarkMode ? 'Benchmark: ACTIVE' : 'Benchmark: OFF'}
+          </button>
+        </div>
       </div>
 
       <div style={{ marginBottom: 16 }}>
@@ -150,16 +165,29 @@ export default function QuerySimulator({ products }: { products: any[] }) {
                 {results[activeTab].top.length === 0 ? (
                   <p style={{ fontSize: 12, color: 'var(--text-muted)', padding: '16px', background: 'var(--bg-surface)', borderRadius: 12, border: '1px solid var(--border)' }}>This AI found no relevant matches in your catalog.</p>
                 ) : (
-                  results[activeTab].top.map((p: any) => (
-                    <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: 12, background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
-                      <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', width: 20, flexShrink: 0, fontFamily: 'var(--font-mono)' }}>#{p.rank}</span>
-                      <div style={{ minWidth: 0, flex: 1 }}>
-                        <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)', fontFamily: 'var(--font-head)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: 2 }}>{p.title}</p>
-                        <p style={{ fontSize: 11, color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.match_reason}</p>
+                  <>
+                    {results[activeTab].top.map((p: any, idx: number) => (
+                      <div key={`${p.id}-${idx}`} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: 12, background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', width: 20, flexShrink: 0, fontFamily: 'var(--font-mono)' }}>#{p.rank}</span>
+                        <div style={{ minWidth: 0, flex: 1 }}>
+                          <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)', fontFamily: 'var(--font-head)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: 2 }}>{p.title}</p>
+                          <p style={{ fontSize: 11, color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.match_reason}</p>
+                        </div>
+                        <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--ok)', flexShrink: 0, fontFamily: 'var(--font-head)' }}>{p.match_score}%</span>
                       </div>
-                      <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--ok)', flexShrink: 0, fontFamily: 'var(--font-head)' }}>{p.match_score}%</span>
-                    </div>
-                  ))
+                    ))}
+                    
+                    {benchmarkMode && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: 12, background: 'rgba(255,255,255,0.02)', border: '1px dashed var(--border)', opacity: 0.7 }}>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-faint)', width: 20, flexShrink: 0, fontFamily: 'var(--font-mono)' }}>EXT</span>
+                        <div style={{ minWidth: 0, flex: 1 }}>
+                          <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', fontFamily: 'var(--font-head)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: 2 }}>Generic Marketplace Competitor</p>
+                          <p style={{ fontSize: 11, color: 'var(--text-faint)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Lacks structured benefits; ranked lower by AI agent due to ambiguity.</p>
+                        </div>
+                        <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-faint)', flexShrink: 0, fontFamily: 'var(--font-head)' }}>42%</span>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </div>
@@ -173,8 +201,8 @@ export default function QuerySimulator({ products }: { products: any[] }) {
                 {results[activeTab].rejected.length === 0 ? (
                   <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>None</p>
                 ) : (
-                  results[activeTab].rejected.map((p: any) => (
-                    <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: 12, background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
+                  results[activeTab].rejected.map((p: any, idx: number) => (
+                    <div key={`${p.id}-${idx}`} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: 12, background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
                       <div style={{ minWidth: 0, flex: 1 }}>
                         <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)', fontFamily: 'var(--font-head)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: 2 }}>{p.title}</p>
                         <p style={{ fontSize: 11, color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.rejection_reason}</p>
