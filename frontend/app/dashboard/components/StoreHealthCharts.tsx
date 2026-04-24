@@ -1,50 +1,107 @@
 'use client';
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import React, { useMemo } from 'react';
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
-  PieChart, Pie,
-  RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Pie,
+  PieChart,
+  PolarAngleAxis,
+  PolarGrid,
+  PolarRadiusAxis,
+  Radar,
+  RadarChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
 } from 'recharts';
 
 interface StoreHealthChartsProps {
-  type: 'bar' | 'pie';
+  type: 'bar' | 'pie' | 'radar';
   data: any;
 }
 
-const DarkTooltip = ({ active, payload, label }: any) => {
+const ChartTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null;
+
   return (
-    <div style={{ background: '#1f1f24', border: '1px solid #27272a', borderRadius: 10, padding: '8px 12px', boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}>
-      {label && <p style={{ color: '#71717a', fontSize: 10, marginBottom: 2 }}>{label}</p>}
-      <p style={{ color: '#fafafa', fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-head)' }}>
-        {payload[0].name ? `${payload[0].name}: ` : ''}{payload[0].value}{label ? '/100' : ''}
+    <div
+      style={{
+        background: 'var(--bg-card)',
+        border: '1px solid var(--border)',
+        borderRadius: 14,
+        padding: '10px 12px',
+        boxShadow: '0 12px 32px rgba(0,0,0,0.18)',
+      }}
+    >
+      {label && <p style={{ color: 'var(--text-muted)', fontSize: 11, marginBottom: 4 }}>{label}</p>}
+      <p style={{ color: 'var(--text)', fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-head)' }}>
+        {payload[0].name ? `${payload[0].name}: ` : ''}
+        {payload[0].value}
+        {label ? '/100' : ''}
       </p>
     </div>
   );
 };
 
 export default function StoreHealthCharts({ type, data }: StoreHealthChartsProps) {
-  if (type === 'bar') {
-    const chartData = useMemo(() =>
-      Object.entries(data).map(([key, details]: [string, any]) => ({
+  const barData = useMemo(
+    () =>
+      Object.entries(data || {}).map(([key, details]: [string, any]) => ({
         name: key.replace(/_/g, ' '),
         score: details.score,
-        color: details.score > 80 ? '#22c55e' : details.score > 50 ? '#f59e0b' : '#ef4444',
-      })), [data]);
+        color: details.score > 80 ? 'var(--ok)' : details.score > 50 ? 'var(--warn)' : 'var(--danger)',
+      })),
+    [data]
+  );
 
+  const pieData = useMemo(
+    () =>
+      [
+        { name: 'Critical', value: data?.critical, color: 'var(--danger)' },
+        { name: 'Warning', value: data?.warning, color: 'var(--warn)' },
+        { name: 'Optimized', value: data?.optimized, color: 'var(--ok)' },
+      ].filter((item) => item.value > 0),
+    [data]
+  );
+
+  const radarData = useMemo(
+    () =>
+      Object.entries(data || {}).map(([key, details]: [string, any]) => ({
+        subject: key.replace(/_/g, ' '),
+        score: details.score,
+        fullMark: 100,
+      })),
+    [data]
+  );
+
+  if (type === 'bar') {
     return (
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={chartData} margin={{ top: 8, right: 8, left: -24, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#1c1c1f" />
-          <XAxis dataKey="name" axisLine={false} tickLine={false}
-            tick={{ fontSize: 10, fontWeight: 600, fill: '#71717a' }} dy={8} />
-          <YAxis domain={[0, 100]} axisLine={false} tickLine={false}
-            tick={{ fontSize: 10, fill: '#3f3f46' }} tickCount={5} />
-          <Tooltip content={<DarkTooltip />} cursor={{ fill: 'rgba(255,255,255,0.02)' }} />
-          <Bar dataKey="score" radius={[6, 6, 0, 0]} barSize={36}>
-            {chartData.map((entry, i) => (
-              <Cell key={i} fill={entry.color} opacity={0.85} />
+        <BarChart data={barData} margin={{ top: 8, right: 8, left: -24, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-subtle)" />
+          <XAxis
+            dataKey="name"
+            axisLine={false}
+            tickLine={false}
+            tick={{ fontSize: 10, fontWeight: 600, fill: 'var(--text-muted)' }}
+            dy={8}
+          />
+          <YAxis
+            domain={[0, 100]}
+            axisLine={false}
+            tickLine={false}
+            tick={{ fontSize: 10, fill: 'var(--text-faint)' }}
+            tickCount={5}
+          />
+          <Tooltip content={<ChartTooltip />} cursor={{ fill: 'rgba(255,255,255,0.02)' }} />
+          <Bar dataKey="score" radius={[10, 10, 0, 0]} barSize={34}>
+            {barData.map((entry, index) => (
+              <Cell key={index} fill={entry.color} opacity={0.88} />
             ))}
           </Bar>
         </BarChart>
@@ -53,52 +110,35 @@ export default function StoreHealthCharts({ type, data }: StoreHealthChartsProps
   }
 
   if (type === 'pie') {
-    const chartData = useMemo(() => [
-      { name: 'Critical',  value: data.critical,  color: '#ef4444' },
-      { name: 'Warning',   value: data.warning,   color: '#f59e0b' },
-      { name: 'Optimized', value: data.optimized, color: '#22c55e' },
-    ].filter(d => d.value > 0), [data]);
-
     return (
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
-          <Pie data={chartData} cx="50%" cy="50%" innerRadius={50} outerRadius={72} paddingAngle={3} dataKey="value">
-            {chartData.map((entry, i) => (
-              <Cell key={i} fill={entry.color} stroke="none" opacity={0.85} />
+          <Pie data={pieData} cx="50%" cy="50%" innerRadius={56} outerRadius={84} paddingAngle={3} dataKey="value">
+            {pieData.map((entry, index) => (
+              <Cell key={index} fill={entry.color} stroke="none" opacity={0.9} />
             ))}
           </Pie>
-          <Tooltip content={<DarkTooltip />} />
+          <Tooltip content={<ChartTooltip />} />
         </PieChart>
       </ResponsiveContainer>
     );
   }
-  
-  if (type === 'radar') {
-    const chartData = useMemo(() =>
-      Object.entries(data).map(([key, details]: [string, any]) => ({
-        subject: key.replace(/_/g, ' '),
-        A: details.score,
-        fullMark: 100,
-      })), [data]);
 
-    return (
-      <ResponsiveContainer width="100%" height="100%">
-        <RadarChart cx="50%" cy="50%" outerRadius="80%" data={chartData}>
-          <PolarGrid stroke="#27272a" />
-          <PolarAngleAxis dataKey="subject" tick={{ fill: '#71717a', fontSize: 10, fontWeight: 600 }} />
-          <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
-          <Tooltip content={<DarkTooltip />} />
-          <Radar
-            name="AI Perception"
-            dataKey="A"
-            stroke="var(--accent)"
-            fill="var(--accent)"
-            fillOpacity={0.3}
-          />
-        </RadarChart>
-      </ResponsiveContainer>
-    );
-  }
-
-  return null;
+  return (
+    <ResponsiveContainer width="100%" height="100%">
+      <RadarChart cx="50%" cy="50%" outerRadius="78%" data={radarData}>
+        <PolarGrid stroke="var(--border)" />
+        <PolarAngleAxis dataKey="subject" tick={{ fill: 'var(--text-muted)', fontSize: 10, fontWeight: 600 }} />
+        <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
+        <Tooltip content={<ChartTooltip />} />
+        <Radar
+          name="AI Perception"
+          dataKey="score"
+          stroke="var(--accent)"
+          fill="var(--accent)"
+          fillOpacity={0.26}
+        />
+      </RadarChart>
+    </ResponsiveContainer>
+  );
 }

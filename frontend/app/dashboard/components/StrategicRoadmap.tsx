@@ -1,4 +1,5 @@
 'use client';
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import React, { useState } from 'react';
 import { Compass, CheckCircle2, AlertCircle, Clock, Zap, ShieldCheck, TrendingUp, Loader2 } from 'lucide-react';
@@ -90,23 +91,23 @@ export default function StrategicRoadmap({ roadmap, products, onMegaSync }: { ro
   };
 
   return (
-    <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 18, padding: '28px 32px', marginBottom: 24 }}>
+    <div className="panel chart-card" style={{ marginTop: 18, marginBottom: 24 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
         <div style={{ padding: 10, borderRadius: 12, background: 'var(--accent-glow)', color: 'var(--accent)', border: '1px solid var(--accent-border)' }}>
           <Compass size={20} />
         </div>
         <div>
           <h2 style={{ fontFamily: 'var(--font-head)', fontWeight: 800, fontSize: 18, color: 'var(--text)', margin: 0 }}>Strategic AI Growth Roadmap</h2>
-          <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '4px 0 0 0' }}>A prioritized, 3-phase action plan to maximize your store's AI-driven discoverability and conversion.</p>
+          <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '4px 0 0 0' }}>A prioritized, 3-phase action plan to maximize your store AI-driven discoverability and conversion.</p>
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16 }}>
         {roadmap.map((item) => (
-          <div key={item.phase} style={{ position: 'relative', background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 16, padding: 20, transition: 'all 0.2s', opacity: completedActions.includes(item.action_type) ? 0.7 : 1 }}>
+          <div key={item.phase} className="surface-muted" style={{ position: 'relative', padding: 20, transition: 'all 0.2s', opacity: completedActions.includes(item.action_type) ? 0.7 : 1 }}>
             
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
-              <div style={{ fontSize: 10, fontWeight: 800, padding: '4px 8px', borderRadius: 6, background: 'var(--bg-elevated)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}>
+              <div style={{ fontSize: 10, fontWeight: 800, padding: '4px 8px', borderRadius: 999, background: 'var(--bg-elevated)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}>
                 PHASE {item.phase}
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, fontWeight: 700, color: item.status === 'critical' && !completedActions.includes(item.action_type) ? '#ef4444' : 'var(--text-muted)' }}>
