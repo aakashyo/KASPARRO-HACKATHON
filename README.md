@@ -35,11 +35,12 @@ When you log into the AI RepOptimizer, you'll be greeted by an interactive dashb
 
 | Feature Area | What it Tells You | Why it wins Track 5 |
 | :--- | :--- | :--- |
-| **Hybrid Deterministic Engine** | Structural data (materials, dimensions, size) is extracted via hard-coded Python boundary logic *before* hitting the LLM. | Proves we know exactly when to use an expensive LLM vs when to use cheap deterministic code. |
-| **Fail-Safe Policy Guardrails** | A post-processing validation layer that checks AI-generated fixes against the merchant's real Shopify policies (Refund/Shipping). | Eliminates legal liability by catching LLM hallucination and failing safely, a core requirement of enterprise AI. |
-| **1-Click GraphQL Execution** | Generates and exposes the raw Shopify `productUpdate` JSON payload, allowing 1-click execution. | Moves the tool from being an "advisor" to an automated "executor" that closes the loop. |
+| **AI Perception Radar Chart** | A 5-dimension spider-map of Product Quality, Policy Clarity, FAQ Coverage, Trust Signals, and Structured Data. | Provides an instant, professional "Store Health" snapshot that looks like enterprise analytics. |
+| **Policy Guardrail Visuals** | A real-time safety badge (Secure/Action Required) for every AI-suggested fix. | Demonstrates a "Human-in-the-Loop" safety architecture, critical for merchant trust in AI. |
+| **Competitive AI Benchmarking** | Side-by-side comparison of your optimized products vs. generic marketplace competitors. | Provides immediate proof of ROI by showing exactly how much higher an AI agent ranks your store. |
 | **Multi-Persona Simulation** | Tests products concurrently against 3 distinct AI Agents: The Budget Optimizer, The Tech-Spec Critic, and The Gift Recommender. | Proves that "AI perception" isn't a monolith, providing nuanced insights into different buyer segments. |
-| **Merchant Intent vs. AI Perception** | Compares what the store *thinks* it is selling vs. what the *AI thinks* the store is selling. | Exposes semantic misinterpretations that kill product visibility. |
+| **1-Click GraphQL Execution** | Generates and exposes the raw Shopify `productUpdate` JSON payload, allowing 1-click execution. | Moves the tool from being an "advisor" to an automated "executor" that closes the loop. |
+| **Hybrid Deterministic Engine** | Structural data (materials, dimensions, size) is extracted via hard-coded Python boundary logic *before* hitting the LLM. | Proves we know exactly when to use an expensive LLM vs when to use cheap deterministic code. |
 
 ---
 
