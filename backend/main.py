@@ -109,6 +109,7 @@ async def analyze_store(request: AnalyzeRequest):
                 
                 pa = ProductAnalysis(
                     id=str(p["id"]), title=p["title"], handle=p["handle"],
+                    price=p.get("price", "0.00"),
                     original_data=p, scan_quick=QuickScanResult(**scan_data),
                     is_audited=False, scan_mode="⚡ Quick Scan"
                 )

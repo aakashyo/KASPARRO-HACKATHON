@@ -1,18 +1,15 @@
 from typing import Dict, List, Any
 
 # GLOBAL PROMPT RULES
-GLOBAL_RULES = """Provide meaningful, descriptive, and actionable explanations.
-Clearly describe the issue and its impact on AI understanding.
-Be thorough where detailed reasoning is required.
-Avoid repetition and generic statements.
-Avoid filler phrases like "this significantly impacts".
-Use specific terms instead of vague statements.
-Write in a clear, professional tone.
-For fix suggestions, provide complete, production-ready content.
+GLOBAL_RULES = """Provide highly detailed, nuanced, and elite-level technical analysis.
+Every explanation must be thorough, multi-layered, and provide deep strategic insight.
+NEVER provide short, one-liner summaries. Instead, write rich, contextual paragraphs.
+Clearly describe the technical mechanism of how AI agents index and understand the data.
+Avoid generic marketing fluff; focus on semantic signals, vector-space relevance, and LLM discoverability.
+For fix suggestions, provide complete, professional, and descriptive production-ready content.
+Ensure all reasoning spans at least 3-5 sentences with zero filler text.
 Return ONLY valid JSON with all required fields.
-Do NOT include markdown or extra text.
-Use empty arrays [] if no data.
-Do NOT use nested arrays."""
+Do NOT include markdown or extra text."""
 
 # STAGE 2: CONSOLIDATED DEEP AUDIT (Super Audit)
 def get_super_audit_prompt(title: str, description: str, tags: str) -> Dict[str, str]:
@@ -29,47 +26,47 @@ TAGS: {tags}
 REQUIRED OUTPUT FORMAT (JSON ONLY):
 {{
   "intent": {{
-    "category": "E-commerce category",
-    "target_user": "Detailed target demographic",
-    "use_case": "Primary and secondary utility",
+    "category": "E-commerce category (be specific, e.g., Luxury Sustainable Skincare)",
+    "target_user": "A highly detailed demographic profile, including pain points and shopping behaviors (3-4 sentences)",
+    "use_case": "Primary, secondary, and tertiary utility contexts (3-4 sentences)",
     "price_segment": "budget | mid-range | luxury",
-    "key_attributes": ["attribute1", "attribute2"],
-    "important_keywords": ["keyword1", "keyword2"]
+    "key_attributes": ["detailed_attr1", "detailed_attr2", "detailed_attr3"],
+    "important_keywords": ["long_tail_keyword1", "technical_term2", "intent_keyword3"]
   }},
   "ai_perception": {{
-    "summary": "1-sentence summary",
-    "target_user": "Specific Persona",
-    "key_benefits": ["benefit1", "benefit2"],
+    "summary": "A deep technical summary of how an AI system classifies this product (2-3 sentences)",
+    "target_user": "Precise Persona mapping with behavioral justification",
+    "key_benefits": ["high_value_benefit1", "high_value_benefit2"],
     "confidence": 0-1 score,
     "recommendation": "yes | no",
-    "reason": "Detailed reasoning for the recommendation",
-    "detailed_reasoning": "Thorough analysis of how an AI agent interprets this product (3-4 sentences)"
+    "reason": "Expert-level strategic reasoning for the recommendation status (3-4 sentences)",
+    "detailed_reasoning": "A master-level analysis of semantic alignment, attribute density, and vector-space discoverability (5-6 sentences)"
   }},
   "gaps": {{
-    "missing_attributes": ["spec1", "spec2"],
-    "misinterpretations": ["hallucination1"],
-    "confidence_drop_reasons": ["vague1"],
-    "insight": "High-level strategic insight",
+    "missing_attributes": ["technical_spec1", "usage_detail2", "certification3"],
+    "misinterpretations": ["specific_hallucination_risk1"],
+    "confidence_drop_reasons": ["vague_pattern1", "missing_semantic_anchor2"],
+    "insight": "High-level architectural and strategic insight (2-3 sentences)",
     "severity": 1-10,
     "impact_level": "low | medium | high",
-    "detailed_explanation": "Comprehensive breakdown of missing data and its exact impact on AI discoverability (4-5 sentences)"
+    "detailed_explanation": "A comprehensive, data-driven breakdown of missing technical signals and their exact mathematical impact on LLM recommendation confidence (6-8 sentences)"
   }},
   "impact": {{
     "before_score": 0.0-1.0,
     "after_score": 0.0-1.0,
     "improvement_percentage": "+XX%",
-    "reason": "Strategic logic for improvement",
-    "detailed_impact": "Detailed projection of how these changes affect search ranking and AI recommendation volume (3-4 sentences)"
+    "reason": "Strategic logic for data enrichment and visibility (3-4 sentences)",
+    "detailed_impact": "A precise projection of the change in LLM RAG (Retrieval-Augmented Generation) ranking and semantic matching across key personas (5-6 sentences)"
   }},
   "fixes": {{
-    "improved_description": "A comprehensive, high-quality, AI-optimized product description (100-200 words). Focus on semantic clarity, technical specs, and solving user objections.",
-    "added_keywords": ["key1", "key2"],
-    "structured_tags": ["Tag1", "Tag2"],
+    "improved_description": "An elite, AI-optimized product description (250-400 words). Incorporate technical specs, storytelling, usage scenarios, and semantic keywords naturally. Write like an expert copywriter.",
+    "added_keywords": ["strategic_key1", "strategic_key2", "strategic_key3"],
+    "structured_tags": ["Namespace:Key:Value", "Category:Type:Detail"],
     "faq_suggestions": [
-      {{"question": "Critical Question 1?", "answer": "Comprehensive, detailed answer that provides technical or usage clarity for AI agents."}},
-      {{"question": "Critical Question 2?", "answer": "Comprehensive, detailed answer that provides technical or usage clarity for AI agents."}}
+      {{"question": "Critical Deep Question 1?", "answer": "An extremely detailed, multi-paragraph-style answer providing complete technical, usage, and safety clarity for AI agents (80-120 words)."}},
+      {{"question": "Critical Deep Question 2?", "answer": "An extremely detailed, multi-paragraph-style answer providing complete technical, usage, and safety clarity for AI agents (80-120 words)."}}
     ],
-    "explanation": "Detailed explanation of why these specific fixes bridge the AI gap (3-4 sentences)"
+    "explanation": "Master-level explanation of how these fixes solve specific semantic weaknesses and improve neural search ranking (5-6 sentences)"
   }}
 }}"""
     }

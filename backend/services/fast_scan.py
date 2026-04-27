@@ -105,28 +105,35 @@ def fast_scan(product: dict) -> dict:
         score -= 10
         issues.append("Title lacks descriptive detail")
 
-    if not attrs["has_material"]:
+    if not attrs["has_material"] and not attrs["ingredients_found"]:
+        score -= 15
+        structural_gaps.append("Missing material or ingredients")
+    elif not attrs["has_material"]:
         score -= 8
-        structural_gaps.append("No material or ingredient data")
-
-    if not attrs["has_dimensions"]:
-        score -= 6
-        structural_gaps.append("No measurable specifications (size, weight, SPF, etc.)")
+        structural_gaps.append("Missing material data")
+        
+    if not attrs["has_dimensions"] and not attrs["has_size_info"]:
+        score -= 15
+        structural_gaps.append("Missing size or dimensions")
 
     if not attrs["has_use_case"]:
-        score -= 5
-        structural_gaps.append("No target use-case or audience specified")
-
+        score -= 15
+        structural_gaps.append("Missing intended use-case")
+    
     if not attrs["certifications_found"]:
-        score -= 4
-        structural_gaps.append("No certifications or trust signals")
+        score -= 5
+        structural_gaps.append("No trust certifications found")
 
     if not price or price == "0.00":
         score -= 5
         structural_gaps.append("Missing price data")
 
     all_gaps = issues + structural_gaps
-    severity = min(10, max(1, (100 - score) // 9))
+    # Final Severity calculation
+    # Severity 1-3: Optimized
+    # Severity 4-6: Warning
+    # Severity 7-10: Critical
+    severity = min(10, max(1, (100 - score) // 8)) # Use // 8 to make it slightly more sensitive
 
     return {
         "quick_score": max(5, score),

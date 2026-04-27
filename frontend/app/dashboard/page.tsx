@@ -90,7 +90,7 @@ export default function Dashboard() {
     setError(null);
     setSyncComplete(false);
 
-    if (forceDemo || isDemo) {
+    if (forceDemo) {
       setStatus('scanning');
       setMessage('Loading demo catalog...');
 
@@ -159,11 +159,19 @@ export default function Dashboard() {
 
           if (progressPercent !== undefined) {
             setProgress({ current: Math.floor(progressPercent), total: 100 });
-            if (processed) setTimeSaved(processed * 2.1);
           } else if (processed && total) {
             setProgress({ current: processed, total });
-            setTimeSaved(processed * 2.1);
           }
+
+          // Calculate more realistic time saved
+          // Quick scan: ~30s per product, Deep audit: ~5m (300s) per product
+          setProducts((currentProducts) => {
+            const list = Object.values(currentProducts);
+            const auditedCount = list.filter((p: any) => p.is_audited).length;
+            const scannedCount = list.length;
+            setTimeSaved((scannedCount * 30) + (auditedCount * 270)); // 30 + 270 = 300 (5 mins)
+            return currentProducts;
+          });
 
           setMessage(updateMessage);
         } else if (type === 'product') {
@@ -191,35 +199,52 @@ export default function Dashboard() {
     const nextTheme: ThemeKey = savedTheme === 'light' ? 'light' : 'dark';
     applyTheme(nextTheme);
 
-    const demo = localStorage.getItem('demo_mode') === 'true';
-    setIsDemo(demo);
-    run(demo);
+    const savedUrl = localStorage.getItem('shopify_url') || '';
+    const savedToken = localStorage.getItem('shopify_token') || '';
+    const hasLiveCredentials = Boolean(savedUrl && savedToken);
+    const demoRequested = localStorage.getItem('demo_mode') === 'true';
+    const shouldUseDemo = demoRequested && !hasLiveCredentials;
+
+    if (hasLiveCredentials) {
+      localStorage.removeItem('demo_mode');
+    }
+
+    setIsDemo(shouldUseDemo);
+    run(shouldUseDemo);
     // `run` is intentionally initialized once here for the first dashboard load.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const productList = useMemo(() => Object.values(products), [products]);
 
+  // Unified severity helper (prefer deep audit)
+  const getProductSeverity = (product: any) => {
+    if (product.is_audited && product.audit_deep?.gaps) {
+      return product.audit_deep.gaps.severity ?? product.scan_quick?.severity ?? 0;
+    }
+    return product.scan_quick?.severity ?? 0;
+  };
+
   const sortedProducts = useMemo(() => {
     let list = [...productList];
 
-    if (filter === 'critical') list = list.filter((product) => (product.scan_quick?.severity || 0) >= 7);
+    if (filter === 'critical') list = list.filter((product) => getProductSeverity(product) >= 7);
     if (filter === 'warning') {
       list = list.filter((product) => {
-        const severity = product.scan_quick?.severity || 0;
+        const severity = getProductSeverity(product);
         return severity >= 4 && severity < 7;
       });
     }
-    if (filter === 'optimized') list = list.filter((product) => (product.scan_quick?.severity || 0) < 4);
+    if (filter === 'optimized') list = list.filter((product) => getProductSeverity(product) < 4);
 
-    return list.sort((left, right) => (right.scan_quick?.severity || 0) - (left.scan_quick?.severity || 0));
+    return list.sort((left, right) => getProductSeverity(right) - getProductSeverity(left));
   }, [filter, productList]);
 
   const stats = useMemo(
     () =>
       productList.reduce(
         (accumulator: any, product: any) => {
-          const severity = product.scan_quick?.severity || 0;
+          const severity = getProductSeverity(product);
 
           if (severity >= 7) accumulator.critical += 1;
           else if (severity >= 4) accumulator.warning += 1;
@@ -231,6 +256,16 @@ export default function Dashboard() {
       ),
     [productList]
   );
+
+  const formatTimeSaved = (seconds: number) => {
+    if (seconds === 0) return '0s';
+    if (seconds < 60) return `${Math.floor(seconds)}s`;
+    const mins = Math.floor(seconds / 60);
+    if (mins < 60) return `${mins}m`;
+    const hours = Math.floor(mins / 60);
+    const remainingMins = mins % 60;
+    return remainingMins > 0 ? `${hours}h ${remainingMins}m` : `${hours}h`;
+  };
 
   const handleMegaSync = async () => {
     if (isDemo) {
@@ -299,7 +334,7 @@ export default function Dashboard() {
     { label: 'Scanned', value: analyzedCount, sub: 'Products surfaced', color: 'var(--info)' },
     { label: 'Critical', value: stats.critical, sub: 'Urgent recommendation gaps', color: 'var(--danger)' },
     { label: 'Audited', value: auditedCount, sub: 'Deep AI reviews complete', color: 'var(--accent)' },
-    { label: 'Time saved', value: `${Math.floor(timeSaved)}s`, sub: 'Automation reclaimed', color: 'var(--amber)' },
+    { label: 'Time saved', value: formatTimeSaved(timeSaved), sub: 'Automation reclaimed', color: 'var(--amber)' },
   ];
 
   const dimensionEntries = showsScores
@@ -390,7 +425,7 @@ export default function Dashboard() {
                 <div className="score-shell">
                   <div>
                     <div className="score-value" style={{ color: scoreColor }}>
-                      {showsScores ? storeScore.overall_score : '--'}
+                      {showsScores ? storeScore.overall_score.toFixed(1) : '--'}
                     </div>
                     <div className="score-sub">out of 100 storewide recommendation confidence</div>
                   </div>
@@ -680,7 +715,7 @@ export default function Dashboard() {
                   show: { opacity: 1, y: 0 },
                 }}
               >
-                <ProductCard product={product} highlighted={(product.scan_quick?.severity || 0) >= 7} isDemo={isDemo} />
+                <ProductCard product={product} highlighted={getProductSeverity(product) >= 7} isDemo={isDemo} />
               </motion.div>
             ))}
           </motion.div>

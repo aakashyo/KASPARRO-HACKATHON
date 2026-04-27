@@ -46,7 +46,9 @@ export default function ScoreCard({ label, score, reason, onClick }: ScoreCardPr
         {label}
       </p>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-        <span style={{ fontFamily: 'var(--font-head)', fontSize: 36, fontWeight: 900, lineHeight: 1, color }}>{score}</span>
+        <span style={{ fontFamily: 'var(--font-head)', fontSize: 36, fontWeight: 900, lineHeight: 1, color }}>
+          {typeof score === 'number' ? score.toFixed(1) : score}
+        </span>
         <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>/100</span>
       </div>
       <div style={{ height: 4, borderRadius: 99, background: 'var(--bg-elevated)' }}>

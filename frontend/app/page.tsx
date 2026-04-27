@@ -82,6 +82,11 @@ export default function LandingPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [count, setCount] = useState(0);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const target = 58;
@@ -153,6 +158,8 @@ export default function LandingPage() {
     localStorage.setItem('demo_mode', 'true');
     router.push('/dashboard');
   };
+
+  if (!mounted) return null;
 
   return (
     <div>

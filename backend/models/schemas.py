@@ -97,6 +97,7 @@ class ProductAnalysis(BaseModel):
     id: str
     title: str
     handle: str
+    price: Optional[str] = "0.00"
     original_data: Dict = {}
     scan_quick: QuickScanResult = Field(default_factory=QuickScanResult)
     audit_deep: Optional[DeepAuditResult] = None

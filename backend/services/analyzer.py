@@ -38,13 +38,21 @@ class Scorer:
 
         overall = int((prod_quality + policy_score + faq_score + trust_score + struct_score) / 5)
         
+        # Helper for consistent severity calculation
+        def get_severity(p):
+            if p.get("is_audited") and p.get("audit_deep"):
+                return p["audit_deep"].get("gaps", {}).get("severity", 0)
+            return p.get("scan_quick", {}).get("severity", 0)
+
         # Calculate Algorithmic Revenue Recovery Impact
-        critical_count = sum(1 for p in products_data if p.get("scan_quick", {}).get("severity", 0) >= 7)
-        warning_count = sum(1 for p in products_data if 4 <= p.get("scan_quick", {}).get("severity", 0) < 7)
+        critical_count = sum(1 for p in products_data if get_severity(p) >= 7)
+        warning_count = sum(1 for p in products_data if 4 <= get_severity(p) < 7)
+        optimized_but_has_gaps = sum(1 for p in products_data if 1 <= get_severity(p) < 4)
         
         # Base assumption: An AI-ready store gains ~5% organic conversion bump per critical fix. 
-        # We assign generic conservative dollar values per product fixed for hackathon demo purposes.
-        est_recovery = (critical_count * 185) + (warning_count * 45)
+        # We assign conservative dollar values per product fix for hackathon demo purposes.
+        # Even minor "optimized" products have a small lift ($15/mo) if they aren't perfect.
+        est_recovery = (critical_count * 185) + (warning_count * 45) + (optimized_but_has_gaps * 15)
 
         # Strategic Roadmap Logic
         roadmap = [

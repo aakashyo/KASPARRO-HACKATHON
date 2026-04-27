@@ -44,6 +44,15 @@ export default function GapView({ gaps, severity, isAudited }: GapViewProps) {
           </div>
         </div>
       )}
+
+      {gaps.detailed_explanation && (
+        <div style={{ marginTop: 8, padding: '16px 18px', background: 'var(--bg-surface)', borderRadius: 14, border: '1px solid var(--border)', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)' }}>
+          <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-faint)', marginBottom: 12, fontFamily: 'var(--font-head)' }}>Deep Technical Reasoning</p>
+          <p style={{ fontSize: '0.92rem', lineHeight: 1.65, color: 'var(--text-secondary)', letterSpacing: '-0.01em' }}>
+            {gaps.detailed_explanation}
+          </p>
+        </div>
+      )}
     </div>
   );
 }

@@ -29,31 +29,31 @@ export default function PreviewModal({ isOpen, onClose, onConfirm, title, descri
   if (!isOpen || !mounted) return null;
 
   const modal = (
-    <div style={{ 
-      position: 'fixed', 
-      inset: 0, 
-      zIndex: 99999, 
-      display: 'flex', 
-      alignItems: 'center', 
-      justifyContent: 'center', 
+    <div style={{
+      position: 'fixed',
+      inset: 0,
+      zIndex: 99999,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
       padding: 20,
       background: 'rgba(0,0,0,0.85)',
       backdropFilter: 'blur(10px)'
     }}>
-      <div 
-        style={{ position: 'absolute', inset: 0 }} 
+      <div
+        style={{ position: 'absolute', inset: 0 }}
         onClick={onClose}
       />
-      <div style={{ 
-        position: 'relative', 
-        width: '100%', 
-        maxWidth: 800, 
-        maxHeight: '85vh', 
-        background: 'var(--bg-surface)', 
-        border: '1px solid var(--border)', 
-        borderRadius: 24, 
-        display: 'flex', 
-        flexDirection: 'column', 
+      <div style={{
+        position: 'relative',
+        width: '100%',
+        maxWidth: 800,
+        maxHeight: '85vh',
+        background: 'var(--bg-surface)',
+        border: '1px solid var(--border)',
+        borderRadius: 24,
+        display: 'flex',
+        flexDirection: 'column',
         boxShadow: '0 24px 80px rgba(0,0,0,0.5)',
         overflow: 'hidden',
         animation: 'modalEnter 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
@@ -64,7 +64,7 @@ export default function PreviewModal({ isOpen, onClose, onConfirm, title, descri
             to { opacity: 1; transform: scale(1) translateY(0); }
           }
         `}</style>
-        
+
         <div style={{ padding: '24px 32px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
           <div>
             <h2 style={{ fontFamily: 'var(--font-head)', fontSize: 20, fontWeight: 800, color: 'var(--text)', margin: 0 }}>{title}</h2>
@@ -78,7 +78,7 @@ export default function PreviewModal({ isOpen, onClose, onConfirm, title, descri
         <div style={{ padding: '32px', overflowY: 'auto', flex: 1, background: 'rgba(0,0,0,0.4)', minHeight: 0 }}>
           {contentType === 'faq' && (
             <div style={{ background: '#fff', color: '#333', padding: '40px', borderRadius: 12, fontSize: 14, boxShadow: '0 4px 20px rgba(0,0,0,0.2)', width: '100%' }}>
-               <div dangerouslySetInnerHTML={{ __html: content }} className="faq-preview-content" />
+              <div dangerouslySetInnerHTML={{ __html: content }} className="faq-preview-content" />
             </div>
           )}
 
@@ -130,54 +130,54 @@ export default function PreviewModal({ isOpen, onClose, onConfirm, title, descri
           )}
 
           {contentType === 'single_fix' && (
-             <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-                <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 16, padding: 20 }}>
-                   <p style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 10 }}>Optimized Description</p>
-                   <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>{content.description}</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+              <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 16, padding: 20 }}>
+                <p style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 10 }}>Optimized Description</p>
+                <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>{content.description}</div>
+              </div>
+              <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 16, padding: 20 }}>
+                <p style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 10 }}>Added Semantic Tags</p>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  {content.tags.map((t: string, i: number) => (
+                    <span key={i} style={{ fontSize: 11, padding: '4px 10px', borderRadius: 6, background: 'var(--bg-elevated)', border: '1px solid var(--border)', color: 'var(--text)' }}>{t}</span>
+                  ))}
                 </div>
-                <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 16, padding: 20 }}>
-                   <p style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 10 }}>Added Semantic Tags</p>
-                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                      {content.tags.map((t: string, i: number) => (
-                         <span key={i} style={{ fontSize: 11, padding: '4px 10px', borderRadius: 6, background: 'var(--bg-elevated)', border: '1px solid var(--border)', color: 'var(--text)' }}>{t}</span>
-                      ))}
-                   </div>
-                </div>
-             </div>
+              </div>
+            </div>
           )}
         </div>
 
         <div style={{ padding: '24px 32px', borderTop: '1px solid var(--border-subtle)', display: 'flex', gap: 12, justifyContent: 'flex-end', background: 'var(--bg-surface)', flexShrink: 0 }}>
-           <button 
-             onClick={onClose}
-             style={{ padding: '12px 24px', borderRadius: 12, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text)', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}
-           >
-             Cancel
-           </button>
-           <button 
-             onClick={onConfirm}
-             disabled={loading}
-             style={{ 
-               padding: '12px 32px', 
-               borderRadius: 12, 
-               border: 'none', 
-               background: 'var(--accent)', 
-               color: '#08080c', 
-               fontSize: 14, 
-               fontWeight: 800, 
-               cursor: loading ? 'not-allowed' : 'pointer',
-               display: 'flex',
-               alignItems: 'center',
-               gap: 10
-             }}
-           >
-             {loading ? 'Processing...' : (
-               <>
-                 <CheckCircle2 size={18} />
-                 {contentType === 'audit_queue' ? 'Start Deep Audit' : 'Approve & Push to Shopify'}
-               </>
-             )}
-           </button>
+          <button
+            onClick={onClose}
+            style={{ padding: '12px 24px', borderRadius: 12, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text)', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={loading}
+            style={{
+              padding: '12px 32px',
+              borderRadius: 12,
+              border: 'none',
+              background: 'var(--accent)',
+              color: '#08080c',
+              fontSize: 14,
+              fontWeight: 800,
+              cursor: loading ? 'not-allowed' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10
+            }}
+          >
+            {loading ? 'Processing...' : (
+              <>
+                <CheckCircle2 size={18} />
+                {contentType === 'audit_queue' ? 'Start Deep Audit' : 'Approve & Push to Shopify'}
+              </>
+            )}
+          </button>
         </div>
       </div>
     </div>

@@ -33,9 +33,9 @@ export default function ProductCard({ product, highlighted = false, isDemo = fal
   const isAudited = product.is_audited;
   const severity = isAudited ? (audit?.gaps?.severity ?? scan?.severity ?? 0) : scan?.severity ?? 0;
   const currentScore = isAudited
-    ? Math.round((audit?.impact?.before_score ?? scan?.quick_score / 100) * 100)
-    : scan?.quick_score;
-  const targetScore = isAudited ? Math.round((audit?.impact?.after_score ?? 1) * 100) : 100;
+    ? ((audit?.impact?.before_score ?? scan?.quick_score / 100) * 100)
+    : (scan?.quick_score || 0);
+  const targetScore = isAudited ? ((audit?.impact?.after_score ?? 1) * 100) : 100.0;
   const gapsData = audit?.gaps || product.gaps || {};
 
   const status =
@@ -64,8 +64,21 @@ export default function ProductCard({ product, highlighted = false, isDemo = fal
           : highlighted
             ? '0 18px 38px rgba(255, 107, 107, 0.08)'
             : 'none',
+        position: 'relative',
+        overflow: 'hidden',
       }}
     >
+      <div 
+        style={{ 
+          position: 'absolute', 
+          left: 0, 
+          top: 0, 
+          bottom: 0, 
+          width: 3, 
+          background: status.color,
+          zIndex: 1
+        }} 
+      />
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
@@ -88,17 +101,18 @@ export default function ProductCard({ product, highlighted = false, isDemo = fal
             flexWrap: 'wrap',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16, flex: '1 1 320px', minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 20, flex: '1 1 320px', minWidth: 0 }}>
             <div
               style={{
-                width: 58,
-                height: 58,
-                borderRadius: 18,
+                width: 64,
+                height: 64,
+                borderRadius: 20,
                 border: '1px solid var(--border)',
                 background: 'var(--bg-surface)',
                 overflow: 'hidden',
                 position: 'relative',
                 flexShrink: 0,
+                boxShadow: '0 8px 16px rgba(0,0,0,0.1)',
               }}
             >
               {imageSrc ? (
@@ -114,6 +128,7 @@ export default function ProductCard({ product, highlighted = false, isDemo = fal
                     color: 'var(--text-faint)',
                     fontFamily: 'var(--font-head)',
                     fontWeight: 800,
+                    fontSize: '1.1rem',
                   }}
                 >
                   AI
@@ -124,49 +139,85 @@ export default function ProductCard({ product, highlighted = false, isDemo = fal
                 <div
                   style={{
                     position: 'absolute',
-                    top: 8,
-                    right: 8,
-                    width: 20,
-                    height: 20,
+                    bottom: 4,
+                    right: 4,
+                    width: 22,
+                    height: 22,
                     borderRadius: '50%',
                     background: 'var(--accent)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     color: '#12141a',
+                    boxShadow: '0 2px 8px rgba(197, 229, 74, 0.4)',
                   }}
                 >
-                  <Zap size={10} />
+                  <Zap size={11} fill="currentColor" />
                 </div>
               )}
             </div>
 
             <div style={{ minWidth: 0, flex: 1 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 8 }}>
-                <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text)' }}>{product.title}</h3>
-                <span
-                  className="chip"
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 6 }}>
+                <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text)' }}>{product.title}</h3>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  {product.price && product.price !== "0.00" && (
+                    <span
+                      className="chip"
+                      style={{
+                        background: 'var(--bg-elevated)',
+                        borderColor: 'var(--border)',
+                        color: 'var(--text)',
+                        fontWeight: 900,
+                        fontSize: '0.7rem',
+                        padding: '2px 8px',
+                      }}
+                    >
+                      ₹{product.price}
+                    </span>
+                  )}
+                  <span
+                    className="chip"
+                    style={{
+                      background: status.bg,
+                      borderColor: status.border,
+                      color: status.color,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.08em',
+                      fontSize: '0.65rem',
+                      padding: '2px 8px',
+                    }}
+                  >
+                    {status.label}
+                  </span>
+                  {(audit?.intent?.category || product.intent?.category) && (
+                    <span
+                      className="chip"
+                      style={{
+                        background: 'var(--bg-elevated)',
+                        borderColor: 'var(--border)',
+                        color: 'var(--text-muted)',
+                        fontSize: '0.65rem',
+                        padding: '2px 8px',
+                      }}
+                    >
+                      {audit?.intent?.category || product.intent?.category}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                <p
                   style={{
-                    background: status.bg,
-                    borderColor: status.border,
-                    color: status.color,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.08em',
+                    color: 'var(--text-secondary)',
+                    lineHeight: 1.5,
+                    fontSize: '0.9rem',
+                    maxWidth: 760,
                   }}
                 >
-                  {status.label}
-                </span>
+                  {isAudited ? audit?.gaps?.insight || scan?.basic_gap : scan?.basic_gap}
+                </p>
               </div>
-              <p
-                style={{
-                  color: 'var(--text-secondary)',
-                  lineHeight: 1.6,
-                  fontSize: '0.92rem',
-                  maxWidth: 760,
-                }}
-              >
-                {isAudited ? audit?.gaps?.insight || scan?.basic_gap : scan?.basic_gap}
-              </p>
             </div>
           </div>
 
@@ -186,11 +237,26 @@ export default function ProductCard({ product, highlighted = false, isDemo = fal
                   AI score shift
                 </span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontSize: '1.7rem', fontWeight: 900, fontFamily: 'var(--font-head)' }}>{currentScore}</span>
+                  <span style={{ fontSize: '1.7rem', fontWeight: 900, fontFamily: 'var(--font-head)' }}>{currentScore.toFixed(1)}</span>
                   <ArrowRight size={16} color="var(--text-muted)" />
-                  <span style={{ fontSize: '1.7rem', fontWeight: 900, fontFamily: 'var(--font-head)', color: 'var(--accent)' }}>
-                    {targetScore}
-                  </span>
+                  <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ fontSize: '1.7rem', fontWeight: 900, fontFamily: 'var(--font-head)', color: 'var(--accent)' }}>
+                      {targetScore.toFixed(1)}
+                    </span>
+                    <span 
+                      style={{ 
+                        fontSize: '0.72rem', 
+                        fontWeight: 900, 
+                        color: 'var(--accent)',
+                        background: 'rgba(197, 229, 74, 0.1)',
+                        padding: '2px 6px',
+                        borderRadius: 6,
+                        border: '1px solid rgba(197, 229, 74, 0.2)'
+                      }}
+                    >
+                      +{(targetScore - currentScore).toFixed(1)}
+                    </span>
+                  </div>
                 </div>
               </div>
             ) : (
