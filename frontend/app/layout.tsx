@@ -1,36 +1,46 @@
 import type { Metadata } from "next";
-import {
-  Bricolage_Grotesque,
-  IBM_Plex_Mono,
-  Source_Sans_3,
-} from "next/font/google";
+import { DM_Sans, Fraunces, JetBrains_Mono, Manrope, Syne } from "next/font/google";
 import "./globals.css";
 
-const bricolage = Bricolage_Grotesque({
-  variable: "--font-bricolage",
+const dmSans = DM_Sans({
+  variable: "--font-dm",
   subsets: ["latin"],
-  weight: ["500", "600", "700", "800"],
   display: "swap",
-});
-
-const sourceSans = Source_Sans_3({
-  variable: "--font-source",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  display: "swap",
-});
-
-const plexMono = IBM_Plex_Mono({
-  variable: "--font-plex",
-  subsets: ["latin"],
   weight: ["400", "500", "600"],
+});
+
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
+  subsets: ["latin"],
   display: "swap",
+  weight: ["300", "700"],
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains",
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["400", "500"],
+});
+
+const manrope = Manrope({
+  variable: "--font-manrope",
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
+});
+
+const syne = Syne({
+  variable: "--font-syne",
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["500", "600", "700"],
 });
 
 export const metadata: Metadata = {
-  title: "RepOptimizer - AI Perception Intelligence for Shopify",
+  title: "RepOptimizer — AI Catalog Intelligence for Shopify",
   description:
-    "See how AI shopping agents perceive your store. Diagnose perception gaps and fix your product data for the agentic commerce era.",
+    "Audit your Shopify catalog and rewrite it to rank higher in AI-powered recommendation engines. Built for the Kasparro Hackathon Track 5.",
 };
 
 export default function RootLayout({
@@ -39,8 +49,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      data-theme="dark"
-      className={`${bricolage.variable} ${sourceSans.variable} ${plexMono.variable}`}
+      className={`${dmSans.variable} ${fraunces.variable} ${jetbrainsMono.variable} ${manrope.variable} ${syne.variable}`}
     >
       <body>{children}</body>
     </html>
