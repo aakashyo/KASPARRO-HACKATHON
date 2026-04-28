@@ -20,7 +20,7 @@ export default function PreviewModal({ isOpen, onClose, onConfirm, title, descri
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
       <div 
-        style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, rgba(15,23,42,0.82), rgba(37,99,235,0.34))', backdropFilter: 'blur(10px)' }} 
+        style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)' }} 
         onClick={onClose}
       />
       <div style={{ 
@@ -28,12 +28,12 @@ export default function PreviewModal({ isOpen, onClose, onConfirm, title, descri
         width: '100%', 
         maxWidth: 800, 
         maxHeight: '85vh', 
-        background: 'linear-gradient(145deg, rgba(255,255,255,0.98), rgba(239,246,255,0.96))', 
-        border: '1px solid var(--accent-border)', 
+        background: 'var(--bg-surface)', 
+        border: '1px solid var(--border)', 
         borderRadius: 24, 
         display: 'flex', 
         flexDirection: 'column', 
-        boxShadow: '0 28px 90px rgba(15,23,42,0.45)',
+        boxShadow: '0 24px 80px rgba(0,0,0,0.5)',
         overflow: 'hidden'
       }}>
         <div style={{ padding: '24px 32px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -46,7 +46,7 @@ export default function PreviewModal({ isOpen, onClose, onConfirm, title, descri
           </button>
         </div>
 
-        <div style={{ padding: '32px', overflowY: 'auto', flex: 1, background: 'linear-gradient(135deg, rgba(219,234,254,0.42), rgba(236,253,245,0.36))' }}>
+        <div style={{ padding: '32px', overflowY: 'auto', flex: 1, background: 'rgba(0,0,0,0.2)' }}>
           {contentType === 'faq' && (
             <div style={{ background: '#fff', color: '#333', padding: 40, borderRadius: 12, fontSize: 14, boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
                <div dangerouslySetInnerHTML={{ __html: content }} />
@@ -110,8 +110,8 @@ export default function PreviewModal({ isOpen, onClose, onConfirm, title, descri
                padding: '12px 32px', 
                borderRadius: 12, 
                border: 'none', 
-               background: 'var(--gradient-primary)', 
-               color: '#FFFFFF', 
+               background: 'var(--accent)', 
+               color: '#08080c', 
                fontSize: 14, 
                fontWeight: 800, 
                cursor: loading ? 'not-allowed' : 'pointer',

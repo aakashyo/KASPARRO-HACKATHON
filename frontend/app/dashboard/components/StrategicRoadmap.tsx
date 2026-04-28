@@ -3,7 +3,6 @@
 
 import React, { useState } from 'react';
 import { Compass, CheckCircle2, AlertCircle, Clock, Zap, ShieldCheck, TrendingUp, Loader2 } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { pushFAQPage, previewFAQPage } from '@/lib/api';
 import PreviewModal from './PreviewModal';
 
@@ -17,7 +16,7 @@ export default function StrategicRoadmap({ roadmap, products, onMegaSync }: { ro
     try {
       await pushFAQPage(products);
       setCompletedActions(prev => [...prev, 'push_faq']);
-      alert("Success! Your Shopping Guide has been published to Shopify.");
+      alert("Success! Your AI Discovery Guide has been published to Shopify.");
       setPreview(null);
     } catch (err: any) {
       alert("Failed to build FAQ Guide: " + err.message);
@@ -44,8 +43,8 @@ export default function StrategicRoadmap({ roadmap, products, onMegaSync }: { ro
         const { html } = await previewFAQPage(products);
         setPreview({
           isOpen: true,
-        title: 'Review Shopping Guide',
-        description: 'This page will be published as "Shopping Assistant Guide" in your Shopify pages.',
+          title: 'Review AI Discovery Guide',
+          description: 'This page will be published as "AI Shopping Assistant Guide" in your Shopify pages.',
           contentType: 'faq',
           content: html
         });
@@ -59,14 +58,14 @@ export default function StrategicRoadmap({ roadmap, products, onMegaSync }: { ro
       const safeFixes = allFixable.filter(p => !p.guardrail || p.guardrail.is_safe);
       
       if (safeFixes.length === 0) {
-        alert("No catalog fixes available to sync.");
+        alert("No AI fixes available to sync.");
         return;
       }
 
       setPreview({
         isOpen: true,
         title: 'Review Mega-Sync Fixes',
-        description: `You are about to push optimized descriptions and tags to ${safeFixes.length} products.`,
+        description: `You are about to push AI-optimized descriptions and tags to ${safeFixes.length} products.`,
         contentType: 'bulk_fixes',
         content: safeFixes.map(p => ({
           title: p.title,
@@ -80,10 +79,10 @@ export default function StrategicRoadmap({ roadmap, products, onMegaSync }: { ro
   };
 
   const getStatusIcon = (status: string, phase: string) => {
-    if (completedActions.includes(phase)) return <CheckCircle2 size={16} color="var(--ok)" />;
-    if (status === 'critical') return <AlertCircle size={16} color="var(--danger)" />;
-    if (status === 'warning') return <Clock size={16} color="var(--warn)" />;
-    return <CheckCircle2 size={16} color="var(--ok)" />;
+    if (completedActions.includes(phase)) return <CheckCircle2 size={16} color="#22c55e" />;
+    if (status === 'critical') return <AlertCircle size={16} color="#ef4444" />;
+    if (status === 'warning') return <Clock size={16} color="#f59e0b" />;
+    return <CheckCircle2 size={16} color="#22c55e" />;
   };
 
   const getStatusLabel = (status: string, phase: string) => {
@@ -93,35 +92,25 @@ export default function StrategicRoadmap({ roadmap, products, onMegaSync }: { ro
 
   return (
     <div className="panel chart-card" style={{ marginTop: 18, marginBottom: 24 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 28 }}>
-        <div style={{ padding: 12, borderRadius: 14, background: 'var(--ok-soft)', color: 'var(--ok)', border: '1px solid var(--ok-border)' }}>
-          <Compass size={24} />
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
+        <div style={{ padding: 10, borderRadius: 12, background: 'var(--accent-glow)', color: 'var(--accent)', border: '1px solid var(--accent-border)' }}>
+          <Compass size={20} />
         </div>
         <div>
-          <h2 style={{ fontWeight: 700, fontSize: 24, color: 'var(--text)', margin: 0 }}>Strategic Growth Roadmap</h2>
-          <p style={{ fontSize: 16, color: 'var(--text-secondary)', margin: '4px 0 0 0' }}>A prioritized, 3-phase action plan to make your store easier to find, understand, and trust.</p>
+          <h2 style={{ fontFamily: 'var(--font-head)', fontWeight: 800, fontSize: 18, color: 'var(--text)', margin: 0 }}>Strategic AI Growth Roadmap</h2>
+          <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '4px 0 0 0' }}>A prioritized, 3-phase action plan to maximize your store AI-driven discoverability and conversion.</p>
         </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16 }}>
         {roadmap.map((item) => (
-          <motion.div 
-            key={item.phase} 
-            className="panel" 
-            whileHover={{ y: -4, boxShadow: 'var(--shadow-card)' }}
-            style={{ 
-              background: 'linear-gradient(145deg, rgba(255,255,255,0.98), rgba(248,250,252,0.9))', 
-              padding: 24, 
-              opacity: completedActions.includes(item.action_type) ? 0.75 : 1,
-              display: 'flex',
-              flexDirection: 'column'
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 999, background: 'var(--bg)', color: 'var(--text-secondary)', border: '1px solid var(--border)' }}>
+          <div key={item.phase} className="surface-muted" style={{ position: 'relative', padding: 20, transition: 'all 0.2s', opacity: completedActions.includes(item.action_type) ? 0.7 : 1 }}>
+            
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+              <div style={{ fontSize: 10, fontWeight: 800, padding: '4px 8px', borderRadius: 999, background: 'var(--bg-elevated)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}>
                 PHASE {item.phase}
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700, color: item.status === 'critical' && !completedActions.includes(item.action_type) ? 'var(--danger)' : 'var(--text-muted)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, fontWeight: 700, color: item.status === 'critical' && !completedActions.includes(item.action_type) ? '#ef4444' : 'var(--text-muted)' }}>
                 {getStatusIcon(item.status, item.action_type)}
                 {getStatusLabel(item.status, item.action_type)}
               </div>
@@ -130,7 +119,7 @@ export default function StrategicRoadmap({ roadmap, products, onMegaSync }: { ro
             <h3 style={{ fontSize: 15, fontWeight: 800, color: 'var(--text)', margin: '0 0 8px 0', fontFamily: 'var(--font-head)' }}>{item.title}</h3>
             <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: 16, minHeight: 36 }}>{item.task}</p>
             
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, marginTop: 'auto' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
                 <span style={{ fontSize: 9, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Est. Impact</span>
                 <span style={{ fontSize: 11, color: 'var(--text)', fontWeight: 700 }}>{item.impact}</span>
@@ -140,32 +129,16 @@ export default function StrategicRoadmap({ roadmap, products, onMegaSync }: { ro
             <button
               onClick={() => handleAction(item.action_type)}
               disabled={loadingAction !== null || completedActions.includes(item.action_type)}
-              style={{ 
-                width: '100%', 
-                minHeight: 46,
-                background: completedActions.includes(item.action_type) ? 'transparent' : 'var(--gradient-primary)', 
-                color: completedActions.includes(item.action_type) ? 'var(--ok)' : '#FFFFFF', 
-                border: completedActions.includes(item.action_type) ? '1px solid var(--ok)' : 'none', 
-                borderRadius: 12, 
-                padding: '12px', 
-                fontSize: 13, 
-                fontWeight: 700, 
-                cursor: completedActions.includes(item.action_type) ? 'default' : 'pointer', 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center', 
-                gap: 8, 
-                boxShadow: completedActions.includes(item.action_type) ? 'none' : '0 12px 24px rgba(37, 99, 235, 0.2)'
-              }}
+              style={{ width: '100%', background: completedActions.includes(item.action_type) ? 'transparent' : 'var(--accent)', color: completedActions.includes(item.action_type) ? 'var(--ok)' : '#08080c', border: completedActions.includes(item.action_type) ? '1px solid var(--ok)' : 'none', borderRadius: 8, padding: '10px', fontSize: 12, fontWeight: 700, cursor: completedActions.includes(item.action_type) ? 'default' : 'pointer', fontFamily: 'var(--font-head)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'all 0.2s' }}
             >
-              {loadingAction === item.action_type || (item.action_type === 'push_faq' && loadingAction === 'preview_faq') ? <Loader2 size={16} className="spin" /> : (
+              {loadingAction === item.action_type ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> : (
                 <>
-                  {completedActions.includes(item.action_type) ? <CheckCircle2 size={16} /> : phaseIcons[item.action_type]}
+                  {completedActions.includes(item.action_type) ? <CheckCircle2 size={14} /> : phaseIcons[item.action_type]}
                   {completedActions.includes(item.action_type) ? 'DONE' : phaseButtonLabels[item.action_type]}
                 </>
               )}
             </button>
-          </motion.div>
+          </div>
         ))}
       </div>
       

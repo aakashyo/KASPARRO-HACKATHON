@@ -68,7 +68,7 @@ export default function QuerySimulator({ products }: { products: any[] }) {
 
         return {
           key: personaRes.persona_key || 'default',
-          name: personaRes.persona || 'Shopper persona',
+          name: personaRes.persona || 'AI Agent',
           top,
           rejected,
         };
@@ -80,7 +80,7 @@ export default function QuerySimulator({ products }: { products: any[] }) {
       setResults([
         {
           key: 'default',
-          name: 'Demo shopper',
+          name: 'Demo fallback AI',
           top: products.slice(0, 2).map((product, index) => ({
             id: product.id,
             title: product.title,
@@ -110,7 +110,7 @@ export default function QuerySimulator({ products }: { products: any[] }) {
         <div style={{ maxWidth: 640 }}>
           <span className="section-kicker">Multi-persona query simulation</span>
           <p className="section-copy">
-            Shoppers are not a monolith. Run the same query across budget, technical-spec, and gifting behaviors to
+            AI shoppers are not a monolith. Run the same query across budget, technical-spec, and gifting behaviors to
             see where your catalog wins or drops.
           </p>
         </div>
@@ -211,7 +211,7 @@ export default function QuerySimulator({ products }: { products: any[] }) {
 
               {results[activeTab].top.length === 0 ? (
                 <div className="surface-muted" style={{ padding: 16 }}>
-                  <p className="faded-note">This persona found no relevant matches in the current catalog snapshot.</p>
+                  <p className="faded-note">This AI found no relevant matches in the current catalog snapshot.</p>
                 </div>
               ) : (
                 <>

@@ -33,7 +33,7 @@ type ThemeKey = 'light' | 'dark';
 const statusCopy: Record<Exclude<DashboardStatus, 'idle' | 'complete' | 'error'>, string> = {
   initializing: 'Warming the audit engine and checking the catalog surface.',
   scanning: 'Running the deterministic sweep to catch obvious visibility gaps.',
-  auditing: 'Deep-auditing product clarity against shopper expectations.',
+  auditing: 'Deep-auditing product perception against shopping AI expectations.',
 };
 
 export default function Dashboard() {
@@ -43,7 +43,7 @@ export default function Dashboard() {
   const [storeScore, setStoreScore] = useState<any>(null);
   const [status, setStatus] = useState<DashboardStatus>('idle');
   const [progress, setProgress] = useState({ current: 0, total: 0 });
-  const [message, setMessage] = useState('Initializing catalog audit...');
+  const [message, setMessage] = useState('Initializing AI Audit...');
   const [isDemo, setIsDemo] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -51,7 +51,7 @@ export default function Dashboard() {
   const [filter, setFilter] = useState<FilterKey>('all');
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncComplete, setSyncComplete] = useState(false);
-  const [theme, setTheme] = useState<ThemeKey>('light');
+  const [theme, setTheme] = useState<ThemeKey>('dark');
   const [selectedDimension, setSelectedDimension] = useState<any>(null);
 
   const applyTheme = (nextTheme: ThemeKey) => {
@@ -61,7 +61,7 @@ export default function Dashboard() {
   };
 
   const toggleTheme = () => {
-    applyTheme(theme === 'light' ? 'dark' : 'light');
+    applyTheme(theme === 'dark' ? 'light' : 'dark');
   };
 
   const run = async (forceDemo = false) => {
@@ -159,7 +159,7 @@ export default function Dashboard() {
     setMounted(true);
 
     const savedTheme = localStorage.getItem('repoptimizer-theme');
-    const nextTheme: ThemeKey = savedTheme === 'dark' ? 'dark' : 'light';
+    const nextTheme: ThemeKey = savedTheme === 'light' ? 'light' : 'dark';
     applyTheme(nextTheme);
 
     const demo = localStorage.getItem('demo_mode') === 'true';
@@ -228,7 +228,7 @@ export default function Dashboard() {
       alert(
         skippedCount > 0
           ? `${skippedCount} products were skipped due to policy guardrail violations. No safe fixes available to sync.`
-          : 'No catalog fixes available to sync.'
+          : 'No AI fixes available to sync.'
       );
       setIsSyncing(false);
       return;
@@ -267,9 +267,9 @@ export default function Dashboard() {
     : 'var(--text-faint)';
 
   const statCards = [
-    { label: 'Scanned', value: analyzedCount, sub: 'Products surfaced', color: 'var(--accent)' },
-    { label: 'Critical', value: stats.critical, sub: 'Urgent catalog gaps', color: 'var(--danger)' },
-    { label: 'Audited', value: auditedCount, sub: 'Deep product reviews complete', color: 'var(--ok)' },
+    { label: 'Scanned', value: analyzedCount, sub: 'Products surfaced', color: 'var(--info)' },
+    { label: 'Critical', value: stats.critical, sub: 'Urgent recommendation gaps', color: 'var(--danger)' },
+    { label: 'Audited', value: auditedCount, sub: 'Deep AI reviews complete', color: 'var(--accent)' },
     { label: 'Time saved', value: `${Math.floor(timeSaved)}s`, sub: 'Automation reclaimed', color: 'var(--amber)' },
   ];
 
@@ -297,7 +297,7 @@ export default function Dashboard() {
               </div>
               <div className="brand-copy">
                 <span className="brand-name">RepOptimizer</span>
-                <span className="brand-tagline">Catalog quality workspace</span>
+                <span className="brand-tagline">Catalog perception dashboard</span>
               </div>
             </div>
           </button>
@@ -337,19 +337,8 @@ export default function Dashboard() {
         </nav>
 
         <main className="dashboard-main">
-          <motion.section 
-            className="dashboard-top-grid"
-            initial="hidden"
-            animate="show"
-            variants={{
-              hidden: { opacity: 0 },
-              show: { opacity: 1, transition: { staggerChildren: 0.1 } }
-            }}
-          >
-            <motion.div 
-              variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
-              className="panel score-hero"
-            >
+          <section className="dashboard-top-grid">
+            <div className="panel panel--glow score-hero">
               <div className="stack" style={{ gap: 18 }}>
                 <div
                   style={{
@@ -361,23 +350,23 @@ export default function Dashboard() {
                   }}
                 >
                   <span className="section-kicker" style={{ marginBottom: 0 }}>
-                    Store readiness index
+                    AI readiness index
                   </span>
                   <span className="ghost-pill">{isProcessing ? 'Audit running' : 'Decision layer active'}</span>
                 </div>
 
                 <div className="score-shell">
                   <div>
-                    <div className="score-value" style={{ color: scoreColor, fontWeight: 700 }}>
+                    <div className="score-value" style={{ color: scoreColor }}>
                       {showsScores ? storeScore.overall_score : '--'}
                     </div>
-                    <div className="score-sub">out of 100 storewide presentation confidence</div>
+                    <div className="score-sub">out of 100 storewide recommendation confidence</div>
                   </div>
                 </div>
 
                 <p className="section-copy" style={{ maxWidth: 620 }}>
                   {showsScores
-                    ? 'This score reflects how clearly your catalog communicates product intent, trust, structure, and searchable context to modern shopping journeys.'
+                    ? 'This score reflects how clearly your catalog communicates product intent, trust, structure, and searchable context to shopping AI systems.'
                     : statusCopy[status as keyof typeof statusCopy] || 'Preparing the dashboard.'}
                 </p>
               </div>
@@ -385,48 +374,43 @@ export default function Dashboard() {
               <div className="stack" style={{ gap: 14 }}>
                 <div className="progress-shell">
                   <div className="progress-track" style={{ flex: 1 }}>
-                    <div className="progress-fill" style={{ width: `${progressWidth}%`, background: 'var(--accent)' }} />
+                    <div className="progress-fill" style={{ width: `${progressWidth}%` }} />
                   </div>
                   <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', fontSize: '0.82rem' }}>
                     {progress.current}/{progress.total || 100}
                   </span>
                 </div>
 
-                <div className="flash-card" style={{ background: 'var(--bg-soft)', border: '1px solid var(--border)' }}>
+                <div className="flash-card">
                   <Search size={18} color="var(--accent)" />
                   <div>
                     <strong style={{ display: 'block', fontSize: '0.96rem', marginBottom: 4 }}>{message}</strong>
                     <span className="faded-note">
                       {status === 'complete'
-                        ? 'Use the cards below to inspect dimensions, roadmap actions, and product-by-product catalog gaps.'
+                        ? 'Use the cards below to inspect dimensions, roadmap actions, and product-by-product AI gaps.'
                         : 'Streaming updates appear here while the catalog scan progresses.'}
                     </span>
                   </div>
                 </div>
               </div>
-            </motion.div>
+            </div>
 
             <div className="metric-grid">
               {statCards.map((stat) => (
-                <motion.div 
-                  key={stat.label} 
-                  variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
-                  className="metric-card"
-                  style={{ borderLeft: `4px solid ${stat.color}` }}
-                >
+                <div key={stat.label} className="metric-card">
                   <span className="metric-label">{stat.label}</span>
                   <div>
-                    <div className="metric-value" style={{ color: 'var(--text)', fontWeight: 700 }}>
+                    <div className="metric-value" style={{ color: stat.color }}>
                       {stat.value}
                     </div>
                     <p className="faded-note" style={{ marginTop: 8 }}>
                       {stat.sub}
                     </p>
                   </div>
-                </motion.div>
+                </div>
               ))}
             </div>
-          </motion.section>
+          </section>
 
           {showsScores && storeScore.business_impact && (
             <section className="panel impact-card">
@@ -443,10 +427,10 @@ export default function Dashboard() {
                 Based on {analyzedCount} analyzed products, the system estimates that
                 {' '}
                 <strong style={{ color: 'var(--danger)' }}>
-                  {storeScore.business_impact.critical_fixes_needed} critical catalog clarity gaps
+                  {storeScore.business_impact.critical_fixes_needed} critical AI perception gaps
                 </strong>
                 {' '}
-                are suppressing product visibility. Fixing the structure first creates the fastest lift.
+                are suppressing recommendation visibility. Fixing the structure first creates the fastest lift.
               </p>
 
               <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
@@ -467,9 +451,8 @@ export default function Dashboard() {
                   disabled={isSyncing || syncComplete}
                   style={{
                     background: syncComplete
-                      ? 'var(--ok)'
-                      : 'var(--gradient-primary)',
-                    boxShadow: '0 12px 24px rgba(37, 99, 235, 0.24)'
+                      ? 'linear-gradient(135deg, var(--ok), #8bf0c9)'
+                      : 'linear-gradient(135deg, var(--accent), var(--accent-strong))',
                   }}
                 >
                   {isSyncing ? (
@@ -509,7 +492,7 @@ export default function Dashboard() {
                   <div>
                     <span className="section-kicker">Dimension radar</span>
                     <h2 className="section-title" style={{ marginBottom: 8 }}>
-                      Which parts of the catalog are helping or hurting customer trust?
+                      Which parts of the catalog are helping or hurting AI trust?
                     </h2>
                     <p className="section-copy">
                       Click any dimension card to open more context and see what that score means inside the catalog.
@@ -540,7 +523,7 @@ export default function Dashboard() {
                   Gap distribution
                 </h2>
                 <p className="section-copy" style={{ marginBottom: 20 }}>
-                  This view shows how many products are still critical, in warning territory, or ready to present.
+                  This view shows how many products are still critical, in warning territory, or already recommendation-ready.
                 </p>
 
                 <div style={{ height: 220 }}>
@@ -582,8 +565,8 @@ export default function Dashboard() {
             <StrategicRoadmap roadmap={storeScore.roadmap} products={productList} onMegaSync={handleMegaSync} />
           )}
 
-          <section className="panel section-bar" style={{ padding: '28px 32px', background: '#FFFFFF' }}>
-            <div className="filter-row" style={{ marginBottom: 20 }}>
+          <section className="panel section-bar">
+            <div className="filter-row">
               <span className="section-kicker" style={{ marginBottom: 0 }}>
                 Product queue
               </span>
@@ -601,11 +584,6 @@ export default function Dashboard() {
                       type="button"
                       className={`filter-chip ${filter === item.id ? 'filter-chip--active' : ''}`}
                       onClick={() => setFilter(item.id as FilterKey)}
-                      style={{
-                        background: filter === item.id ? 'var(--gradient-primary)' : 'transparent',
-                        color: filter === item.id ? '#FFFFFF' : 'var(--text-secondary)',
-                        borderColor: filter === item.id ? 'transparent' : 'var(--border)'
-                      }}
                     >
                       {item.label}
                     </button>
@@ -614,14 +592,14 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div className="progress-shell" style={{ background: 'var(--bg)', padding: '16px 20px', borderRadius: 12 }}>
+            <div className="progress-shell">
               <div>
                 <div style={{ fontWeight: 700, marginBottom: 4 }}>Live processing status</div>
                 <p className="faded-note">
                   {isProcessing ? message : `Showing ${sortedProducts.length} products in the current filter.`}
                 </p>
               </div>
-              <div className="progress-track" style={{ height: 8, background: 'var(--border)' }}>
+              <div className="progress-track">
                 <div className="progress-fill" style={{ width: `${progressWidth}%` }} />
               </div>
             </div>
@@ -671,7 +649,7 @@ export default function Dashboard() {
 
           {status === 'complete' && (
             <section className="panel chart-card" style={{ marginTop: 28 }}>
-              <span className="section-kicker">Search testing lab</span>
+              <span className="section-kicker">Search simulation lab</span>
               <div
                 style={{
                   display: 'flex',
@@ -684,16 +662,16 @@ export default function Dashboard() {
               >
                 <div>
                   <h2 className="section-title" style={{ marginBottom: 8 }}>
-                    Test how different shoppers rank the catalog now.
+                    Test how different AI shoppers rank the catalog now.
                   </h2>
                   <p className="section-copy">
-                    Compare confidence across multiple buying personas and inspect why products are
+                    Compare recommendation confidence across multiple buying personas and inspect why products are
                     accepted or rejected.
                   </p>
                 </div>
                 <span className="status-pill">
                   <Search size={14} />
-                  Query studio live
+                  Query sandbox live
                 </span>
               </div>
 

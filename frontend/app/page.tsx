@@ -7,15 +7,12 @@ import {
   ArrowRight,
   BarChart2,
   BrainCircuit,
-  CheckCircle2,
   Lock,
-  PackageCheck,
   ShieldCheck,
   Sparkles,
   Target,
   Zap,
 } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { fetchConfig, validateCredentials } from '@/lib/api';
 
 const features = [
@@ -76,15 +73,6 @@ const signalStats = [
   { value: '3x', label: 'Buyer personas simulated' },
 ];
 
-const marqueeCards = [
-  { title: 'Clear product story', score: '94', tone: 'sage' },
-  { title: 'Stronger trust cues', score: '81', tone: 'gold' },
-  { title: 'Search-ready tags', score: '88', tone: 'clay' },
-  { title: 'Cleaner descriptions', score: '91', tone: 'ink' },
-  { title: 'Policy confidence', score: '79', tone: 'sage' },
-  { title: 'Better buyer fit', score: '86', tone: 'gold' },
-];
-
 export default function LandingPage() {
   const router = useRouter();
   const heroRef = useRef<HTMLDivElement>(null);
@@ -125,6 +113,20 @@ export default function LandingPage() {
     loadConfig();
   }, []);
 
+  useEffect(() => {
+    const node = heroRef.current;
+    if (!node) return;
+
+    const move = (event: MouseEvent) => {
+      const rect = node.getBoundingClientRect();
+      node.style.setProperty('--mx', `${event.clientX - rect.left}px`);
+      node.style.setProperty('--my', `${event.clientY - rect.top}px`);
+    };
+
+    window.addEventListener('mousemove', move);
+    return () => window.removeEventListener('mousemove', move);
+  }, []);
+
   const handleStart = async (event: React.FormEvent) => {
     event.preventDefault();
     setLoading(true);
@@ -152,162 +154,120 @@ export default function LandingPage() {
   };
 
   return (
-    <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
+    <div>
       <div className="page-shell">
         <nav className="site-nav">
           <div className="brand-lockup">
             <div className="brand-mark">
-              <BrainCircuit size={18} color="#FFFFFF" />
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.1"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+              </svg>
             </div>
             <div className="brand-copy">
               <span className="brand-name">RepOptimizer</span>
-              <span className="brand-tagline">Studio Light • Kasparro 2026</span>
+              <span className="brand-tagline">Kasparro Hackathon Track 5</span>
             </div>
           </div>
 
           <div className="nav-actions">
-            <span className="ghost-pill" style={{ background: 'var(--accent-soft)', color: 'var(--accent-strong)', borderColor: 'var(--accent-border)' }}>
+            <span className="status-pill">
               <Sparkles size={14} />
-              AI Perception Hub
+              Agentic commerce signal lab
             </span>
             <button type="button" className="btn-secondary" onClick={handleDemo}>
-              Demo access
+              Explore demo
             </button>
           </div>
         </nav>
 
         <main className="landing-main">
-          <motion.section 
-            className="hero-grid landing-stage"
-            initial="hidden"
-            animate="show"
-            variants={{
-              hidden: { opacity: 0 },
-              show: { opacity: 1, transition: { staggerChildren: 0.15 } }
-            }}
-          >
-            <motion.div
-              variants={{ hidden: { opacity: 0, y: 30 }, show: { opacity: 1, y: 0 } }}
-              className="panel hero-copy"
+          <section className="hero-grid">
+            <div
+              ref={heroRef}
+              className="panel panel--glow hero-copy anim-fade-up"
               style={{
-                boxShadow: 'var(--shadow-card)',
-                padding: '56px'
+                background:
+                  'radial-gradient(820px circle at var(--mx, 26%) var(--my, 18%), rgba(197, 229, 74, 0.12), transparent 52%), linear-gradient(180deg, rgba(255,255,255,0.05), transparent), var(--bg-card)',
               }}
             >
-              <div className="commerce-orbit" aria-hidden="true">
-                <span />
-                <span />
-                <span />
-              </div>
               <div className="stack" style={{ gap: 26 }}>
                 <span className="eyebrow">
-                  <PackageCheck size={14} />
-                  Storefront readiness studio
+                  <Sparkles size={14} />
+                  AI discovery control room
                 </span>
 
-                <div className="catalog-marquee catalog-marquee--hero" aria-hidden="true">
-                  <div className="catalog-marquee__track">
-                    {[...marqueeCards, ...marqueeCards].map((card, index) => (
-                      <div key={`${card.title}-hero-${index}`} className={`catalog-marquee__card catalog-marquee__card--${card.tone}`}>
-                        <span>{card.title}</span>
-                        <strong>{card.score}</strong>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="stack" style={{ gap: 20 }}>
-                  <h1 className="hero-title" style={{ fontWeight: 800, lineHeight: 1.03 }}>
-                    Make every product
-                    <br />
-                    <span className="hero-gradient">easy to choose.</span>
+                <div className="stack" style={{ gap: 18 }}>
+                  <h1 className="hero-title">
+                    Make your catalog readable to
+                    {' '}
+                    <span className="hero-gradient">AI shoppers.</span>
                   </h1>
-                  <p className="hero-summary" style={{ color: 'var(--text-secondary)' }}>
-                    RepOptimizer turns unclear listings into confident shopping signals. Audit your catalog, spot weak
-                    product stories, and prepare cleaner descriptions, tags, and trust content from one focused workspace.
+                  <p className="hero-summary">
+                    RepOptimizer turns vague product listings into recommendation-ready inventory. We simulate how
+                    shopping LLMs interpret your store, surface the perception gaps, and prepare fixes that actually
+                    improve discoverability.
                   </p>
                 </div>
 
-                <div className="hero-actions" style={{ marginTop: 8 }}>
-                  <button type="button" className="btn-primary" onClick={handleDemo} style={{ height: 64, padding: '0 38px', fontSize: '1.2rem' }}>
+                <div className="hero-actions">
+                  <button type="button" className="btn-primary" onClick={handleDemo}>
                     Walk through the demo
-                    <ArrowRight size={20} />
+                    <ArrowRight size={16} />
                   </button>
-                  <div className="flash-card" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
-                    <BarChart2 size={18} color="var(--accent)" />
+                  <div className="flash-card">
+                    <BarChart2 size={18} color="var(--amber)" />
                     <div>
-                      <strong style={{ display: 'block', fontSize: '1.04rem', marginBottom: 4, color: 'var(--text)' }}>
-                        Precision signals for the agentic age.
+                      <strong style={{ display: 'block', fontSize: '0.92rem', marginBottom: 4 }}>
+                        {count} live-style audits benchmarked this week
                       </strong>
-                      <span className="faded-note" style={{ color: 'var(--text-secondary)' }}>
-                        Designed for merchants who need ranking signals, not just dashboards.
+                      <span className="faded-note">
+                        Designed for teams who need clearer AI ranking signals, not just prettier dashboards.
                       </span>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="commerce-flow" aria-hidden="true">
-                {[
-                  ['Product copy', '92'],
-                  ['Trust signals', '76'],
-                  ['Search tags', '88'],
-                ].map(([label, value], index) => (
-                  <motion.div
-                    key={label}
-                    className="commerce-flow-card"
-                    initial={{ opacity: 0, y: 20, rotate: index === 1 ? -2 : 2 }}
-                    animate={{ opacity: 1, y: [0, -8, 0], rotate: index === 1 ? [-2, 1, -2] : [2, -1, 2] }}
-                    transition={{ delay: 0.35 + index * 0.15, duration: 4.5 + index, repeat: Infinity, ease: 'easeInOut' }}
-                  >
-                    <CheckCircle2 size={17} />
-                    <span>{label}</span>
-                    <strong>{value}</strong>
-                  </motion.div>
-                ))}
-              </div>
-
-              <div className="stack" style={{ gap: 24, marginTop: 40 }}>
-                <motion.div 
-                  className="hero-feature-grid"
-                  variants={{
-                    show: { transition: { staggerChildren: 0.1 } }
-                  }}
-                >
+              <div className="stack" style={{ gap: 18 }}>
+                <div className="hero-feature-grid">
                   {features.map((feature) => (
-                    <motion.div 
-                      key={feature.title} 
-                      className="hero-feature" 
-                      style={{ background: 'var(--bg-soft)', border: '1px solid var(--border)', borderRadius: 16, padding: 16 }}
-                      variants={{ 
-                        hidden: { opacity: 0, y: 15 }, 
-                        show: { opacity: 1, y: 0, transition: { duration: 0.5 } } 
-                      }}
-                      whileHover={{ y: -4, borderColor: 'var(--accent-border)', boxShadow: 'var(--shadow-hover)' }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
-                        <motion.div 
-                          style={{ padding: 8, borderRadius: 10, background: 'var(--accent-soft)', border: '1px solid var(--accent-border)' }}
-                          whileHover={{ rotate: 8, scale: 1.05 }}
-                        >
-                          {feature.icon}
-                        </motion.div>
-                        <strong style={{ fontSize: '0.95rem' }}>{feature.title}</strong>
+                    <div key={feature.title} className="hero-feature">
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        {feature.icon}
+                        <strong>{feature.title}</strong>
                       </div>
-                      <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>{feature.desc}</p>
-                    </motion.div>
+                      <p>{feature.desc}</p>
+                    </div>
                   ))}
-                </motion.div>
+                </div>
+
+                <div className="hero-metrics">
+                  <div className="hero-stat">
+                    <strong>Merchant intent</strong>
+                    <span>What the product should rank for according to the business.</span>
+                  </div>
+                  <div className="hero-stat">
+                    <strong>Model perception</strong>
+                    <span>What the AI actually understands based on your existing listing data.</span>
+                  </div>
+                  <div className="hero-stat">
+                    <strong>Actionable sync</strong>
+                    <span>The fastest path from diagnostic insight to approved catalog repair.</span>
+                  </div>
+                </div>
               </div>
-            </motion.div>
+            </div>
 
-            <motion.aside 
-              variants={{ hidden: { opacity: 0, x: 20 }, show: { opacity: 1, x: 0 } }}
-              className="panel hero-form-card"
-              style={{ boxShadow: 'var(--shadow-card)', padding: '42px' }}
-            >
-
-
+            <aside className="panel hero-form-card anim-fade-up anim-d2">
               <div className="terminal-ribbon">
                 <div className="terminal-dots">
                   <span />
@@ -319,7 +279,7 @@ export default function LandingPage() {
 
               <div className="terminal-panel">
                 <span className="section-kicker">Launch an audit</span>
-                <h2 className="section-title">Connect your store and start with clarity.</h2>
+                <h2 className="section-title">Connect your store with a cleaner starting point.</h2>
                 <p className="section-copy">
                   We validate the Shopify URL, preserve sanitized credentials locally, and move straight into the audit
                   dashboard once access is confirmed.
@@ -329,7 +289,7 @@ export default function LandingPage() {
               <div className="flash-card">
                 <Sparkles size={18} color="var(--accent)" />
                 <div>
-                      <strong style={{ display: 'block', fontSize: '1.05rem', marginBottom: 4 }}>
+                  <strong style={{ display: 'block', fontSize: '0.94rem', marginBottom: 4 }}>
                     Demo mode is ready immediately
                   </strong>
                   <span className="faded-note">
@@ -421,33 +381,19 @@ export default function LandingPage() {
                   Start with demo data instead
                 </button>
               </form>
-            </motion.aside>
-          </motion.section>
+            </aside>
+          </section>
 
-          <motion.section 
-            variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
-            className="panel signal-strip"
-            style={{ background: '#FFFFFF', border: '1px solid var(--border)' }}
-          >
-            {signalStats.map((item, index) => (
-              <motion.div 
-                key={item.label} 
-                className="signal-block"
-                variants={{ hidden: { opacity: 0, scale: 0.9 }, show: { opacity: 1, scale: 1 } }}
-                transition={{ delay: index * 0.1, duration: 0.5 }}
-                whileHover={{ scale: 1.05 }}
-              >
-                <strong className="signal-value" style={{ color: 'var(--accent)' }}>{item.value}</strong>
+          <section className="panel signal-strip anim-fade-up anim-d3">
+            {signalStats.map((item) => (
+              <div key={item.label} className="signal-block">
+                <strong className="signal-value">{item.value}</strong>
                 <span className="signal-label">{item.label}</span>
-              </motion.div>
+              </div>
             ))}
-          </motion.section>
+          </section>
 
-          <motion.section 
-            variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
-            className="panel" 
-            style={{ marginTop: 22, padding: '48px', background: '#FFFFFF' }}
-          >
+          <section className="panel" style={{ marginTop: 22, padding: '32px' }}>
             <span className="section-kicker">How the system thinks</span>
             <div
               style={{
@@ -456,65 +402,49 @@ export default function LandingPage() {
                 justifyContent: 'space-between',
                 gap: 20,
                 flexWrap: 'wrap',
-                marginBottom: 32
               }}
             >
               <div style={{ maxWidth: 620 }}>
-                <h2 className="section-title" style={{ fontSize: '2.2rem', marginBottom: 12 }}>A storefront audit that behaves more like an operations workflow.</h2>
-                <p className="section-copy" style={{ fontSize: '1.1rem' }}>
+                <h2 className="section-title">A storefront audit that behaves more like an operations workflow.</h2>
+                <p className="section-copy">
                   The interface is built around one outcome: make it obvious why a product is invisible to AI and what
-                  to fix first. Every stage is meant to move from signal to action.
+                  to fix first. Every stage is meant to move from signal to action, not just show charts for the sake
+                  of looking technical.
                 </p>
               </div>
-              <span className="ghost-pill" style={{ background: 'var(--accent-soft)', color: 'var(--accent-strong)', borderColor: 'var(--accent-border)' }}>
+              <span className="metric-pill">
                 <Target size={14} />
-                Precision Audit Architecture
+                Designed for merchants under time pressure
               </span>
             </div>
 
             <div className="step-grid">
-              {steps.map((step, index) => (
-                <motion.article 
-                  key={step.number} 
-                  className="step-card" 
-                  style={{ background: 'var(--bg-soft)', border: '1px solid var(--border)', padding: 24, borderRadius: 16 }}
-                  variants={{ hidden: { opacity: 0, y: 15 }, show: { opacity: 1, y: 0 } }}
-                  transition={{ delay: index * 0.08, duration: 0.5 }}
-                  whileHover={{ y: -6, borderColor: 'var(--accent-border)', boxShadow: 'var(--shadow-hover)' }}
-                >
-                  <motion.span 
-                    className="step-number" 
-                    style={{ color: 'var(--accent)', background: 'var(--accent-soft)', marginBottom: 16, display: 'inline-block', fontSize: '1.8rem', fontWeight: 700 }}
-                    whileHover={{ scale: 1.1, rotate: 5 }}
-                  >
-                    {step.number}
-                  </motion.span>
-                  <h3 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: 12 }}>{step.title}</h3>
-                  <p className="section-copy" style={{ fontSize: '0.92rem', color: 'var(--text-secondary)' }}>
+              {steps.map((step) => (
+                <article key={step.number} className="step-card">
+                  <span className="step-number">{step.number}</span>
+                  <h3 style={{ fontSize: '1.05rem', lineHeight: 1.1 }}>{step.title}</h3>
+                  <p className="section-copy" style={{ fontSize: '0.9rem' }}>
                     {step.desc}
                   </p>
-                </motion.article>
+                </article>
               ))}
             </div>
-          </motion.section>
+          </section>
 
-          <motion.footer
-            variants={{ hidden: { opacity: 0 }, show: { opacity: 1 } }}
+          <footer
             style={{
               display: 'flex',
               justifyContent: 'space-between',
               gap: 14,
               flexWrap: 'wrap',
-              padding: '40px 12px',
+              padding: '26px 4px 0',
               color: 'var(--text-muted)',
               fontSize: '0.85rem',
-              borderTop: '1px solid var(--border)',
-              marginTop: 40
             }}
           >
-            <span>RepOptimizer • Kasparro 2026</span>
-            <span>Studio Light Theme Engine Active</span>
-          </motion.footer>
+            <span>RepOptimizer for Kasparro Hackathon 2026</span>
+            <span>Next.js, FastAPI, Groq, and a frontend rebuilt for clarity</span>
+          </footer>
         </main>
       </div>
     </div>

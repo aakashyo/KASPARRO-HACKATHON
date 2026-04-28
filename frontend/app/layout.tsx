@@ -1,29 +1,29 @@
 import type { Metadata } from "next";
 import {
-  Fraunces,
-  Manrope,
-  Space_Mono,
+  Bricolage_Grotesque,
+  IBM_Plex_Mono,
+  Source_Sans_3,
 } from "next/font/google";
 import "./globals.css";
 
-const display = Fraunces({
+const bricolage = Bricolage_Grotesque({
   variable: "--font-bricolage",
   subsets: ["latin"],
-  weight: ["600", "700", "800", "900"],
+  weight: ["500", "600", "700", "800"],
   display: "swap",
 });
 
-const body = Manrope({
+const sourceSans = Source_Sans_3({
   variable: "--font-source",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
-const mono = Space_Mono({
+const plexMono = IBM_Plex_Mono({
   variable: "--font-plex",
   subsets: ["latin"],
-  weight: ["400", "700"],
+  weight: ["400", "500", "600"],
   display: "swap",
 });
 
@@ -39,11 +39,10 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      data-theme="light"
-      className={`${display.variable} ${body.variable} ${mono.variable}`}
-      suppressHydrationWarning
+      data-theme="dark"
+      className={`${bricolage.variable} ${sourceSans.variable} ${plexMono.variable}`}
     >
-      <body suppressHydrationWarning>{children}</body>
+      <body>{children}</body>
     </html>
   );
 }
