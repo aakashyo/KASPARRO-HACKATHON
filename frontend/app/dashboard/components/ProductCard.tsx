@@ -56,15 +56,15 @@ export default function ProductCard({ product, highlighted = false, isDemo = fal
   return (
     <motion.div
       layout
-      className="product-card"
+      className="panel"
       style={{
-        borderColor: highlighted ? 'var(--danger-border)' : 'var(--border)',
-        boxShadow: open
-          ? '0 28px 60px rgba(0, 0, 0, 0.2), 0 0 28px var(--accent-glow)'
-          : highlighted
-            ? '0 18px 38px rgba(255, 107, 107, 0.08)'
-            : 'none',
+        background: 'linear-gradient(145deg, rgba(255,255,255,0.98), rgba(248,250,252,0.9))',
+        borderLeft: `4px solid ${status.color}`,
+        padding: 0,
+        overflow: 'hidden'
       }}
+      whileHover={{ y: -4, boxShadow: 'var(--shadow-card)' }}
+      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
     >
       <button
         type="button"
@@ -116,7 +116,7 @@ export default function ProductCard({ product, highlighted = false, isDemo = fal
                     fontWeight: 800,
                   }}
                 >
-                  AI
+                  RP
                 </div>
               )}
 
@@ -133,7 +133,7 @@ export default function ProductCard({ product, highlighted = false, isDemo = fal
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    color: '#12141a',
+                    color: '#FFFFFF',
                   }}
                 >
                   <Zap size={10} />
@@ -181,22 +181,22 @@ export default function ProductCard({ product, highlighted = false, isDemo = fal
             }}
           >
             {isAudited ? (
-              <div className="surface-muted" style={{ padding: '12px 14px', minWidth: 180 }}>
-                <span className="section-kicker" style={{ marginBottom: 8 }}>
-                  AI score shift
+              <div style={{ padding: '8px 16px', background: 'var(--bg-main)', borderRadius: 12, minWidth: 160 }}>
+                <span className="section-kicker" style={{ marginBottom: 4, fontSize: '0.65rem' }}>
+                  Score shift
                 </span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontSize: '1.7rem', fontWeight: 900, fontFamily: 'var(--font-head)' }}>{currentScore}</span>
-                  <ArrowRight size={16} color="var(--text-muted)" />
-                  <span style={{ fontSize: '1.7rem', fontWeight: 900, fontFamily: 'var(--font-head)', color: 'var(--accent)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--text-secondary)' }}>{currentScore}</span>
+                  <ArrowRight size={14} color="var(--text-muted)" />
+                  <span style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--ok)' }}>
                     {targetScore}
                   </span>
                 </div>
               </div>
             ) : (
-              <div className="surface-muted" style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Loader2 size={15} className="spin" color="var(--info)" />
-                <span style={{ fontSize: '0.84rem', fontWeight: 700, color: 'var(--info)' }}>Awaiting deep audit</span>
+              <div style={{ padding: '8px 16px', background: 'var(--info-soft)', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Loader2 size={14} className="spin" color="var(--accent)" />
+                <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--accent)' }}>Analyzing...</span>
               </div>
             )}
 
@@ -277,7 +277,7 @@ export default function ProductCard({ product, highlighted = false, isDemo = fal
                           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
                             <Target size={16} color="var(--accent)" />
                             <span className="section-kicker" style={{ marginBottom: 0 }}>
-                              Merchant intent vs AI perception
+                              Merchant intent vs shopper reading
                             </span>
                           </div>
 
@@ -290,7 +290,7 @@ export default function ProductCard({ product, highlighted = false, isDemo = fal
                             </div>
                             <div>
                               <span className="section-kicker" style={{ marginBottom: 8 }}>
-                                AI perceived user
+                                Interpreted user
                               </span>
                               <p style={{ lineHeight: 1.6, color: 'var(--warn)' }}>
                                 {audit.ai_perception?.target_user || 'Unknown'}
@@ -301,10 +301,10 @@ export default function ProductCard({ product, highlighted = false, isDemo = fal
                           {!!audit.intent.important_keywords?.length && (
                             <div style={{ marginTop: 18, paddingTop: 18, borderTop: '1px dashed var(--border)' }}>
                               <span className="section-kicker" style={{ marginBottom: 10 }}>
-                                Missing keywords that matter to AI queries
+                                Missing keywords that matter to shopper queries
                               </span>
                               <div className="chip-list">
-                                {audit.intent.important_keywords.map((keyword: string) => (
+                                {audit.intent.important_keywords?.map((keyword: string) => (
                                   <span
                                     key={keyword}
                                     className="chip"

@@ -22,7 +22,7 @@ export default function GapView({ gaps, severity, isAudited }: GapViewProps) {
 
       {gaps.misinterpretations?.length > 0 && (
         <div>
-          <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: 7, fontFamily: 'var(--font-head)' }}>What AI Gets Wrong</p>
+          <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: 7, fontFamily: 'var(--font-head)' }}>What Shoppers May Misread</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {gaps.misinterpretations.map((m: string, i: number) => (
               <div key={i} style={{ display: 'flex', gap: 10, padding: '10px 12px', borderRadius: 10, background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
@@ -36,7 +36,7 @@ export default function GapView({ gaps, severity, isAudited }: GapViewProps) {
 
       {gaps.confidence_drop_reasons?.length > 0 && (
         <div>
-          <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: 7, fontFamily: 'var(--font-head)' }}>Why AI Is Unsure</p>
+          <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: 7, fontFamily: 'var(--font-head)' }}>Why Confidence Drops</p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
             {gaps.confidence_drop_reasons.map((reason: string, i: number) => (
               <span key={i} style={{ fontSize: 10, padding: '3px 9px', borderRadius: 99, background: 'var(--info-soft)', border: '1px solid var(--info-border)', color: 'var(--info)', fontWeight: 600, fontFamily: 'var(--font-head)' }}>{reason}</span>
