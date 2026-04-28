@@ -82,11 +82,6 @@ export default function LandingPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [count, setCount] = useState(0);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     const target = 58;
@@ -138,17 +133,16 @@ export default function LandingPage() {
     setError(null);
 
     try {
-      const result = await validateCredentials(storeUrl.trim(), token.trim());
-      const finalUrl = result.sanitized_url || storeUrl.trim();
+      const result = await validateCredentials(storeUrl, token);
+      const finalUrl = result.sanitized_url || storeUrl;
 
-      // Clear demo artifacts and set live credentials
-      localStorage.removeItem('demo_mode');
       localStorage.setItem('shopify_url', finalUrl);
-      localStorage.setItem('shopify_token', token.trim());
+      localStorage.setItem('shopify_token', token);
+      localStorage.removeItem('demo_mode');
 
       router.push('/dashboard');
-    } catch (err: any) {
-      const message = err.message || 'Connection failed. Please check your credentials.';
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Connection failed. Please check your credentials.';
       setError(message);
       setLoading(false);
     }
@@ -158,8 +152,6 @@ export default function LandingPage() {
     localStorage.setItem('demo_mode', 'true');
     router.push('/dashboard');
   };
-
-  if (!mounted) return null;
 
   return (
     <div>

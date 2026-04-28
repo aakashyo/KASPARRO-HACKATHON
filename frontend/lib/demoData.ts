@@ -44,7 +44,6 @@ export const demoData = {
       id: "demo-1",
       title: "Neural Vitamin C Serum",
       handle: "neural-vitamin-c-serum",
-      price: "1450.00",
       original_data: {
         description: "A nice serum for your face. Makes you look good.",
         tags: [],
@@ -100,7 +99,6 @@ export const demoData = {
       id: "demo-2",
       title: "Mineral Shield SPF 50",
       handle: "mineral-shield-spf-50",
-      price: "1890.00",
       original_data: {
         description: "Sunscreen for beach days.",
         tags: ["sunscreen"],

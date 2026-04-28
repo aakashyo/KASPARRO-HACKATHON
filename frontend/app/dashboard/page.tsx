@@ -16,7 +16,6 @@ import {
   RefreshCw,
   Search,
   Sun,
-  LogOut,
 } from 'lucide-react';
 import { analyzeStore, exportReportCSV, pushBulkFixes } from '@/lib/api';
 import { demoData } from '@/lib/demoData';
@@ -26,7 +25,6 @@ import StoreHealthCharts from './components/StoreHealthCharts';
 import ScoreCard from './components/ScoreCard';
 import StrategicRoadmap from './components/StrategicRoadmap';
 import DimensionDetailModal from './components/DimensionDetailModal';
-import PreviewModal from './components/PreviewModal';
 
 type DashboardStatus = 'idle' | 'initializing' | 'scanning' | 'auditing' | 'complete' | 'error';
 type FilterKey = 'all' | 'critical' | 'warning' | 'optimized';
@@ -55,17 +53,6 @@ export default function Dashboard() {
   const [syncComplete, setSyncComplete] = useState(false);
   const [theme, setTheme] = useState<ThemeKey>('dark');
   const [selectedDimension, setSelectedDimension] = useState<any>(null);
-  
-  // Modal State for Roadmap actions
-  const [preview, setPreview] = useState<{
-    isOpen: boolean;
-    title: string;
-    description: string;
-    contentType: 'faq' | 'bulk_fixes' | 'single_fix';
-    content: any;
-    onConfirm: () => void;
-  } | null>(null);
-  const [modalLoading, setModalLoading] = useState(false);
 
   const applyTheme = (nextTheme: ThemeKey) => {
     setTheme(nextTheme);
@@ -77,20 +64,13 @@ export default function Dashboard() {
     applyTheme(theme === 'dark' ? 'light' : 'dark');
   };
 
-  const handleDisconnect = () => {
-    localStorage.removeItem('shopify_url');
-    localStorage.removeItem('shopify_token');
-    localStorage.removeItem('demo_mode');
-    router.push('/');
-  };
-
   const run = async (forceDemo = false) => {
     setProducts({});
     setStoreScore(null);
     setError(null);
     setSyncComplete(false);
 
-    if (forceDemo) {
+    if (forceDemo || isDemo) {
       setStatus('scanning');
       setMessage('Loading demo catalog...');
 
@@ -130,18 +110,9 @@ export default function Dashboard() {
     const url = localStorage.getItem('shopify_url') || '';
     const token = localStorage.getItem('shopify_token') || '';
 
-    if (!url || !token) {
-        router.push('/');
-        return;
-    }
-
-    startLiveAudit(url, token);
-  };
-
-  const startLiveAudit = async (url: string, token: string) => {
-    setStatus('initializing');
-
     try {
+      setStatus('initializing');
+
       await analyzeStore(url, token, (update: any) => {
         const {
           type,
@@ -159,19 +130,11 @@ export default function Dashboard() {
 
           if (progressPercent !== undefined) {
             setProgress({ current: Math.floor(progressPercent), total: 100 });
+            if (processed) setTimeSaved(processed * 2.1);
           } else if (processed && total) {
             setProgress({ current: processed, total });
+            setTimeSaved(processed * 2.1);
           }
-
-          // Calculate more realistic time saved
-          // Quick scan: ~30s per product, Deep audit: ~5m (300s) per product
-          setProducts((currentProducts) => {
-            const list = Object.values(currentProducts);
-            const auditedCount = list.filter((p: any) => p.is_audited).length;
-            const scannedCount = list.length;
-            setTimeSaved((scannedCount * 30) + (auditedCount * 270)); // 30 + 270 = 300 (5 mins)
-            return currentProducts;
-          });
 
           setMessage(updateMessage);
         } else if (type === 'product') {
@@ -199,52 +162,35 @@ export default function Dashboard() {
     const nextTheme: ThemeKey = savedTheme === 'light' ? 'light' : 'dark';
     applyTheme(nextTheme);
 
-    const savedUrl = localStorage.getItem('shopify_url') || '';
-    const savedToken = localStorage.getItem('shopify_token') || '';
-    const hasLiveCredentials = Boolean(savedUrl && savedToken);
-    const demoRequested = localStorage.getItem('demo_mode') === 'true';
-    const shouldUseDemo = demoRequested && !hasLiveCredentials;
-
-    if (hasLiveCredentials) {
-      localStorage.removeItem('demo_mode');
-    }
-
-    setIsDemo(shouldUseDemo);
-    run(shouldUseDemo);
+    const demo = localStorage.getItem('demo_mode') === 'true';
+    setIsDemo(demo);
+    run(demo);
     // `run` is intentionally initialized once here for the first dashboard load.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const productList = useMemo(() => Object.values(products), [products]);
 
-  // Unified severity helper (prefer deep audit)
-  const getProductSeverity = (product: any) => {
-    if (product.is_audited && product.audit_deep?.gaps) {
-      return product.audit_deep.gaps.severity ?? product.scan_quick?.severity ?? 0;
-    }
-    return product.scan_quick?.severity ?? 0;
-  };
-
   const sortedProducts = useMemo(() => {
     let list = [...productList];
 
-    if (filter === 'critical') list = list.filter((product) => getProductSeverity(product) >= 7);
+    if (filter === 'critical') list = list.filter((product) => (product.scan_quick?.severity || 0) >= 7);
     if (filter === 'warning') {
       list = list.filter((product) => {
-        const severity = getProductSeverity(product);
+        const severity = product.scan_quick?.severity || 0;
         return severity >= 4 && severity < 7;
       });
     }
-    if (filter === 'optimized') list = list.filter((product) => getProductSeverity(product) < 4);
+    if (filter === 'optimized') list = list.filter((product) => (product.scan_quick?.severity || 0) < 4);
 
-    return list.sort((left, right) => getProductSeverity(right) - getProductSeverity(left));
+    return list.sort((left, right) => (right.scan_quick?.severity || 0) - (left.scan_quick?.severity || 0));
   }, [filter, productList]);
 
   const stats = useMemo(
     () =>
       productList.reduce(
         (accumulator: any, product: any) => {
-          const severity = getProductSeverity(product);
+          const severity = product.scan_quick?.severity || 0;
 
           if (severity >= 7) accumulator.critical += 1;
           else if (severity >= 4) accumulator.warning += 1;
@@ -256,16 +202,6 @@ export default function Dashboard() {
       ),
     [productList]
   );
-
-  const formatTimeSaved = (seconds: number) => {
-    if (seconds === 0) return '0s';
-    if (seconds < 60) return `${Math.floor(seconds)}s`;
-    const mins = Math.floor(seconds / 60);
-    if (mins < 60) return `${mins}m`;
-    const hours = Math.floor(mins / 60);
-    const remainingMins = mins % 60;
-    return remainingMins > 0 ? `${hours}h ${remainingMins}m` : `${hours}h`;
-  };
 
   const handleMegaSync = async () => {
     if (isDemo) {
@@ -334,7 +270,7 @@ export default function Dashboard() {
     { label: 'Scanned', value: analyzedCount, sub: 'Products surfaced', color: 'var(--info)' },
     { label: 'Critical', value: stats.critical, sub: 'Urgent recommendation gaps', color: 'var(--danger)' },
     { label: 'Audited', value: auditedCount, sub: 'Deep AI reviews complete', color: 'var(--accent)' },
-    { label: 'Time saved', value: formatTimeSaved(timeSaved), sub: 'Automation reclaimed', color: 'var(--amber)' },
+    { label: 'Time saved', value: `${Math.floor(timeSaved)}s`, sub: 'Automation reclaimed', color: 'var(--amber)' },
   ];
 
   const dimensionEntries = showsScores
@@ -394,11 +330,8 @@ export default function Dashboard() {
             <button type="button" className="icon-button" onClick={toggleTheme}>
               {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
             </button>
-            <button type="button" className="icon-button" onClick={() => run()} title="Refresh Audit">
+            <button type="button" className="icon-button" onClick={() => run()}>
               <RefreshCcw size={17} />
-            </button>
-            <button type="button" className="icon-button" onClick={handleDisconnect} title="Disconnect Store">
-              <LogOut size={17} />
             </button>
           </div>
         </nav>
@@ -425,7 +358,7 @@ export default function Dashboard() {
                 <div className="score-shell">
                   <div>
                     <div className="score-value" style={{ color: scoreColor }}>
-                      {showsScores ? storeScore.overall_score.toFixed(1) : '--'}
+                      {showsScores ? storeScore.overall_score : '--'}
                     </div>
                     <div className="score-sub">out of 100 storewide recommendation confidence</div>
                   </div>
@@ -629,13 +562,7 @@ export default function Dashboard() {
           )}
 
           {showsScores && storeScore.roadmap && (
-            <StrategicRoadmap 
-              roadmap={storeScore.roadmap} 
-              products={productList} 
-              onMegaSync={handleMegaSync} 
-              onShowPreview={setPreview}
-              onLoading={setModalLoading}
-            />
+            <StrategicRoadmap roadmap={storeScore.roadmap} products={productList} onMegaSync={handleMegaSync} />
           )}
 
           <section className="panel section-bar">
@@ -715,7 +642,7 @@ export default function Dashboard() {
                   show: { opacity: 1, y: 0 },
                 }}
               >
-                <ProductCard product={product} highlighted={getProductSeverity(product) >= 7} isDemo={isDemo} />
+                <ProductCard product={product} highlighted={product.scan_quick.severity >= 7} isDemo={isDemo} />
               </motion.div>
             ))}
           </motion.div>
@@ -762,19 +689,6 @@ export default function Dashboard() {
           score={selectedDimension.score}
           reason={selectedDimension.reason}
           products={productList}
-        />
-      )}
-
-      {preview && (
-        <PreviewModal
-          isOpen={preview.isOpen}
-          onClose={() => setPreview(null)}
-          onConfirm={preview.onConfirm}
-          title={preview.title}
-          description={preview.description}
-          contentType={preview.contentType}
-          content={preview.content}
-          loading={modalLoading}
         />
       )}
     </div>

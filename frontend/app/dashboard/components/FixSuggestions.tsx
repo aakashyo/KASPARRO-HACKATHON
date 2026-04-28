@@ -52,9 +52,9 @@ export default function FixSuggestions({ fixes, productId, isDemo, guardrail }: 
   };
 
   const handlePush = async () => {
-    if (isDemo || (productId && productId.startsWith('demo-'))) {
+    if (isDemo) {
       setPushStatus('success');
-      setPushMessage('Demo Mode: Changes would be applied to your live store here.');
+      setPushMessage('Demo mode — changes would be applied to your live store.');
       return;
     }
     setShowPreview(true);
