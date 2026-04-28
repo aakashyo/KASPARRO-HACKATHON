@@ -5,16 +5,10 @@ import { useRouter } from 'next/navigation';
 
 type Severity = 'CRITICAL' | 'WARNING' | 'OPTIMIZED';
 
-type Product = {
-  id: number;
-  name: string;
-  severity: Severity;
-  oldScore: number;
-  newScore: number;
-  diagnosis: string;
-  issues: string[];
-  fixes: string[];
-  afterSync: string;
+const statusCopy: Record<Exclude<DashboardStatus, 'idle' | 'complete' | 'error'>, string> = {
+  initializing: 'Warming the audit engine and checking the catalog surface.',
+  scanning: 'Running the deterministic sweep to catch obvious visibility gaps.',
+  auditing: 'Deep-auditing product clarity against shopper expectations.',
 };
 
 const PRODUCTS: Product[] = [
@@ -124,12 +118,134 @@ export default function DashboardPage() {
   const [pulseCard, setPulseCard] = useState<number | null>(null);
   const [hoverAxis, setHoverAxis] = useState<number | null>(null);
 
-  const radarCanvasRef = useRef<HTMLCanvasElement | null>(null);
-  const donutCanvasRef = useRef<HTMLCanvasElement | null>(null);
-  const upsideRef = useRef<HTMLElement | null>(null);
+  const [products, setProducts] = useState<Record<string, any>>({});
+  const [storeScore, setStoreScore] = useState<any>(null);
+  const [status, setStatus] = useState<DashboardStatus>('idle');
+  const [progress, setProgress] = useState({ current: 0, total: 0 });
+  const [message, setMessage] = useState('Initializing catalog audit...');
+  const [isDemo, setIsDemo] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [timeSaved, setTimeSaved] = useState(0);
+  const [filter, setFilter] = useState<FilterKey>('all');
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncComplete, setSyncComplete] = useState(false);
+  const [theme, setTheme] = useState<ThemeKey>('light');
+  const [selectedDimension, setSelectedDimension] = useState<any>(null);
+
+  const applyTheme = (nextTheme: ThemeKey) => {
+    setTheme(nextTheme);
+    document.documentElement.setAttribute('data-theme', nextTheme);
+    localStorage.setItem('repoptimizer-theme', nextTheme);
+  };
+
+  const toggleTheme = () => {
+    applyTheme(theme === 'light' ? 'dark' : 'light');
+  };
+
+  const run = async (forceDemo = false) => {
+    setProducts({});
+    setStoreScore(null);
+    setError(null);
+    setSyncComplete(false);
+
+    if (forceDemo || isDemo) {
+      setStatus('scanning');
+      setMessage('Loading demo catalog...');
+
+      setTimeout(() => {
+        const demoProducts: Record<string, any> = {};
+
+        demoData.products.forEach((product: any) => {
+          demoProducts[product.id] = {
+            ...product,
+            is_audited: true,
+            audit_deep: {
+              intent: product.intent,
+              ai_perception: product.ai_perception,
+              gaps: product.gaps,
+              impact: product.impact,
+              fixes: product.fixes,
+            },
+            scan_quick: {
+              severity: product.gaps.severity,
+              quick_score: 80,
+              basic_gap: product.gaps.insight,
+              priority: 'high',
+            },
+          };
+        });
+
+        setProducts(demoProducts);
+        setStoreScore(demoData.store_score);
+        setStatus('complete');
+        setMessage('Demo audit complete');
+        setProgress({ current: 100, total: 100 });
+      }, 1000);
+
+      return;
+    }
+
+    const url = localStorage.getItem('shopify_url') || '';
+    const token = localStorage.getItem('shopify_token') || '';
+
+    try {
+      setStatus('initializing');
+
+      await analyzeStore(url, token, (update: any) => {
+        const {
+          type,
+          status: updateStatus,
+          data,
+          message: updateMessage,
+          total,
+          processed,
+          progress_percent: progressPercent,
+          store_score: nextStoreScore,
+        } = update;
+
+        if (type === 'progress') {
+          setStatus(updateStatus);
+
+          if (progressPercent !== undefined) {
+            setProgress({ current: Math.floor(progressPercent), total: 100 });
+            if (processed) setTimeSaved(processed * 2.1);
+          } else if (processed && total) {
+            setProgress({ current: processed, total });
+            setTimeSaved(processed * 2.1);
+          }
+
+          setMessage(updateMessage);
+        } else if (type === 'product') {
+          setProducts((previous) => ({ ...previous, [data.id]: data }));
+        } else if (type === 'complete') {
+          setStatus('complete');
+          setStoreScore(nextStoreScore);
+          setMessage(updateMessage);
+          setProgress({ current: 100, total: 100 });
+        } else if (type === 'error') {
+          setStatus('error');
+          setError(updateMessage);
+        }
+      });
+    } catch {
+      setStatus('error');
+      setError('Connection lost. Please ensure the backend is running.');
+    }
+  };
 
   useEffect(() => {
-    setNavReady(true);
+    setMounted(true);
+
+    const savedTheme = localStorage.getItem('repoptimizer-theme');
+    const nextTheme: ThemeKey = savedTheme === 'dark' ? 'dark' : 'light';
+    applyTheme(nextTheme);
+
+    const demo = localStorage.getItem('demo_mode') === 'true';
+    setIsDemo(demo);
+    run(demo);
+    // `run` is intentionally initialized once here for the first dashboard load.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -199,19 +315,50 @@ export default function DashboardPage() {
     const draw = (scale: number) => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      for (let layer = 1; layer <= 4; layer += 1) {
-        ctx.beginPath();
-        for (let i = 0; i < DIMENSIONS.length; i += 1) {
-          const angle = -Math.PI / 2 + i * angleStep;
-          const x = centerX + Math.cos(angle) * ((radius * layer) / 4);
-          const y = centerY + Math.sin(angle) * ((radius * layer) / 4);
-          if (i === 0) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
-        }
-        ctx.closePath();
-        ctx.strokeStyle = 'rgba(226,221,216,0.6)';
-        ctx.lineWidth = 1;
-        ctx.stroke();
+          return accumulator;
+        },
+        { critical: 0, warning: 0, optimized: 0 }
+      ),
+    [productList]
+  );
+
+  const handleMegaSync = async () => {
+    if (isDemo) {
+      alert('Mega-Sync is disabled in Demo Mode. Connect your store to push real fixes.');
+      return;
+    }
+
+    setIsSyncing(true);
+    setSyncComplete(false);
+
+    const allFixable = productList.filter((product) => product.audit_deep && product.audit_deep.fixes);
+    const safeFixes = allFixable.filter((product) => !product.guardrail || product.guardrail.is_safe);
+    const skippedCount = allFixable.length - safeFixes.length;
+
+    const fixes = safeFixes.map((product) => ({
+      product_id: product.id,
+      description: product.audit_deep!.fixes!.improved_description || '',
+      tags: (product.audit_deep!.fixes!.structured_tags || []).map((tag: any) =>
+        typeof tag === 'string' ? tag : `${tag.name}:${tag.value}`
+      ),
+    }));
+
+    if (fixes.length === 0) {
+      alert(
+        skippedCount > 0
+          ? `${skippedCount} products were skipped due to policy guardrail violations. No safe fixes available to sync.`
+          : 'No catalog fixes available to sync.'
+      );
+      setIsSyncing(false);
+      return;
+    }
+
+    try {
+      const result = await pushBulkFixes(fixes);
+      const failed = (result?.results || []).filter((item: any) => !item.success);
+
+      if (failed.length > 0) {
+        throw new Error(`${failed.length} product update${failed.length === 1 ? '' : 's'} failed during Mega-Sync.`);
       }
 
       for (let i = 0; i < DIMENSIONS.length; i += 1) {
@@ -404,23 +551,88 @@ export default function DashboardPage() {
     }, 200);
   };
 
-  const critical = PRODUCTS.filter((p) => p.severity === 'CRITICAL').length;
-  const warning = PRODUCTS.filter((p) => p.severity === 'WARNING').length;
+  if (!mounted) return null;
+
+  const showsScores = status === 'complete' && storeScore;
+  const analyzedCount = productList.length;
+  const auditedCount = productList.filter((product) => product.is_audited).length;
+  const isProcessing = status !== 'complete' && status !== 'error';
+  const progressWidth = progress.total > 0 ? (progress.current / progress.total) * 100 : 0;
+  const scoreColor = showsScores
+    ? storeScore.overall_score > 70
+      ? 'var(--ok)'
+      : storeScore.overall_score > 45
+        ? 'var(--warn)'
+        : 'var(--danger)'
+    : 'var(--text-faint)';
+
+  const statCards = [
+    { label: 'Scanned', value: analyzedCount, sub: 'Products surfaced', color: 'var(--accent)' },
+    { label: 'Critical', value: stats.critical, sub: 'Urgent catalog gaps', color: 'var(--danger)' },
+    { label: 'Audited', value: auditedCount, sub: 'Deep product reviews complete', color: 'var(--ok)' },
+    { label: 'Time saved', value: `${Math.floor(timeSaved)}s`, sub: 'Automation reclaimed', color: 'var(--amber)' },
+  ];
+
+  const dimensionEntries = showsScores
+    ? Object.entries(storeScore.dimension_scores).map(([key, value]: any) => ({
+        key,
+        label: key.replace(/_/g, ' '),
+        score: value.score,
+        reason: value.reason,
+      }))
+    : [];
 
   return (
-    <div className="page-wrap">
-      <nav className={`main-nav ${navReady ? 'nav-ready' : ''}`}>
-        <button
-          type="button"
-          className="brand-home"
-          onClick={() => router.push('/')}
-          aria-label="Go to home"
-        >
-          <div className="nav-left">
-            <div className="logo-box">R</div>
-            <div className="brand-name">RepOptimizer</div>
-            <div className="nav-sep" />
-            <div className="nav-track">KASPARRO HACKATHON TRACK 5</div>
+    <div>
+      <div className="page-shell">
+        <nav className="site-nav">
+          <button
+            type="button"
+            onClick={() => router.push('/')}
+            style={{ background: 'none', border: 'none', padding: 0, color: 'inherit', cursor: 'pointer' }}
+          >
+            <div className="brand-lockup">
+              <div className="brand-mark">
+                <Brain size={20} />
+              </div>
+              <div className="brand-copy">
+                <span className="brand-name">RepOptimizer</span>
+                <span className="brand-tagline">Catalog quality workspace</span>
+              </div>
+            </div>
+          </button>
+
+          <div className="nav-actions">
+            {isProcessing && (
+              <span className="status-pill">
+                <Loader2 size={14} className="spin" />
+                {message}
+              </span>
+            )}
+            <span className={isDemo ? 'metric-pill' : 'ghost-pill'}>
+              <span
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: '50%',
+                  background: isDemo ? 'var(--amber)' : 'var(--ok)',
+                  display: 'inline-block',
+                }}
+              />
+              {isDemo ? 'Demo mode' : 'Live audit'}
+            </span>
+            {status === 'complete' && (
+              <button type="button" className="btn-secondary" onClick={() => exportReportCSV(productList)}>
+                <Download size={15} />
+                Export CSV
+              </button>
+            )}
+            <button type="button" className="icon-button" onClick={toggleTheme}>
+              {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
+            </button>
+            <button type="button" className="icon-button" onClick={() => run()}>
+              <RefreshCcw size={17} />
+            </button>
           </div>
         </button>
         <div className="dash-nav-right">
@@ -437,70 +649,294 @@ export default function DashboardPage() {
         </div>
       </nav>
 
-      <main className="dash-container">
-        <section className="dash-grid-top reveal">
-          <article className="readiness-card">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
-              <div className="metric-label">AI READINESS INDEX</div>
-              <div className="badge-small" style={{ border: '1px solid var(--border)', background: 'var(--bg-muted)', color: 'var(--ink-secondary)' }}>
-                DECISION LAYER ACTIVE
-              </div>
-            </div>
-            <div className="readiness-score">{readiness}</div>
-            <div style={{ color: 'var(--ink-secondary)', fontSize: 14, marginTop: -8 }}>
-              out of 100 storewide recommendation confidence
-            </div>
-            <div className="progress-track">
-              <div className="progress-fill play" style={{ width: `${readiness}%` }} />
-            </div>
-            <p style={{ marginTop: 20, color: 'var(--ink-secondary)', fontSize: 14, lineHeight: 1.65 }}>
-              This score reflects how clearly your catalog communicates product intent, trust, structure, and searchable
-              context to shopping AI systems.
-            </p>
-            <div
-              style={{
-                marginTop: 16,
-                background: 'var(--bg)',
-                border: '1px solid var(--border)',
-                borderRadius: 10,
-                padding: '14px 16px',
-                display: 'flex',
-                gap: 10,
-                alignItems: 'flex-start',
-              }}
+        <main className="dashboard-main">
+          <motion.section 
+            className="dashboard-top-grid"
+            initial="hidden"
+            animate="show"
+            variants={{
+              hidden: { opacity: 0 },
+              show: { opacity: 1, transition: { staggerChildren: 0.1 } }
+            }}
+          >
+            <motion.div 
+              variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
+              className="panel score-hero"
             >
-              <span style={{ color: 'var(--copper)' }}>⌕</span>
+              <div className="stack" style={{ gap: 18 }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 16,
+                    flexWrap: 'wrap',
+                  }}
+                >
+                  <span className="section-kicker" style={{ marginBottom: 0 }}>
+                    Store readiness index
+                  </span>
+                  <span className="ghost-pill">{isProcessing ? 'Audit running' : 'Decision layer active'}</span>
+                </div>
+
+                <div className="score-shell">
+                  <div>
+                    <div className="score-value" style={{ color: scoreColor, fontWeight: 700 }}>
+                      {showsScores ? storeScore.overall_score : '--'}
+                    </div>
+                    <div className="score-sub">out of 100 storewide presentation confidence</div>
+                  </div>
+                </div>
+
+                <p className="section-copy" style={{ maxWidth: 620 }}>
+                  {showsScores
+                    ? 'This score reflects how clearly your catalog communicates product intent, trust, structure, and searchable context to modern shopping journeys.'
+                    : statusCopy[status as keyof typeof statusCopy] || 'Preparing the dashboard.'}
+                </p>
+              </div>
+
+              <div className="stack" style={{ gap: 14 }}>
+                <div className="progress-shell">
+                  <div className="progress-track" style={{ flex: 1 }}>
+                    <div className="progress-fill" style={{ width: `${progressWidth}%`, background: 'var(--accent)' }} />
+                  </div>
+                  <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', fontSize: '0.82rem' }}>
+                    {progress.current}/{progress.total || 100}
+                  </span>
+                </div>
+
+                <div className="flash-card" style={{ background: 'var(--bg-soft)', border: '1px solid var(--border)' }}>
+                  <Search size={18} color="var(--accent)" />
+                  <div>
+                    <strong style={{ display: 'block', fontSize: '0.96rem', marginBottom: 4 }}>{message}</strong>
+                    <span className="faded-note">
+                      {status === 'complete'
+                        ? 'Use the cards below to inspect dimensions, roadmap actions, and product-by-product catalog gaps.'
+                        : 'Streaming updates appear here while the catalog scan progresses.'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            <div className="metric-grid">
+              {statCards.map((stat) => (
+                <motion.div 
+                  key={stat.label} 
+                  variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
+                  className="metric-card"
+                  style={{ borderLeft: `4px solid ${stat.color}` }}
+                >
+                  <span className="metric-label">{stat.label}</span>
+                  <div>
+                    <div className="metric-value" style={{ color: 'var(--text)', fontWeight: 700 }}>
+                      {stat.value}
+                    </div>
+                    <p className="faded-note" style={{ marginTop: 8 }}>
+                      {stat.sub}
+                    </p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.section>
+
+          {showsScores && storeScore.business_impact && (
+            <section className="panel impact-card">
               <div>
-                <div style={{ fontWeight: 600, fontSize: 14 }}>Demo audit complete</div>
-                <div style={{ marginTop: 4, color: 'var(--ink-secondary)', fontSize: 13 }}>
-                  Use the cards below to inspect dimensions, roadmap actions, and product-by-product AI gaps.
+                <span className="section-kicker">Recoverable upside</span>
+                <div className="impact-figure">
+                  <span style={{ color: 'var(--accent)' }}>$</span>
+                  {storeScore.business_impact.recoverable_revenue.toLocaleString()}
+                  <span style={{ fontSize: '1.3rem', color: 'var(--text-muted)' }}>/mo</span>
+                </div>
+              </div>
+
+              <p className="section-copy" style={{ maxWidth: 560 }}>
+                Based on {analyzedCount} analyzed products, the system estimates that
+                {' '}
+                <strong style={{ color: 'var(--danger)' }}>
+                  {storeScore.business_impact.critical_fixes_needed} critical catalog clarity gaps
+                </strong>
+                {' '}
+                are suppressing product visibility. Fixing the structure first creates the fastest lift.
+              </p>
+
+              <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => {
+                    setFilter('critical');
+                    window.scrollTo({ top: 1100, behavior: 'smooth' });
+                  }}
+                >
+                  Focus critical gaps
+                </button>
+                <button
+                  type="button"
+                  className="btn-primary"
+                  onClick={handleMegaSync}
+                  disabled={isSyncing || syncComplete}
+                  style={{
+                    background: syncComplete
+                      ? 'var(--ok)'
+                      : 'var(--gradient-primary)',
+                    boxShadow: '0 12px 24px rgba(37, 99, 235, 0.24)'
+                  }}
+                >
+                  {isSyncing ? (
+                    <>
+                      <RefreshCw size={16} className="spin" />
+                      Syncing catalog
+                    </>
+                  ) : syncComplete ? (
+                    <>
+                      <CheckCircle2 size={16} />
+                      Sync complete
+                    </>
+                  ) : (
+                    <>
+                      Mega-Sync safe fixes
+                      <RefreshCw size={16} />
+                    </>
+                  )}
+                </button>
+              </div>
+            </section>
+          )}
+
+          {showsScores && storeScore.dimension_scores && (
+            <section className="chart-grid">
+              <div className="panel chart-card">
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'flex-end',
+                    justifyContent: 'space-between',
+                    gap: 20,
+                    flexWrap: 'wrap',
+                    marginBottom: 18,
+                  }}
+                >
+                  <div>
+                    <span className="section-kicker">Dimension radar</span>
+                    <h2 className="section-title" style={{ marginBottom: 8 }}>
+                      Which parts of the catalog are helping or hurting customer trust?
+                    </h2>
+                    <p className="section-copy">
+                      Click any dimension card to open more context and see what that score means inside the catalog.
+                    </p>
+                  </div>
+                </div>
+
+                <div style={{ height: 280, marginBottom: 22 }}>
+                  <StoreHealthCharts type="radar" data={storeScore.dimension_scores} />
+                </div>
+
+                <div className="scorecard-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))' }}>
+                  {dimensionEntries.map((entry) => (
+                    <ScoreCard
+                      key={entry.key}
+                      label={entry.label}
+                      score={entry.score}
+                      reason={entry.reason}
+                      onClick={() => setSelectedDimension(entry)}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <div className="panel chart-card">
+                <span className="section-kicker">Catalog health mix</span>
+                <h2 className="section-title" style={{ fontSize: '1.8rem', marginBottom: 10 }}>
+                  Gap distribution
+                </h2>
+                <p className="section-copy" style={{ marginBottom: 20 }}>
+                  This view shows how many products are still critical, in warning territory, or ready to present.
+                </p>
+
+                <div style={{ height: 220 }}>
+                  <StoreHealthCharts type="pie" data={stats} />
+                </div>
+
+                <div className="stack" style={{ marginTop: 18 }}>
+                  {[
+                    { label: 'Critical', color: 'var(--danger)', value: stats.critical },
+                    { label: 'Warning', color: 'var(--warn)', value: stats.warning },
+                    { label: 'Optimized', color: 'var(--ok)', value: stats.optimized },
+                  ].map((entry) => (
+                    <div
+                      key={entry.label}
+                      className="surface-muted"
+                      style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <span
+                          style={{
+                            width: 10,
+                            height: 10,
+                            borderRadius: '50%',
+                            background: entry.color,
+                            display: 'inline-block',
+                          }}
+                        />
+                        <span style={{ fontWeight: 700 }}>{entry.label}</span>
+                      </div>
+                      <span style={{ color: entry.color, fontWeight: 800 }}>{entry.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+          )}
+
+          {showsScores && storeScore.roadmap && (
+            <StrategicRoadmap roadmap={storeScore.roadmap} products={productList} onMegaSync={handleMegaSync} />
+          )}
+
+          <section className="panel section-bar" style={{ padding: '28px 32px', background: '#FFFFFF' }}>
+            <div className="filter-row" style={{ marginBottom: 20 }}>
+              <span className="section-kicker" style={{ marginBottom: 0 }}>
+                Product queue
+              </span>
+              <div className="filter-row">
+                <Filter size={15} color="var(--text-muted)" />
+                <div className="filter-chip-row">
+                  {[
+                    { id: 'all', label: 'All' },
+                    { id: 'critical', label: 'Critical' },
+                    { id: 'warning', label: 'Warning' },
+                    { id: 'optimized', label: 'Optimized' },
+                  ].map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      className={`filter-chip ${filter === item.id ? 'filter-chip--active' : ''}`}
+                      onClick={() => setFilter(item.id as FilterKey)}
+                      style={{
+                        background: filter === item.id ? 'var(--gradient-primary)' : 'transparent',
+                        color: filter === item.id ? '#FFFFFF' : 'var(--text-secondary)',
+                        borderColor: filter === item.id ? 'transparent' : 'var(--border)'
+                      }}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>
           </article>
 
-          <div className="small-grid">
-            <article className="metric-card">
-              <div className="metric-label">SCANNED</div>
-              <div className="metric-num">6</div>
-              <div className="metric-sub">Products surfaced</div>
-            </article>
-            <article className="metric-card">
-              <div className="metric-label">CRITICAL</div>
-              <div className="metric-num" style={{ color: 'var(--danger)' }}>
-                3
+            <div className="progress-shell" style={{ background: 'var(--bg)', padding: '16px 20px', borderRadius: 12 }}>
+              <div>
+                <div style={{ fontWeight: 700, marginBottom: 4 }}>Live processing status</div>
+                <p className="faded-note">
+                  {isProcessing ? message : `Showing ${sortedProducts.length} products in the current filter.`}
+                </p>
               </div>
-              <div className="metric-sub">Urgent recommendation gaps</div>
-            </article>
-            <article className="metric-card">
-              <div className="metric-label">AUDITED</div>
-              <div className="metric-num">6</div>
-              <div className="metric-sub">Deep AI reviews complete</div>
-            </article>
-            <article className="metric-card">
-              <div className="metric-label">TIME SAVED</div>
-              <div className="metric-num" style={{ color: 'var(--copper)' }}>
-                0s
+              <div className="progress-track" style={{ height: 8, background: 'var(--border)' }}>
+                <div className="progress-fill" style={{ width: `${progressWidth}%` }} />
               </div>
               <div className="metric-sub" style={{ color: 'var(--copper)', fontWeight: 500, cursor: 'pointer' }}>
                 Run your first sync to start saving time →
@@ -547,72 +983,31 @@ export default function DashboardPage() {
               <canvas ref={radarCanvasRef} width={320} height={320} />
             </div>
 
-            <div className="score-row">
-              {DIMENSIONS.slice(0, 4).map((dim, idx) => (
-                <div key={dim.name} className={`score-chip ${hoverAxis === idx ? 'active' : ''}`}>
-                  <div className="metric-label">{dim.name.toUpperCase()}</div>
-                  <div style={{ marginTop: 4, fontSize: 22, fontWeight: 700 }}>{dim.value}/100</div>
-                  <div className="score-bar">
-                    <div
-                      className="score-bar-fill"
-                      style={{
-                        width: `${dim.value}%`,
-                        background:
-                          dim.value < 45 ? 'var(--danger)' : dim.value < 75 ? 'var(--warning)' : 'var(--success)',
-                      }}
-                    />
-                  </div>
+          {status === 'complete' && (
+            <section className="panel chart-card" style={{ marginTop: 28 }}>
+              <span className="section-kicker">Search testing lab</span>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'flex-end',
+                  justifyContent: 'space-between',
+                  gap: 20,
+                  flexWrap: 'wrap',
+                  marginBottom: 16,
+                }}
+              >
+                <div>
+                  <h2 className="section-title" style={{ marginBottom: 8 }}>
+                    Test how different shoppers rank the catalog now.
+                  </h2>
+                  <p className="section-copy">
+                    Compare confidence across multiple buying personas and inspect why products are
+                    accepted or rejected.
+                  </p>
                 </div>
-              ))}
-            </div>
-          </article>
-
-          <article className="dash-card">
-            <div className="eyebrow" style={{ marginBottom: 8 }}>
-              CATALOG HEALTH MIX
-            </div>
-            <h3 style={{ fontSize: 24 }}>Gap distribution</h3>
-            <p style={{ marginTop: 8, color: 'var(--ink-secondary)', fontSize: 14 }}>
-              How many products are critical, warning, or ready.
-            </p>
-
-            <div className="canvas-wrap">
-              <canvas ref={donutCanvasRef} width={200} height={200} />
-            </div>
-
-            <div className="legend-row">
-              <span>● Critical</span>
-              <strong style={{ color: 'var(--danger)' }}>{critical}</strong>
-            </div>
-            <div className="legend-row">
-              <span>● Warning</span>
-              <strong style={{ color: 'var(--warning)' }}>{warning}</strong>
-            </div>
-            <div className="legend-row">
-              <span>● Optimized</span>
-              <span style={{ color: 'var(--ink-tertiary)', fontStyle: 'italic' }}>0 - sync fixes to promote</span>
-            </div>
-          </article>
-        </section>
-
-        <section className="dash-card roadmap reveal">
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ color: 'var(--copper)' }}>⌖</span>
-            <div style={{ fontSize: 18, fontWeight: 600 }}>Strategic AI Growth Roadmap</div>
-          </div>
-          <p style={{ marginTop: 4, color: 'var(--ink-secondary)', fontSize: 14 }}>
-            A prioritized, 3-phase action plan to maximize your store AI-driven discoverability and conversion.
-          </p>
-
-          <div className="road-grid">
-            <article className="road-card">
-              <div className="road-top" style={{ background: 'var(--danger)' }} />
-              <div className="badge-row">
-                <span className="badge-small" style={{ background: 'var(--bg-muted)', color: 'var(--ink-secondary)' }}>
-                  PHASE 1
-                </span>
-                <span className="badge-small" style={{ border: '1px solid rgba(153,27,27,0.2)', background: 'rgba(153,27,27,0.08)', color: 'var(--danger)' }}>
-                  ● CRITICAL
+                <span className="status-pill">
+                  <Search size={14} />
+                  Query studio live
                 </span>
               </div>
               <h4 style={{ marginTop: 14, fontFamily: 'DM Sans, sans-serif', fontSize: 17 }}>Trust Foundation</h4>

@@ -1,9 +1,22 @@
 'use client';
 
-import Link from 'next/link';
-import { useEffect, useRef, useState } from 'react';
-import { useReducedMotion } from 'framer-motion';
-import MarketingShell from '@/components/marketing/MarketingShell';
+import React, { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import {
+  AlertCircle,
+  ArrowRight,
+  BarChart2,
+  BrainCircuit,
+  CheckCircle2,
+  Lock,
+  PackageCheck,
+  ShieldCheck,
+  Sparkles,
+  Target,
+  Zap,
+} from 'lucide-react';
+import { motion } from 'framer-motion';
+import { fetchConfig, validateCredentials } from '@/lib/api';
 
 const signals = [
   'query confidence +142%',
@@ -42,6 +55,15 @@ const transformations = [
   },
 ];
 
+const marqueeCards = [
+  { title: 'Clear product story', score: '94', tone: 'sage' },
+  { title: 'Stronger trust cues', score: '81', tone: 'gold' },
+  { title: 'Search-ready tags', score: '88', tone: 'clay' },
+  { title: 'Cleaner descriptions', score: '91', tone: 'ink' },
+  { title: 'Policy confidence', score: '79', tone: 'sage' },
+  { title: 'Better buyer fit', score: '86', tone: 'gold' },
+];
+
 export default function LandingPage() {
   const reducedMotion = useReducedMotion();
   const [signalIndex, setSignalIndex] = useState(0);
@@ -70,60 +92,7 @@ export default function LandingPage() {
     return () => window.clearInterval(timer);
   }, []);
 
-  useEffect(() => {
-    const refreshTick = () => {
-      const now = new Date();
-      setTimestamp(
-        now.toLocaleTimeString([], {
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit',
-        }),
-      );
-    };
-    refreshTick();
-    const ticker = window.setInterval(refreshTick, 1000);
-    return () => window.clearInterval(ticker);
-  }, []);
-
-  const activeTransform = transformations[transformIndex];
-
-  useEffect(() => {
-    const activate = () => setHeavyReady(true);
-    const deferred = window.setTimeout(activate, 700);
-    return () => window.clearTimeout(deferred);
-  }, []);
-
-  useEffect(() => {
-    if (!heavyReady || reducedMotion) return;
-    const move = (event: MouseEvent) => {
-      const glow = glowRef.current;
-      if (!glow) return;
-      glow.style.transform = `translate(${event.clientX - 130}px, ${event.clientY - 130}px)`;
-    };
-    window.addEventListener('mousemove', move);
-    return () => window.removeEventListener('mousemove', move);
-  }, [heavyReady, reducedMotion]);
-
-  const validate = () => {
-    const nextErrors: { storeUrl?: string; token?: string } = {};
-    const shopifyPattern = /^https:\/\/[a-zA-Z0-9-]+\.myshopify\.com\/?$/;
-
-    if (!storeUrl.trim()) nextErrors.storeUrl = 'Store URL is required.';
-    else if (!shopifyPattern.test(storeUrl.trim())) {
-      nextErrors.storeUrl = 'Use a valid myshopify URL (https://your-store.myshopify.com).';
-    }
-
-    if (!token.trim()) nextErrors.token = 'Admin token is required.';
-    else if (!token.startsWith('shpat_') || token.length < 14) {
-      nextErrors.token = 'Token should start with shpat_ and look complete.';
-    }
-
-    setErrors(nextErrors);
-    return Object.keys(nextErrors).length === 0;
-  };
-
-  const handleConnect = async (event: React.FormEvent) => {
+  const handleStart = async (event: React.FormEvent) => {
     event.preventDefault();
     setSubmitMessage('');
     setSubmitState('idle');
@@ -138,192 +107,390 @@ export default function LandingPage() {
     setSubmitMessage('Validating credentials...');
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 900));
-      localStorage.setItem('demo_mode', 'false');
-      localStorage.setItem('shopify_url', storeUrl.trim());
-      localStorage.setItem('shopify_token', token.trim());
-      setSubmitState('success');
-      setSubmitMessage('Connected successfully. Opening dashboard...');
-      setTimeout(() => {
-        window.location.href = '/dashboard';
-      }, 500);
-    } catch {
-      setSubmitState('error');
-      setSubmitMessage('Connection failed. Please retry.');
+      const result = await validateCredentials(storeUrl, token);
+      const finalUrl = result.sanitized_url || storeUrl;
+
+      localStorage.setItem('shopify_url', finalUrl);
+      localStorage.setItem('shopify_token', token);
+      localStorage.removeItem('demo_mode');
+
+      router.push('/dashboard');
+    } catch (err: unknown) {
+      const rawMessage = err instanceof Error ? err.message : 'Connection failed. Please check your credentials.';
+      const message =
+        /all connection attempts failed|connect to shopify|connection refused|timed out/i.test(rawMessage)
+          ? 'This environment cannot reach Shopify right now. Your store URL may be valid, but the live connection is being blocked. Use demo mode for the walkthrough or retry from a network that can reach Shopify.'
+          : rawMessage;
+      setError(message);
+      setLoading(false);
     }
   };
 
   return (
-    <MarketingShell primaryCtaHref="/login" primaryCtaLabel="Start audit" showFooterCta>
-      {heavyReady && !reducedMotion && <div ref={glowRef} className="cursor-glow" />}
-
-      <div>
-        <section className="sleek-hero">
-          <div className="hero-noise" />
-          <div className="sleek-hero-left">
-            <p className="sleek-eyebrow">AI COMMERCE SIGNAL INFRASTRUCTURE</p>
-            <h1>
-              Make your catalog
-              <br />
-              <span>impossible to ignore.</span>
-            </h1>
-            <p className="sleek-copy">
-              RepOptimizer rewrites noisy Shopify product data into recommendation-grade trust packets that rank better
-              inside modern AI shopping engines.
-            </p>
-
-            <div className="sleek-cta-row">
-              <Link href="/login" className="sleek-btn solid big">
-                Start audit
-              </Link>
-              <Link href="/dashboard" className="sleek-btn ghost big">
-                Enter live workspace
-              </Link>
+    <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
+      <div className="page-shell">
+        <nav className="site-nav">
+          <div className="brand-lockup">
+            <div className="brand-mark">
+              <BrainCircuit size={18} color="#FFFFFF" />
             </div>
-
-            <div className="signal-ticker">
-              <span className="dot" />
-              <span className="ticker-text">{signals[signalIndex]}</span>
+            <div className="brand-copy">
+              <span className="brand-name">RepOptimizer</span>
+              <span className="brand-tagline">Studio Light • Kasparro 2026</span>
             </div>
           </div>
 
-          <div className="sleek-hero-card">
-            <div className="card-top">
-              <span>LIVE SIGNAL MAP</span>
-              <span className="card-track">TRACK 5 · {timestamp || '--:--:--'}</span>
-            </div>
-            <div className={`orbital-stage ${heavyReady && !reducedMotion ? 'orbit-active' : ''}`}>
-              <div className="ring a" />
-              <div className="ring b" />
-              <div className="ring c" />
-              <div className="core">AI</div>
-              <div className="orbiter one" />
-              <div className="orbiter two" />
-            </div>
-            <div className="code-surface">
-              <div>
-                <label>before</label>
-                <pre>{activeTransform.before}</pre>
-              </div>
-              <div>
-                <label>after</label>
-                <pre>{activeTransform.after}</pre>
-              </div>
-            </div>
-            <div className="card-metrics">
-              <div>
-                <span>trust score</span>
-                <strong>91%</strong>
-              </div>
-              <div>
-                <span>drift issues</span>
-                <strong>12</strong>
-              </div>
-              <div>
-                <span>queued fixes</span>
-                <strong>04</strong>
-              </div>
-            </div>
-            <div className="wave-strip" aria-hidden="true">
-              <span />
-              <span />
-              <span />
-              <span />
-              <span />
-              <span />
-              <span />
-              <span />
-              <span />
-              <span />
-              <span />
-              <span />
-            </div>
-            <ul className="card-events code-font">
-              {activeTransform.events.map((event) => (
-                <li key={event}>{event}</li>
-              ))}
-            </ul>
-          </div>
-        </section>
-
-        <section id="connect" className="sleek-connect">
-          <div className="connect-copy">
-            <p className="sleek-eyebrow">CONNECT YOUR STORE</p>
-            <h2>Fast onboarding, clean controls, zero noise.</h2>
-            <p>
-              Connect once, run the audit in under a minute, and review high-confidence fixes before anything syncs
-              back to Shopify.
-            </p>
-          </div>
-
-          <form className="connect-form" onSubmit={handleConnect} noValidate>
-            <label htmlFor="store-url">SHOPIFY STORE URL</label>
-            <input
-              id="store-url"
-              value={storeUrl}
-              onChange={(event) => {
-                setStoreUrl(event.target.value);
-                if (errors.storeUrl) setErrors((prev) => ({ ...prev, storeUrl: undefined }));
-              }}
-              aria-invalid={!!errors.storeUrl}
-              placeholder="https://your-store.myshopify.com"
-            />
-            {errors.storeUrl ? <p className="form-error">{errors.storeUrl}</p> : null}
-
-            <label htmlFor="token">ADMIN API TOKEN</label>
-            <div className="token-row">
-              <input
-                id="token"
-                value={token}
-                onChange={(event) => {
-                  setToken(event.target.value);
-                  if (errors.token) setErrors((prev) => ({ ...prev, token: undefined }));
-                }}
-                aria-invalid={!!errors.token}
-                placeholder="shpat_****************"
-                type={showToken ? 'text' : 'password'}
-              />
-              <button
-                className="token-toggle"
-                type="button"
-                onClick={() => setShowToken((prev) => !prev)}
-                aria-label={showToken ? 'Hide token' : 'Show token'}
-              >
-                {showToken ? 'Hide' : 'Show'}
-              </button>
-            </div>
-            {errors.token ? <p className="form-error">{errors.token}</p> : null}
-
-            {submitMessage ? (
-              <p className={`form-message ${submitState === 'error' ? 'error' : ''}`}>{submitMessage}</p>
-            ) : null}
-
-            <button className="sleek-btn solid big" type="submit" disabled={submitState === 'loading'}>
-              {submitState === 'loading' ? 'Connecting...' : 'Connect and run audit'}
+          <div className="nav-actions">
+            <span className="ghost-pill" style={{ background: 'var(--accent-soft)', color: 'var(--accent-strong)', borderColor: 'var(--accent-border)' }}>
+              <Sparkles size={14} />
+              AI Perception Hub
+            </span>
+            <button type="button" className="btn-secondary" onClick={handleDemo} suppressHydrationWarning>
+              Demo access
             </button>
-            <Link href="/login" className="sleek-inline-link center">
-              Open dedicated login page
-            </Link>
-            <Link href="/dashboard" className="sleek-inline-link center">
-              Try demo mode instead
-            </Link>
-          </form>
-        </section>
+          </div>
+        </nav>
 
-        <section className="sleek-grid">
-          <article tabIndex={0}>
-            <h3>Signal cleanup</h3>
-            <p>Convert weak merchant phrasing into high-clarity product evidence that models can trust.</p>
-          </article>
-          <article tabIndex={0}>
-            <h3>Intent mapping</h3>
-            <p>Align prompt-level buyer intent with missing attributes, FAQs, and tag structure.</p>
-          </article>
-          <article tabIndex={0}>
-            <h3>Guardrailed sync</h3>
-            <p>Push only verified fixes after policy checks and confidence scoring are complete.</p>
-          </article>
-        </section>
+        <main className="landing-main">
+          <motion.section 
+            className="hero-grid landing-stage"
+            initial="hidden"
+            animate="show"
+            variants={{
+              hidden: { opacity: 0 },
+              show: { opacity: 1, transition: { staggerChildren: 0.15 } }
+            }}
+          >
+            <motion.div
+              variants={{ hidden: { opacity: 0, y: 30 }, show: { opacity: 1, y: 0 } }}
+              className="panel hero-copy"
+              style={{
+                boxShadow: 'var(--shadow-card)',
+                padding: '56px'
+              }}
+            >
+              <div className="commerce-orbit" aria-hidden="true">
+                <span />
+                <span />
+                <span />
+              </div>
+              <div className="stack" style={{ gap: 26 }}>
+                <span className="eyebrow">
+                  <PackageCheck size={14} />
+                  Storefront readiness studio
+                </span>
+
+                <div className="stack" style={{ gap: 20 }}>
+                  <h1 className="hero-title" style={{ fontWeight: 800, lineHeight: 1.03 }}>
+                    Make every product
+                    <br />
+                    <span className="hero-gradient">easy to choose.</span>
+                  </h1>
+                  <p className="hero-summary" style={{ color: 'var(--text-secondary)' }}>
+                    RepOptimizer turns unclear listings into confident shopping signals. Audit your catalog, spot weak
+                    product stories, and prepare cleaner descriptions, tags, and trust content from one focused workspace.
+                  </p>
+                </div>
+
+                <div className="catalog-marquee catalog-marquee--hero" aria-hidden="true">
+                  <div className="catalog-marquee__track">
+                    {[...marqueeCards, ...marqueeCards].map((card, index) => (
+                      <div key={`${card.title}-hero-${index}`} className={`catalog-marquee__card catalog-marquee__card--${card.tone}`}>
+                        <span>{card.title}</span>
+                        <strong>{card.score}</strong>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="hero-actions" style={{ marginTop: 8 }}>
+                  <button type="button" className="btn-primary" onClick={handleDemo} style={{ height: 64, padding: '0 38px', fontSize: '1.2rem' }} suppressHydrationWarning>
+                    Walk through the demo
+                    <ArrowRight size={20} />
+                  </button>
+                  <div className="flash-card" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+                    <BarChart2 size={18} color="var(--accent)" />
+                    <div>
+                      <strong style={{ display: 'block', fontSize: '1.04rem', marginBottom: 4, color: 'var(--text)' }}>
+                        Precision signals for the agentic age.
+                      </strong>
+                      <span className="faded-note" style={{ color: 'var(--text-secondary)' }}>
+                        Designed for merchants who need ranking signals, not just dashboards.
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="commerce-flow" aria-hidden="true">
+                {[
+                  ['Product copy', '92'],
+                  ['Trust signals', '76'],
+                  ['Search tags', '88'],
+                ].map(([label, value], index) => (
+                  <motion.div
+                    key={label}
+                    className="commerce-flow-card"
+                    initial={{ opacity: 0, y: 20, rotate: index === 1 ? -2 : 2 }}
+                    animate={{ opacity: 1, y: [0, -8, 0], rotate: index === 1 ? [-2, 1, -2] : [2, -1, 2] }}
+                    transition={{ delay: 0.35 + index * 0.15, duration: 4.5 + index, repeat: Infinity, ease: 'easeInOut' }}
+                  >
+                    <CheckCircle2 size={17} />
+                    <span>{label}</span>
+                    <strong>{value}</strong>
+                  </motion.div>
+                ))}
+              </div>
+
+              <div className="stack" style={{ gap: 24, marginTop: 40 }}>
+                <motion.div 
+                  className="hero-feature-grid"
+                  variants={{
+                    show: { transition: { staggerChildren: 0.1 } }
+                  }}
+                >
+                  {features.map((feature) => (
+                    <motion.div 
+                      key={feature.title} 
+                      className="hero-feature" 
+                      style={{ background: 'var(--bg-soft)', border: '1px solid var(--border)', borderRadius: 16, padding: 16 }}
+                      variants={{ 
+                        hidden: { opacity: 0, y: 15 }, 
+                        show: { opacity: 1, y: 0, transition: { duration: 0.5 } } 
+                      }}
+                      whileHover={{ y: -4, borderColor: 'var(--accent-border)', boxShadow: 'var(--shadow-hover)' }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+                        <motion.div 
+                          style={{ padding: 8, borderRadius: 10, background: 'var(--accent-soft)', border: '1px solid var(--accent-border)' }}
+                          whileHover={{ rotate: 8, scale: 1.05 }}
+                        >
+                          {feature.icon}
+                        </motion.div>
+                        <strong style={{ fontSize: '0.95rem' }}>{feature.title}</strong>
+                      </div>
+                      <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>{feature.desc}</p>
+                    </motion.div>
+                  ))}
+                </motion.div>
+              </div>
+            </motion.div>
+
+            <motion.aside 
+              variants={{ hidden: { opacity: 0, x: 20 }, show: { opacity: 1, x: 0 } }}
+              className="panel hero-form-card"
+              style={{ boxShadow: 'var(--shadow-card)', padding: '42px' }}
+            >
+
+
+              <div className="terminal-ribbon">
+                <div className="terminal-dots">
+                  <span />
+                  <span />
+                  <span />
+                </div>
+                <span className="ghost-pill">Secure Shopify intake</span>
+              </div>
+
+              <div className="terminal-panel">
+                <span className="section-kicker">Launch an audit</span>
+                <h2 className="section-title">Connect your store and start with clarity.</h2>
+                <p className="section-copy">
+                  We validate the Shopify URL, preserve sanitized credentials locally, and move straight into the audit
+                  dashboard once access is confirmed.
+                </p>
+              </div>
+
+              <div className="flash-card">
+                <Sparkles size={18} color="var(--accent)" />
+                <div>
+                      <strong style={{ display: 'block', fontSize: '1.05rem', marginBottom: 4 }}>
+                    Demo mode is ready immediately
+                  </strong>
+                  <span className="faded-note">
+                    Prefer a fast walkthrough first? The demo opens with curated catalog data and simulated AI outputs.
+                  </span>
+                </div>
+              </div>
+
+              <form onSubmit={handleStart} className="input-stack">
+                <div>
+                  <label className="field-label">Shopify store URL</label>
+                  <input
+                    type="text"
+                    required
+                    value={storeUrl}
+                    onChange={(event) => setStoreUrl(event.target.value)}
+                    className="input-shell"
+                    placeholder="your-store.myshopify.com"
+                    suppressHydrationWarning
+                  />
+                </div>
+
+                <div>
+                  <label className="field-label">
+                    <Lock size={13} />
+                    Admin API token
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    value={token}
+                    onChange={(event) => setToken(event.target.value)}
+                    className="input-shell"
+                    placeholder="shpat_..."
+                    suppressHydrationWarning
+                    style={{ fontFamily: 'var(--font-mono)' }}
+                  />
+                </div>
+
+                {error && (
+                  <div
+                    style={{
+                      padding: '14px 16px',
+                      borderRadius: 18,
+                      border: '1px solid var(--danger-border)',
+                      background: 'var(--danger-soft)',
+                      color: 'var(--danger)',
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: 10,
+                    }}
+                  >
+                    <AlertCircle size={16} style={{ flexShrink: 0, marginTop: 1 }} />
+                    <span style={{ fontSize: '0.9rem', lineHeight: 1.55 }}>{error}</span>
+                  </div>
+                )}
+
+                <div className="shield-note">
+                  <ShieldCheck size={18} color="var(--ok)" />
+                  <span style={{ lineHeight: 1.55 }}>
+                    Read-only by default. No catalog updates are pushed unless you explicitly approve them later.
+                  </span>
+                </div>
+
+                <button type="submit" className="btn-primary" disabled={loading} style={{ width: '100%' }} suppressHydrationWarning>
+                  {loading ? (
+                    <>
+                      <span
+                        style={{
+                          width: 15,
+                          height: 15,
+                          borderRadius: '50%',
+                          border: '2px solid rgba(18, 20, 26, 0.2)',
+                          borderTopColor: '#12141a',
+                        }}
+                        className="spin"
+                      />
+                      Validating connection
+                    </>
+                  ) : (
+                    <>
+                      Run free audit
+                      <ArrowRight size={16} />
+                    </>
+                  )}
+                </button>
+
+                <button type="button" className="btn-secondary" onClick={handleDemo} suppressHydrationWarning>
+                  Start with demo data instead
+                </button>
+              </form>
+            </motion.aside>
+          </motion.section>
+
+          <motion.section 
+            variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
+            className="panel signal-strip"
+            style={{ background: '#FFFFFF', border: '1px solid var(--border)' }}
+          >
+            {signalStats.map((item, index) => (
+              <motion.div 
+                key={item.label} 
+                className="signal-block"
+                variants={{ hidden: { opacity: 0, scale: 0.9 }, show: { opacity: 1, scale: 1 } }}
+                transition={{ delay: index * 0.1, duration: 0.5 }}
+                whileHover={{ scale: 1.05 }}
+              >
+                <strong className="signal-value" style={{ color: 'var(--accent)' }}>{item.value}</strong>
+                <span className="signal-label">{item.label}</span>
+              </motion.div>
+            ))}
+          </motion.section>
+
+          <motion.section 
+            variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
+            className="panel" 
+            style={{ marginTop: 22, padding: '48px', background: '#FFFFFF' }}
+          >
+            <span className="section-kicker">How the system thinks</span>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'flex-end',
+                justifyContent: 'space-between',
+                gap: 20,
+                flexWrap: 'wrap',
+                marginBottom: 32
+              }}
+            >
+              <div style={{ maxWidth: 620 }}>
+                <h2 className="section-title" style={{ fontSize: '2.2rem', marginBottom: 12 }}>A storefront audit that behaves more like an operations workflow.</h2>
+                <p className="section-copy" style={{ fontSize: '1.1rem' }}>
+                  The interface is built around one outcome: make it obvious why a product is invisible to AI and what
+                  to fix first. Every stage is meant to move from signal to action.
+                </p>
+              </div>
+              <span className="ghost-pill" style={{ background: 'var(--accent-soft)', color: 'var(--accent-strong)', borderColor: 'var(--accent-border)' }}>
+                <Target size={14} />
+                Precision Audit Architecture
+              </span>
+            </div>
+
+            <div className="step-grid">
+              {steps.map((step, index) => (
+                <motion.article 
+                  key={step.number} 
+                  className="step-card" 
+                  style={{ background: 'var(--bg-soft)', border: '1px solid var(--border)', padding: 24, borderRadius: 16 }}
+                  variants={{ hidden: { opacity: 0, y: 15 }, show: { opacity: 1, y: 0 } }}
+                  transition={{ delay: index * 0.08, duration: 0.5 }}
+                  whileHover={{ y: -6, borderColor: 'var(--accent-border)', boxShadow: 'var(--shadow-hover)' }}
+                >
+                  <motion.span 
+                    className="step-number" 
+                    style={{ color: 'var(--accent)', background: 'var(--accent-soft)', marginBottom: 16, display: 'inline-block', fontSize: '1.8rem', fontWeight: 700 }}
+                    whileHover={{ scale: 1.1, rotate: 5 }}
+                  >
+                    {step.number}
+                  </motion.span>
+                  <h3 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: 12 }}>{step.title}</h3>
+                  <p className="section-copy" style={{ fontSize: '0.92rem', color: 'var(--text-secondary)' }}>
+                    {step.desc}
+                  </p>
+                </motion.article>
+              ))}
+            </div>
+          </motion.section>
+
+          <motion.footer
+            variants={{ hidden: { opacity: 0 }, show: { opacity: 1 } }}
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              gap: 14,
+              flexWrap: 'wrap',
+              padding: '40px 12px',
+              color: 'var(--text-muted)',
+              fontSize: '0.85rem',
+              borderTop: '1px solid var(--border)',
+              marginTop: 40
+            }}
+          >
+            <span>RepOptimizer • Kasparro 2026</span>
+            <span>Studio Light Theme Engine Active</span>
+          </motion.footer>
+        </main>
       </div>
     </MarketingShell>
   );

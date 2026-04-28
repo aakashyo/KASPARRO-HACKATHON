@@ -1,17 +1,29 @@
 import type { Metadata } from "next";
-import { DM_Sans, Fraunces, JetBrains_Mono, Manrope, Syne } from "next/font/google";
+import {
+  Fraunces,
+  Manrope,
+  Space_Mono,
+} from "next/font/google";
 import "./globals.css";
 
-const dmSans = DM_Sans({
-  variable: "--font-dm",
+const display = Fraunces({
+  variable: "--font-bricolage",
   subsets: ["latin"],
+  weight: ["600", "700", "800", "900"],
   display: "swap",
-  weight: ["400", "500", "600"],
 });
 
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
+const body = Manrope({
+  variable: "--font-source",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
+});
+
+const mono = Space_Mono({
+  variable: "--font-plex",
+  subsets: ["latin"],
+  weight: ["400", "700"],
   display: "swap",
   weight: ["300", "700"],
 });
@@ -49,9 +61,11 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${dmSans.variable} ${fraunces.variable} ${jetbrainsMono.variable} ${manrope.variable} ${syne.variable}`}
+      data-theme="light"
+      className={`${display.variable} ${body.variable} ${mono.variable}`}
+      suppressHydrationWarning
     >
-      <body>{children}</body>
+      <body suppressHydrationWarning>{children}</body>
     </html>
   );
 }

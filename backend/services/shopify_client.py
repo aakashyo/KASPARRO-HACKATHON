@@ -19,9 +19,15 @@ class ShopifyClient:
             "X-Shopify-Access-Token": self.access_token,
             "Content-Type": "application/json"
         }
+        # Ignore host-level proxy settings for Shopify calls. This environment can
+        # have a broken local proxy configured, which prevents direct HTTPS access.
+        self.client_kwargs = {
+            "timeout": 30.0,
+            "trust_env": False,
+        }
 
     async def _graphql(self, query: str, variables: Dict[str, Any] | None = None) -> Dict[str, Any]:
-        async with httpx.AsyncClient(timeout=30.0) as client:
+        async with httpx.AsyncClient(**self.client_kwargs) as client:
             response = await client.post(
                 f"{self.store_url}/admin/api/2024-01/graphql.json",
                 json={"query": query, "variables": variables or {}},
@@ -111,7 +117,7 @@ class ShopifyClient:
         return pages
 
     async def fetch_policies(self) -> List[Dict[str, Any]]:
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(**self.client_kwargs) as client:
             try:
                 response = await client.get(
                     f"{self.store_url}/admin/api/2024-01/policies.json",
