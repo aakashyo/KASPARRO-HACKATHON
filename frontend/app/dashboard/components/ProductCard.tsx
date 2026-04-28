@@ -52,11 +52,26 @@ export default function ProductCard({ product, highlighted = false, isDemo = fal
   ] as const;
 
   const imageSrc = product.original_data?.image?.src || product.original_data?.image;
+  const vendor = product.vendor || product.original_data?.vendor || 'Unknown vendor';
+  const rawPrice = product.price || product.original_data?.price;
+  const price =
+    typeof rawPrice === 'number'
+      ? `$${rawPrice.toFixed(2)}`
+      : typeof rawPrice === 'string' && rawPrice.trim()
+        ? rawPrice.startsWith('$')
+          ? rawPrice
+          : `$${rawPrice}`
+        : 'Price pending';
+  const tags = Array.isArray(product.tags)
+    ? product.tags.slice(0, 2)
+    : Array.isArray(product.original_data?.tags)
+      ? product.original_data.tags.slice(0, 2)
+      : [];
 
   return (
     <motion.div
       layout
-      className="panel"
+      className="panel product-card"
       style={{
         background: 'linear-gradient(145deg, rgba(255,255,255,0.98), rgba(248,250,252,0.9))',
         borderLeft: `4px solid ${status.color}`,
@@ -167,6 +182,31 @@ export default function ProductCard({ product, highlighted = false, isDemo = fal
               >
                 {isAudited ? audit?.gaps?.insight || scan?.basic_gap : scan?.basic_gap}
               </p>
+
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  flexWrap: 'wrap',
+                  marginTop: 14,
+                }}
+              >
+                <span className="product-meta-pill">
+                  <strong>{price}</strong>
+                  <span>Price</span>
+                </span>
+                <span className="product-meta-pill">
+                  <strong>{vendor}</strong>
+                  <span>Vendor</span>
+                </span>
+                {tags.map((tag: string) => (
+                  <span key={tag} className="product-meta-pill product-meta-pill--tag">
+                    <strong>{tag}</strong>
+                    <span>Tag</span>
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -182,13 +222,13 @@ export default function ProductCard({ product, highlighted = false, isDemo = fal
           >
             {isAudited ? (
               <div style={{ padding: '8px 16px', background: 'var(--bg-main)', borderRadius: 12, minWidth: 160 }}>
-                <span className="section-kicker" style={{ marginBottom: 4, fontSize: '0.65rem' }}>
+                <span className="section-kicker" style={{ marginBottom: 4, fontSize: '0.82rem' }}>
                   Score shift
                 </span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--text-secondary)' }}>{currentScore}</span>
+                  <span style={{ fontSize: '1.62rem', fontWeight: 700, color: 'var(--text-secondary)' }}>{currentScore}</span>
                   <ArrowRight size={14} color="var(--text-muted)" />
-                  <span style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--ok)' }}>
+                  <span style={{ fontSize: '1.62rem', fontWeight: 800, color: 'var(--ok)' }}>
                     {targetScore}
                   </span>
                 </div>
@@ -196,7 +236,7 @@ export default function ProductCard({ product, highlighted = false, isDemo = fal
             ) : (
               <div style={{ padding: '8px 16px', background: 'var(--info-soft)', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
                 <Loader2 size={14} className="spin" color="var(--accent)" />
-                <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--accent)' }}>Analyzing...</span>
+                <span style={{ fontSize: '0.96rem', fontWeight: 600, color: 'var(--accent)' }}>Analyzing...</span>
               </div>
             )}
 

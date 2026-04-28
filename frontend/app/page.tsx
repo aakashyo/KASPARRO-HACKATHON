@@ -140,7 +140,11 @@ export default function LandingPage() {
 
       router.push('/dashboard');
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Connection failed. Please check your credentials.';
+      const rawMessage = err instanceof Error ? err.message : 'Connection failed. Please check your credentials.';
+      const message =
+        /all connection attempts failed|connect to shopify|connection refused|timed out/i.test(rawMessage)
+          ? 'This environment cannot reach Shopify right now. Your store URL may be valid, but the live connection is being blocked. Use demo mode for the walkthrough or retry from a network that can reach Shopify.'
+          : rawMessage;
       setError(message);
       setLoading(false);
     }
@@ -170,7 +174,7 @@ export default function LandingPage() {
               <Sparkles size={14} />
               AI Perception Hub
             </span>
-            <button type="button" className="btn-secondary" onClick={handleDemo}>
+            <button type="button" className="btn-secondary" onClick={handleDemo} suppressHydrationWarning>
               Demo access
             </button>
           </div>
@@ -205,17 +209,6 @@ export default function LandingPage() {
                   Storefront readiness studio
                 </span>
 
-                <div className="catalog-marquee catalog-marquee--hero" aria-hidden="true">
-                  <div className="catalog-marquee__track">
-                    {[...marqueeCards, ...marqueeCards].map((card, index) => (
-                      <div key={`${card.title}-hero-${index}`} className={`catalog-marquee__card catalog-marquee__card--${card.tone}`}>
-                        <span>{card.title}</span>
-                        <strong>{card.score}</strong>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
                 <div className="stack" style={{ gap: 20 }}>
                   <h1 className="hero-title" style={{ fontWeight: 800, lineHeight: 1.03 }}>
                     Make every product
@@ -228,8 +221,19 @@ export default function LandingPage() {
                   </p>
                 </div>
 
+                <div className="catalog-marquee catalog-marquee--hero" aria-hidden="true">
+                  <div className="catalog-marquee__track">
+                    {[...marqueeCards, ...marqueeCards].map((card, index) => (
+                      <div key={`${card.title}-hero-${index}`} className={`catalog-marquee__card catalog-marquee__card--${card.tone}`}>
+                        <span>{card.title}</span>
+                        <strong>{card.score}</strong>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
                 <div className="hero-actions" style={{ marginTop: 8 }}>
-                  <button type="button" className="btn-primary" onClick={handleDemo} style={{ height: 64, padding: '0 38px', fontSize: '1.2rem' }}>
+                  <button type="button" className="btn-primary" onClick={handleDemo} style={{ height: 64, padding: '0 38px', fontSize: '1.2rem' }} suppressHydrationWarning>
                     Walk through the demo
                     <ArrowRight size={20} />
                   </button>
@@ -394,7 +398,7 @@ export default function LandingPage() {
                   </span>
                 </div>
 
-                <button type="submit" className="btn-primary" disabled={loading} style={{ width: '100%' }}>
+                <button type="submit" className="btn-primary" disabled={loading} style={{ width: '100%' }} suppressHydrationWarning>
                   {loading ? (
                     <>
                       <span
@@ -417,7 +421,7 @@ export default function LandingPage() {
                   )}
                 </button>
 
-                <button type="button" className="btn-secondary" onClick={handleDemo}>
+                <button type="button" className="btn-secondary" onClick={handleDemo} suppressHydrationWarning>
                   Start with demo data instead
                 </button>
               </form>
