@@ -1,90 +1,205 @@
-# AI RepOptimizer: Perception Intelligence Engine
+# AI RepOptimizer
 
-AI RepOptimizer is a high-performance intelligence engine designed to optimize Shopify stores for the Agentic Web and AI-driven e-commerce.
+AI RepOptimizer is a Shopify-focused commerce intelligence tool built for the Anthropic Hackathon. It helps merchants understand how AI shopping systems interpret their product catalog, identify discoverability gaps, and generate safer, more structured improvements that make products easier for AI-driven commerce systems to recommend.
 
----
+## What Problem It Solves
 
-## Problem Statement: The AI Perception Gap in E-commerce
+Traditional SEO is no longer enough for stores that want to appear in AI-assisted shopping flows. Product catalogs are often written for human browsing and keyword search, but not for reasoning-based systems that need clear intent, structured attributes, trust signals, and policy-aligned context.
 
-E-commerce is currently undergoing a fundamental transition. Consumers are increasingly moving away from traditional keyword-based search and toward Agentic AI Shopping. Users now utilize Large Language Models (LLMs) such as ChatGPT, Perplexity, and Google AI Overviews to perform complex, intent-based product discovery.
+AI RepOptimizer is designed to close that gap. It audits a Shopify catalog through the lens of AI perception, highlights weak or missing signals, and turns those findings into actionable recommendations that merchants can review before pushing back into their store.
 
-Traditional Search Engine Optimization (SEO) is no longer sufficient. Most Shopify stores remain unintelligible to AI shopping agents because their product data is optimized for human readability and legacy search algorithms. When an AI agent encounters ambiguous, incomplete, or unstructured data, it cannot confidently recommend the product, leading to a significant loss in visibility and conversion.
+## What the Product Does
 
-## Solution: Bridging the Perception Gap
+- Connects to a Shopify store using store URL and admin token
+- Fetches product, policy, and page data from the storefront
+- Runs a deterministic quick scan for structural catalog gaps
+- Runs a deeper AI audit for intent clarity, recommendation fitness, and discoverability issues
+- Validates generated recommendations against policy-sensitive areas such as shipping, returns, warranties, and subscriptions
+- Simulates how different AI shopper personas may rank products
+- Presents findings in a dashboard with issues, fixes, and review-first actions
+- Supports FAQ preview and push-back workflows for store improvements
 
-AI RepOptimizer serves as an intelligence layer that interfaces between merchant intent and AI perception. The system analyzes store data through the lens of an AI agent, identifies critical knowledge gaps, and generates structured, optimized data to ensure maximum discoverability in the AI era.
+## Core Features
 
----
+| Feature | Description |
+| --- | --- |
+| Shopify catalog ingestion | Pulls live products, policies, and pages from a Shopify store |
+| Deterministic quick scan | Detects missing descriptions, tags, use-case language, size data, trust signals, and more |
+| Deep AI audit | Evaluates how an AI shopping assistant may interpret each product |
+| Policy guardrails | Flags risky generated claims against actual store policy context |
+| Multi-persona simulation | Tests products against budget, tech-spec, and gift-style shopper intent |
+| Review-first workflow | Keeps merchants in control before anything is pushed back to Shopify |
+| Demo mode | Allows full product walkthrough without requiring live store credentials |
 
-## Technical Architecture: The Intelligence Pipeline
+## How It Works
 
-The platform executes a multi-layered audit on the Shopify catalog in real-time:
+1. The user connects a Shopify store or enters demo mode.
+2. The backend validates credentials and fetches catalog, policy, and page data.
+3. A deterministic scan finds structural catalog weaknesses quickly.
+4. A deeper AI audit analyzes intent, perception, gaps, impact, and fix opportunities.
+5. Generated fixes are checked against store policy context.
+6. Results are streamed to the frontend dashboard for review.
+7. The merchant reviews product issues, simulations, and suggested improvements.
+8. Approved changes can be previewed and pushed back into Shopify.
 
-1.  **Data Ingestion**: Seamless integration with Shopify Admin APIs via GraphQL to fetch live inventory, product descriptions, policies, and metadata.
-2.  **Deterministic Scan**: A high-speed, rule-based engine identifies immediate structural gaps such as missing descriptions or unstructured tags.
-3.  **AI Perception Simulation**: Product data is processed by a deep-audit engine powered by Llama 3 via Groq. This simulation determines how an LLM interprets product features and use-cases.
-4.  **Resilient Sanitization**: Raw AI outputs undergo recursive JSON parsing and cleaning to remove markdown noise and ensure data integrity.
-5.  **Real-Time Visualization**: Diagnostics and recommended optimizations are pushed to the dashboard via Server-Sent Events (SSE).
-6.  **Query Simulation**: A built-in sandbox allows merchants to test products against hypothetical customer queries to validate AI recommendation logic.
+## Architecture Overview
 
----
+### Frontend
 
-## Key Features and Capabilities
+- Next.js 14 and React
+- Landing page, login flow, marketing pages, and audit dashboard
+- Review-first UI for issue inspection, fix approval, and simulation output
 
-| Feature Area | Functionality | Strategic Value |
-| :--- | :--- | :--- |
-| **Perception Radar Chart** | 5-dimension visualization of Product Quality, Policy Clarity, FAQ Coverage, Trust Signals, and Structured Data. | Provides an instant, enterprise-grade store health assessment. |
-| **Policy Guardrails** | Real-time safety validation for all AI-suggested optimizations. | Establishes human-in-the-loop control, essential for merchant trust. |
-| **Competitive Benchmarking** | Side-by-side comparison of optimized products against generic marketplace competitors. | Demonstrates immediate ROI through improved AI ranking signals. |
-| **Multi-Persona Simulation** | Concurrent testing against distinct AI personas: Budget Optimizer, Tech-Spec Critic, and Gift Recommender. | Validates product perception across diverse buyer segments. |
-| **1-Click Execution** | Generation of Shopify `productUpdate` JSON payloads for immediate implementation. | Transitions the tool from an advisory platform to an automated executor. |
-| **Hybrid Inference** | Combination of deterministic Python logic and high-performance LLM inference. | Optimizes for both accuracy and computational efficiency. |
+### Backend
 
----
+- Python and FastAPI
+- Shopify integration, catalog ingestion, quick scan pipeline, deep audit orchestration, scoring, guardrails, and push-back endpoints
+- Server-Sent Events (SSE) for progressive analysis updates
 
-## Infrastructure and Technology Stack
+### Intelligence Layer
 
-The platform is engineered for ultra-low latency and enterprise reliability:
+- Deterministic rules for consistent structural checks
+- LLM-based analysis for semantic reasoning and recommendation quality
+- Hybrid architecture chosen to balance reliability, speed, and intelligence
 
-*   **Backend**: Python and FastAPI for concurrent data orchestration and AI pipeline management.
-*   **Inference Engine**: Powered by Groq LPU processors, utilizing Llama 3.3 models to achieve sub-500ms inference speeds.
-*   **Frontend**: Next.js 14 and React featuring a glassmorphic UI with dynamic charting via Recharts.
-*   **Validation Layer**: Pydantic 2.x for strict schema enforcement and a dedicated sanitization layer to handle LLM hallucinations.
-*   **Concurrency Management**: Automatic rate-limit adjustment and hash-based caching to ensure scalability for large catalogs.
+## Technology Stack
 
----
+- Frontend: Next.js, React, TypeScript
+- Styling/UI: custom design system, motion-driven dashboard UI
+- Backend: Python, FastAPI
+- AI inference: Groq + Llama
+- Validation: Pydantic
+- Data source: Shopify Admin API
+- Charts/visualization: Recharts
+- Deployment: Render
 
-## Installation and Configuration
+## Repository Structure
+
+```text
+backend/                      FastAPI backend, analysis services, Shopify integration
+frontend/                     Next.js frontend and dashboard
+PRODUCT_DOCUMENT.md           Product-focused submission document
+TECHNICAL_DOCUMENT.md         Technical architecture and engineering document
+CONTRIBUTION_NOTE.md          Team contribution breakdown
+DECISION_LOG.md               Key product and engineering tradeoffs
+README.md                     Project overview and setup guide
+render.yaml                   Deployment configuration
+```
+
+## Submission Documents
+
+- [Product Document](./PRODUCT_DOCUMENT.md)
+- [Technical Document](./TECHNICAL_DOCUMENT.md)
+- [Contribution Note](./CONTRIBUTION_NOTE.md)
+- [Decision Log](./DECISION_LOG.md)
+
+## Setup Instructions
 
 ### Prerequisites
-*   Python 3.10+
-*   Node.js 18+
-*   Groq API Key
-*   Shopify Admin API Token (with `read_products` and `write_products` scopes)
+
+- Python 3.10+
+- Node.js 18+
+- A Groq API key
+- A Shopify Admin API token with appropriate read/write scopes
 
 ### Backend Setup
-1.  Install dependencies: `pip install -r backend/requirements.txt`
-2.  Configure environment: Copy `backend/.env.example` to `backend/.env`
-3.  Update `.env` with your `GROQ_API_KEY`, `SHOPIFY_STORE_URL`, and `SHOPIFY_ADMIN_TOKEN`.
-4.  Start server: `python -m backend.main`
+
+1. Install backend dependencies:
+
+```bash
+pip install -r backend/requirements.txt
+```
+
+2. Create environment configuration:
+
+```bash
+copy backend\.env.example backend\.env
+```
+
+3. Add the required values to `backend/.env`:
+
+- `GROQ_API_KEY`
+- `SHOPIFY_STORE_URL`
+- `SHOPIFY_ADMIN_TOKEN`
+
+4. Start the backend:
+
+```bash
+python -m backend.main
+```
 
 ### Frontend Setup
-1.  Navigate to directory: `cd frontend`
-2.  Install packages: `npm install`
-3.  Configure environment: Copy `.env.local.example` to `.env.local`
-4.  Start development server: `npm run dev`
 
----
+1. Move into the frontend directory:
 
-## FAQ and Troubleshooting
+```bash
+cd frontend
+```
 
-**Issue: Data fetch failure**
-Ensure both frontend and backend servers are active. Verify the validity of the Shopify Admin Token and Groq API key in the backend environment configuration.
+2. Install dependencies:
 
-**Issue: Latency on large stores**
-The system throttles concurrency to respect API rate limits. For large catalogs, the deep audit processes items sequentially to ensure data stability.
+```bash
+npm install
+```
 
----
+3. Create frontend environment configuration if needed:
+
+```bash
+copy .env.local.example .env.local
+```
+
+4. Start the frontend:
+
+```bash
+npm run dev
+```
+
+5. Open the app at:
+
+```text
+http://localhost:3000
+```
+
+## Demo Flow
+
+The recommended demo flow is:
+
+1. Open the landing page
+2. Use demo mode or connect a Shopify store
+3. Run the audit
+4. Review store readiness metrics and product severity states
+5. Explore issue summaries and generated fixes
+6. Use multi-persona query simulation
+7. Preview FAQ or improvement outputs
+8. Review push-back actions
+
+## Current Prototype Scope
+
+This project is a working end-to-end prototype built under hackathon constraints. It intentionally favors a complete and reviewable workflow over production-hard infrastructure.
+
+Current prototype shortcuts include:
+
+- in-memory caching instead of a durable persistence layer
+- broad CORS configuration for development convenience
+- simplified credential and deployment flows
+- Shopify-first platform scope rather than multi-platform support
+
+## Why This Project Is Different
+
+This is not a generic chatbot or a simple SEO rewrite tool. AI RepOptimizer is designed as a workflow product with:
+
+- real Shopify ingestion
+- deterministic catalog inspection
+- deeper AI perception analysis
+- policy-aware validation
+- multi-persona query simulation
+- review-first merchant control
+- push-back capability into the storefront
+
+## Early Signal
+
+The repository saw 1,076 clones from 320 unique cloners in the first two weeks, providing an early signal of organic interest in the project and its problem framing.
 
 ## License
+
 Distributed under the MIT License.
