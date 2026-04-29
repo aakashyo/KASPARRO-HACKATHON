@@ -38,8 +38,8 @@ export default function PreviewModal({ isOpen, onClose, onConfirm, title, descri
       }}>
         <div style={{ padding: '24px 32px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
-            <h2 style={{ fontFamily: 'var(--font-head)', fontSize: 20, fontWeight: 800, color: 'var(--text)', margin: 0 }}>{title}</h2>
-            <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '4px 0 0 0' }}>{description}</p>
+            <h2 style={{ fontFamily: 'var(--font-head)', fontSize: 24, fontWeight: 800, color: 'var(--text)', margin: 0 }}>{title}</h2>
+            <p style={{ fontSize: 15, color: 'var(--text-muted)', margin: '6px 0 0 0', lineHeight: 1.6 }}>{description}</p>
           </div>
           <button onClick={onClose} style={{ background: 'var(--bg-elevated)', border: 'none', borderRadius: 12, padding: 8, cursor: 'pointer', color: 'var(--text-muted)' }}>
             <X size={20} />
@@ -48,7 +48,7 @@ export default function PreviewModal({ isOpen, onClose, onConfirm, title, descri
 
         <div style={{ padding: '32px', overflowY: 'auto', flex: 1, background: 'linear-gradient(135deg, rgba(219,234,254,0.42), rgba(236,253,245,0.36))' }}>
           {contentType === 'faq' && (
-            <div style={{ background: '#fff', color: '#333', padding: 40, borderRadius: 12, fontSize: 14, boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
+            <div style={{ background: '#fff', color: '#333', padding: 40, borderRadius: 12, fontSize: 16, lineHeight: 1.75, boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
                <div dangerouslySetInnerHTML={{ __html: content }} />
             </div>
           )}
@@ -61,14 +61,14 @@ export default function PreviewModal({ isOpen, onClose, onConfirm, title, descri
                     <div style={{ padding: 6, borderRadius: 8, background: 'var(--accent-glow)', color: 'var(--accent)' }}>
                       <Zap size={14} />
                     </div>
-                    <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>{fix.title}</span>
+                    <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text)' }}>{fix.title}</span>
                   </div>
-                  <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, background: 'rgba(0,0,0,0.2)', padding: 12, borderRadius: 8, border: '1px dashed var(--border-subtle)' }}>
+                  <div style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.7, background: 'rgba(0,0,0,0.2)', padding: 14, borderRadius: 8, border: '1px dashed var(--border-subtle)' }}>
                     {fix.description}
                   </div>
                   <div style={{ display: 'flex', gap: 6, marginTop: 10, flexWrap: 'wrap' }}>
                     {fix.tags.map((tag: string, j: number) => (
-                      <span key={j} style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: 'var(--bg-elevated)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
+                      <span key={j} style={{ fontSize: 12, padding: '4px 10px', borderRadius: 6, background: 'var(--bg-elevated)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
                         {tag}
                       </span>
                     ))}
@@ -81,14 +81,14 @@ export default function PreviewModal({ isOpen, onClose, onConfirm, title, descri
           {contentType === 'single_fix' && (
              <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                 <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 16, padding: 20 }}>
-                   <p style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 10 }}>Optimized Description</p>
-                   <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>{content.description}</div>
+                   <p style={{ fontSize: 13, fontWeight: 800, textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 12, letterSpacing: '0.08em' }}>Optimized Description</p>
+                   <div style={{ fontSize: 15, color: 'var(--text-secondary)', lineHeight: 1.8 }}>{content.description}</div>
                 </div>
                 <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 16, padding: 20 }}>
-                   <p style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 10 }}>Added Semantic Tags</p>
+                   <p style={{ fontSize: 13, fontWeight: 800, textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 12, letterSpacing: '0.08em' }}>Added Semantic Tags</p>
                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                       {content.tags.map((t: string, i: number) => (
-                         <span key={i} style={{ fontSize: 11, padding: '4px 10px', borderRadius: 6, background: 'var(--bg-elevated)', border: '1px solid var(--border)', color: 'var(--text)' }}>{t}</span>
+                         <span key={i} style={{ fontSize: 13, padding: '6px 12px', borderRadius: 8, background: 'var(--bg-elevated)', border: '1px solid var(--border)', color: 'var(--text)' }}>{t}</span>
                       ))}
                    </div>
                 </div>
@@ -99,7 +99,7 @@ export default function PreviewModal({ isOpen, onClose, onConfirm, title, descri
         <div style={{ padding: '24px 32px', borderTop: '1px solid var(--border-subtle)', display: 'flex', gap: 12, justifyContent: 'flex-end', background: 'var(--bg-surface)' }}>
            <button 
              onClick={onClose}
-             style={{ padding: '12px 24px', borderRadius: 12, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text)', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}
+             style={{ padding: '12px 24px', borderRadius: 12, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text)', fontSize: 15, fontWeight: 600, cursor: 'pointer' }}
            >
              Cancel
            </button>
@@ -112,7 +112,7 @@ export default function PreviewModal({ isOpen, onClose, onConfirm, title, descri
                border: 'none', 
                background: 'var(--gradient-primary)', 
                color: '#FFFFFF', 
-               fontSize: 14, 
+               fontSize: 15, 
                fontWeight: 800, 
                cursor: loading ? 'not-allowed' : 'pointer',
                display: 'flex',

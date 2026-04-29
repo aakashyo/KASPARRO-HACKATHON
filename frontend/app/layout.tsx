@@ -3,6 +3,8 @@ import {
   Fraunces,
   Manrope,
   Space_Mono,
+  JetBrains_Mono,
+  Syne,
 } from "next/font/google";
 import "./globals.css";
 
@@ -25,7 +27,6 @@ const mono = Space_Mono({
   subsets: ["latin"],
   weight: ["400", "700"],
   display: "swap",
-  weight: ["300", "700"],
 });
 
 const jetbrainsMono = JetBrains_Mono({
@@ -46,7 +47,7 @@ const syne = Syne({
   variable: "--font-syne",
   subsets: ["latin"],
   display: "swap",
-  weight: ["500", "600", "700"],
+  weight: ["500", "600", "700", "800"],
 });
 
 export const metadata: Metadata = {

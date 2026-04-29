@@ -1,9 +1,45 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import {
+  Brain,
+  CheckCircle2,
+  Download,
+  Loader2,
+  Moon,
+  RefreshCcw,
+  RefreshCw,
+  Search,
+  Sun,
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { analyzeStore, exportReportCSV, pushBulkFixes } from '@/lib/api';
+import { demoData } from '@/lib/demoData';
+import StoreHealthCharts from './components/StoreHealthCharts';
+import ScoreCard from './components/ScoreCard';
+import StrategicRoadmap from './components/StrategicRoadmap';
+import ProductCard from './components/ProductCard';
 
-type Severity = 'CRITICAL' | 'WARNING' | 'OPTIMIZED';
+type DashboardStatus = 'idle' | 'initializing' | 'scanning' | 'auditing' | 'complete' | 'error';
+type FilterKey = 'ALL' | 'CRITICAL' | 'WARNING' | 'OPTIMIZED';
+type ThemeKey = 'light' | 'dark';
+
+interface Product {
+  id: number | string;
+  name: string;
+  severity: 'CRITICAL' | 'WARNING' | 'OPTIMIZED';
+  oldScore: number;
+  newScore: number;
+  diagnosis: string;
+  issues: string[];
+  fixes: string[];
+  afterSync: string;
+  is_audited?: boolean;
+  audit_deep?: any;
+  scan_quick?: any;
+  guardrail?: any;
+}
 
 const statusCopy: Record<Exclude<DashboardStatus, 'idle' | 'complete' | 'error'>, string> = {
   initializing: 'Warming the audit engine and checking the catalog surface.',
@@ -11,7 +47,7 @@ const statusCopy: Record<Exclude<DashboardStatus, 'idle' | 'complete' | 'error'>
   auditing: 'Deep-auditing product clarity against shopper expectations.',
 };
 
-const PRODUCTS: Product[] = [
+const STATIC_PRODUCTS: Product[] = [
   {
     id: 1,
     name: 'Neural Vitamin C Serum',
@@ -88,36 +124,27 @@ const PRODUCTS: Product[] = [
   },
 ];
 
-const DIMENSIONS = [
-  { name: 'Product Quality', value: 42 },
-  { name: 'Policy Clarity', value: 85 },
-  { name: 'FAQ Coverage', value: 38 },
-  { name: 'Trust Signals', value: 72 },
-  { name: 'Structured Data', value: 45 },
-];
+const FILTERS: FilterKey[] = ['ALL', 'CRITICAL', 'WARNING', 'OPTIMIZED'];
 
-const FILTERS = ['ALL', 'CRITICAL', 'WARNING', 'OPTIMIZED'] as const;
+function getFilterKey(product: any): FilterKey {
+  const severity = product.scan_quick?.severity ?? product.audit_deep?.gaps?.severity ?? product.severity;
 
-type Filter = (typeof FILTERS)[number];
+  if (typeof severity === 'number') {
+    if (severity >= 7) return 'CRITICAL';
+    if (severity >= 4) return 'WARNING';
+    return 'OPTIMIZED';
+  }
 
-function severityClass(level: Severity): string {
-  if (level === 'CRITICAL') return 'status-critical';
-  if (level === 'WARNING') return 'status-warning';
-  return 'status-optimized';
+  if (severity === 'CRITICAL' || severity === 'WARNING' || severity === 'OPTIMIZED') {
+    return severity;
+  }
+
+  return 'WARNING';
 }
 
 export default function DashboardPage() {
   const router = useRouter();
-  const [navReady, setNavReady] = useState(false);
-  const [readiness, setReadiness] = useState(0);
-  const [upside, setUpside] = useState(0);
-  const [activeFilter, setActiveFilter] = useState<Filter>('ALL');
-  const [displayFilter, setDisplayFilter] = useState<Filter>('ALL');
-  const [fading, setFading] = useState(false);
-  const [expanded, setExpanded] = useState<number | null>(null);
-  const [pulseCard, setPulseCard] = useState<number | null>(null);
-  const [hoverAxis, setHoverAxis] = useState<number | null>(null);
-
+  const [activeFilter, setActiveFilter] = useState<FilterKey>('ALL');
   const [products, setProducts] = useState<Record<string, any>>({});
   const [storeScore, setStoreScore] = useState<any>(null);
   const [status, setStatus] = useState<DashboardStatus>('idle');
@@ -127,11 +154,32 @@ export default function DashboardPage() {
   const [mounted, setMounted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [timeSaved, setTimeSaved] = useState(0);
-  const [filter, setFilter] = useState<FilterKey>('all');
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncComplete, setSyncComplete] = useState(false);
   const [theme, setTheme] = useState<ThemeKey>('light');
-  const [selectedDimension, setSelectedDimension] = useState<any>(null);
+
+  const productList = useMemo(() => {
+    const liveProducts = Object.values(products);
+    return liveProducts.length > 0 ? liveProducts : STATIC_PRODUCTS;
+  }, [products]);
+
+  const stats = useMemo(() => {
+    const nextStats = { critical: 0, warning: 0, optimized: 0 };
+
+    productList.forEach((product) => {
+      const key = getFilterKey(product);
+      if (key === 'CRITICAL') nextStats.critical += 1;
+      else if (key === 'WARNING') nextStats.warning += 1;
+      else nextStats.optimized += 1;
+    });
+
+    return nextStats;
+  }, [productList]);
+
+  const filteredProducts = useMemo(() => {
+    if (activeFilter === 'ALL') return productList;
+    return productList.filter((product) => getFilterKey(product) === activeFilter);
+  }, [activeFilter, productList]);
 
   const applyTheme = (nextTheme: ThemeKey) => {
     setTheme(nextTheme);
@@ -153,7 +201,7 @@ export default function DashboardPage() {
       setStatus('scanning');
       setMessage('Loading demo catalog...');
 
-      setTimeout(() => {
+      window.setTimeout(() => {
         const demoProducts: Record<string, any> = {};
 
         demoData.products.forEach((product: any) => {
@@ -206,7 +254,6 @@ export default function DashboardPage() {
 
         if (type === 'progress') {
           setStatus(updateStatus);
-
           if (progressPercent !== undefined) {
             setProgress({ current: Math.floor(progressPercent), total: 100 });
             if (processed) setTimeSaved(processed * 2.1);
@@ -214,7 +261,6 @@ export default function DashboardPage() {
             setProgress({ current: processed, total });
             setTimeSaved(processed * 2.1);
           }
-
           setMessage(updateMessage);
         } else if (type === 'product') {
           setProducts((previous) => ({ ...previous, [data.id]: data }));
@@ -236,327 +282,49 @@ export default function DashboardPage() {
 
   useEffect(() => {
     setMounted(true);
-
     const savedTheme = localStorage.getItem('repoptimizer-theme');
-    const nextTheme: ThemeKey = savedTheme === 'dark' ? 'dark' : 'light';
-    applyTheme(nextTheme);
+    applyTheme(savedTheme === 'dark' ? 'dark' : 'light');
 
     const demo = localStorage.getItem('demo_mode') === 'true';
     setIsDemo(demo);
     run(demo);
-    // `run` is intentionally initialized once here for the first dashboard load.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  useEffect(() => {
-    const els = Array.from(document.querySelectorAll<HTMLElement>('.reveal'));
-    const obs = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('revealed');
-          }
-        });
-      },
-      { threshold: 0.15 }
-    );
-    els.forEach((el) => obs.observe(el));
-    return () => obs.disconnect();
-  }, []);
-
-  useEffect(() => {
-    const start = performance.now();
-    const duration = 1500;
-    const tick = (now: number) => {
-      const t = Math.min(1, (now - start) / duration);
-      const ease = 1 - Math.pow(1 - t, 3);
-      setReadiness(Math.round(54 * ease));
-      if (t < 1) requestAnimationFrame(tick);
-    };
-    requestAnimationFrame(tick);
-  }, []);
-
-  useEffect(() => {
-    const node = upsideRef.current;
-    if (!node) return;
-    const obs = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (!entry.isIntersecting) return;
-          const start = performance.now();
-          const duration = 1800;
-          const tick = (now: number) => {
-            const t = Math.min(1, (now - start) / duration);
-            const ease = 1 - Math.pow(1 - t, 3);
-            setUpside(Math.round(12500 * ease));
-            if (t < 1) requestAnimationFrame(tick);
-          };
-          requestAnimationFrame(tick);
-          obs.disconnect();
-        });
-      },
-      { threshold: 0.25 }
-    );
-    obs.observe(node);
-    return () => obs.disconnect();
-  }, []);
-
-  useEffect(() => {
-    const canvas = radarCanvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-    const radius = 115;
-    const angleStep = (Math.PI * 2) / DIMENSIONS.length;
-
-    const draw = (scale: number) => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-          return accumulator;
-        },
-        { critical: 0, warning: 0, optimized: 0 }
-      ),
-    [productList]
-  );
 
   const handleMegaSync = async () => {
     if (isDemo) {
-      alert('Mega-Sync is disabled in Demo Mode. Connect your store to push real fixes.');
+      alert('Mega-Sync is disabled in Demo Mode.');
       return;
     }
 
     setIsSyncing(true);
-    setSyncComplete(false);
-
-    const allFixable = productList.filter((product) => product.audit_deep && product.audit_deep.fixes);
-    const safeFixes = allFixable.filter((product) => !product.guardrail || product.guardrail.is_safe);
-    const skippedCount = allFixable.length - safeFixes.length;
-
-    const fixes = safeFixes.map((product) => ({
-      product_id: product.id,
-      description: product.audit_deep!.fixes!.improved_description || '',
-      tags: (product.audit_deep!.fixes!.structured_tags || []).map((tag: any) =>
-        typeof tag === 'string' ? tag : `${tag.name}:${tag.value}`
-      ),
-    }));
-
-    if (fixes.length === 0) {
-      alert(
-        skippedCount > 0
-          ? `${skippedCount} products were skipped due to policy guardrail violations. No safe fixes available to sync.`
-          : 'No catalog fixes available to sync.'
-      );
-      setIsSyncing(false);
-      return;
-    }
 
     try {
-      const result = await pushBulkFixes(fixes);
-      const failed = (result?.results || []).filter((item: any) => !item.success);
+      const allFixable = productList.filter((product) => product.audit_deep?.fixes);
+      const fixes = allFixable.map((product) => ({
+        product_id: product.id,
+        description: product.audit_deep.fixes.improved_description || '',
+        tags: (product.audit_deep.fixes.structured_tags || []).map((tag: any) =>
+          typeof tag === 'string' ? tag : `${tag.name}:${tag.value}`
+        ),
+      }));
 
-      if (failed.length > 0) {
-        throw new Error(`${failed.length} product update${failed.length === 1 ? '' : 's'} failed during Mega-Sync.`);
+      if (fixes.length === 0) {
+        alert('No fixes available to sync.');
+        return;
       }
 
-      for (let i = 0; i < DIMENSIONS.length; i += 1) {
-        const angle = -Math.PI / 2 + i * angleStep;
-        const x = centerX + Math.cos(angle) * radius;
-        const y = centerY + Math.sin(angle) * radius;
-        ctx.beginPath();
-        ctx.moveTo(centerX, centerY);
-        ctx.lineTo(x, y);
-        ctx.strokeStyle = '#e2ddd8';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-
-        const labelX = centerX + Math.cos(angle) * (radius + 22);
-        const labelY = centerY + Math.sin(angle) * (radius + 22);
-        ctx.fillStyle = i === hoverAxis ? '#b87333' : '#8c857d';
-        ctx.font = '12px "DM Sans"';
-        ctx.textAlign = 'center';
-        ctx.fillText(DIMENSIONS[i]?.name ?? '', labelX, labelY);
-      }
-
-      ctx.beginPath();
-      for (let i = 0; i < DIMENSIONS.length; i += 1) {
-        const angle = -Math.PI / 2 + i * angleStep;
-        const p = (DIMENSIONS[i]?.value ?? 0) / 100;
-        const x = centerX + Math.cos(angle) * radius * p * scale;
-        const y = centerY + Math.sin(angle) * radius * p * scale;
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      }
-      ctx.closePath();
-      ctx.fillStyle = 'rgba(184,115,51,0.15)';
-      ctx.strokeStyle = '#b87333';
-      ctx.lineWidth = 2;
-      ctx.fill();
-      ctx.stroke();
-    };
-
-    const start = performance.now();
-    const duration = 800;
-    const animate = (now: number) => {
-      const t = Math.min(1, (now - start) / duration);
-      const ease = 1 - Math.pow(1 - t, 3);
-      draw(ease);
-      if (t < 1) requestAnimationFrame(animate);
-    };
-    requestAnimationFrame(animate);
-
-    const onMove = (event: MouseEvent) => {
-      const rect = canvas.getBoundingClientRect();
-      const x = event.clientX - rect.left;
-      const y = event.clientY - rect.top;
-      let found: number | null = null;
-      for (let i = 0; i < DIMENSIONS.length; i += 1) {
-        const angle = -Math.PI / 2 + i * angleStep;
-        const lx = centerX + Math.cos(angle) * (radius + 22);
-        const ly = centerY + Math.sin(angle) * (radius + 22);
-        const dx = x - lx;
-        const dy = y - ly;
-        if (Math.sqrt(dx * dx + dy * dy) < 26) {
-          found = i;
-          break;
-        }
-      }
-      setHoverAxis(found);
-      draw(1);
-    };
-
-    const onLeave = () => {
-      setHoverAxis(null);
-      draw(1);
-    };
-
-    canvas.addEventListener('mousemove', onMove);
-    canvas.addEventListener('mouseleave', onLeave);
-
-    return () => {
-      canvas.removeEventListener('mousemove', onMove);
-      canvas.removeEventListener('mouseleave', onLeave);
-    };
-  }, [hoverAxis]);
-
-  useEffect(() => {
-    const canvas = donutCanvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const data = [
-      { label: 'Critical', value: 3, color: '#991b1b' },
-      { label: 'Warning', value: 3, color: '#92400e' },
-      { label: 'Optimized', value: 0, color: '#2d6a4f' },
-    ];
-    const total = data.reduce((sum, item) => sum + item.value, 0);
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-    const radius = 82;
-    const inner = radius * 0.6;
-
-    const draw = (progress: number) => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      let start = -Math.PI / 2;
-      const gap = (3 / (Math.PI * radius)) * 2;
-      data.forEach((segment) => {
-        const slice = total === 0 ? 0 : (segment.value / total) * Math.PI * 2;
-        const end = start + slice * progress;
-        if (slice > 0) {
-          ctx.beginPath();
-          ctx.arc(centerX, centerY, radius, start + gap, end - gap);
-          ctx.strokeStyle = segment.color;
-          ctx.lineWidth = radius - inner;
-          ctx.lineCap = 'butt';
-          ctx.stroke();
-        } else {
-          ctx.beginPath();
-          ctx.arc(centerX, centerY, radius, start, start + Math.PI / 2);
-          ctx.strokeStyle = 'rgba(45,106,79,0.22)';
-          ctx.lineWidth = radius - inner;
-          ctx.stroke();
-        }
-        start += slice;
-      });
-      ctx.fillStyle = '#4a4540';
-      ctx.font = '14px "DM Sans"';
-      ctx.textAlign = 'center';
-      ctx.fillText('6 total', centerX, centerY + 4);
-    };
-
-    const startTs = performance.now();
-    const duration = 1000;
-    const animate = (now: number) => {
-      const t = Math.min(1, (now - startTs) / duration);
-      const ease = 1 - Math.pow(1 - t, 3);
-      draw(ease);
-      if (t < 1) requestAnimationFrame(animate);
-    };
-    requestAnimationFrame(animate);
-  }, []);
-
-  useEffect(() => {
-    let timer: number;
-    const pulse = () => {
-      const index = Math.floor(Math.random() * PRODUCTS.length);
-      setPulseCard(PRODUCTS[index]?.id ?? null);
-      timer = window.setTimeout(() => {
-        setPulseCard(null);
-        timer = window.setTimeout(pulse, 8000 + Math.floor(Math.random() * 4000));
-      }, 400);
-    };
-    timer = window.setTimeout(pulse, 9000);
-    return () => window.clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    const down = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      if (target && target.tagName === 'BUTTON') {
-        target.classList.add('spring');
-        target.classList.remove('spring-up');
-      }
-    };
-    const up = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      if (target && target.tagName === 'BUTTON') {
-        target.classList.remove('spring');
-        target.classList.add('spring-up');
-        setTimeout(() => target.classList.remove('spring-up'), 180);
-      }
-    };
-    document.addEventListener('mousedown', down);
-    document.addEventListener('mouseup', up);
-    return () => {
-      document.removeEventListener('mousedown', down);
-      document.removeEventListener('mouseup', up);
-    };
-  }, []);
-
-  const filtered = useMemo(() => {
-    if (displayFilter === 'ALL') return PRODUCTS;
-    return PRODUCTS.filter((item) => item.severity === displayFilter);
-  }, [displayFilter]);
-
-  const setFilter = (next: Filter) => {
-    if (next === activeFilter) return;
-    setActiveFilter(next);
-    setFading(true);
-    setTimeout(() => {
-      setDisplayFilter(next);
-      setFading(false);
-    }, 200);
+      await pushBulkFixes(fixes);
+      setSyncComplete(true);
+    } catch (err: any) {
+      alert(`Sync failed: ${err.message}`);
+    } finally {
+      setIsSyncing(false);
+    }
   };
 
   if (!mounted) return null;
 
   const showsScores = status === 'complete' && storeScore;
-  const analyzedCount = productList.length;
-  const auditedCount = productList.filter((product) => product.is_audited).length;
-  const isProcessing = status !== 'complete' && status !== 'error';
   const progressWidth = progress.total > 0 ? (progress.current / progress.total) * 100 : 0;
   const scoreColor = showsScores
     ? storeScore.overall_score > 70
@@ -567,9 +335,9 @@ export default function DashboardPage() {
     : 'var(--text-faint)';
 
   const statCards = [
-    { label: 'Scanned', value: analyzedCount, sub: 'Products surfaced', color: 'var(--accent)' },
+    { label: 'Scanned', value: productList.length, sub: 'Products surfaced', color: 'var(--accent)' },
     { label: 'Critical', value: stats.critical, sub: 'Urgent catalog gaps', color: 'var(--danger)' },
-    { label: 'Audited', value: auditedCount, sub: 'Deep product reviews complete', color: 'var(--ok)' },
+    { label: 'Audited', value: productList.filter((product) => product.is_audited).length, sub: 'Deep reviews complete', color: 'var(--ok)' },
     { label: 'Time saved', value: `${Math.floor(timeSaved)}s`, sub: 'Automation reclaimed', color: 'var(--amber)' },
   ];
 
@@ -583,600 +351,197 @@ export default function DashboardPage() {
     : [];
 
   return (
-    <div>
-      <div className="page-shell">
-        <nav className="site-nav">
-          <button
-            type="button"
-            onClick={() => router.push('/')}
-            style={{ background: 'none', border: 'none', padding: 0, color: 'inherit', cursor: 'pointer' }}
-          >
-            <div className="brand-lockup">
-              <div className="brand-mark">
-                <Brain size={20} />
-              </div>
-              <div className="brand-copy">
-                <span className="brand-name">RepOptimizer</span>
-                <span className="brand-tagline">Catalog quality workspace</span>
-              </div>
+    <div className="page-shell" style={{ background: 'var(--bg)', minHeight: '100vh' }}>
+      <nav className="site-nav">
+        <button type="button" onClick={() => router.push('/')} className="brand-button">
+          <div className="brand-lockup">
+            <div className="brand-mark"><Brain size={20} /></div>
+            <div className="brand-copy">
+              <span className="brand-name">RepOptimizer</span>
+              <span className="brand-tagline">Catalog quality workspace</span>
             </div>
-          </button>
-
-          <div className="nav-actions">
-            {isProcessing && (
-              <span className="status-pill">
-                <Loader2 size={14} className="spin" />
-                {message}
-              </span>
-            )}
-            <span className={isDemo ? 'metric-pill' : 'ghost-pill'}>
-              <span
-                style={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: '50%',
-                  background: isDemo ? 'var(--amber)' : 'var(--ok)',
-                  display: 'inline-block',
-                }}
-              />
-              {isDemo ? 'Demo mode' : 'Live audit'}
-            </span>
-            {status === 'complete' && (
-              <button type="button" className="btn-secondary" onClick={() => exportReportCSV(productList)}>
-                <Download size={15} />
-                Export CSV
-              </button>
-            )}
-            <button type="button" className="icon-button" onClick={toggleTheme}>
-              {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
-            </button>
-            <button type="button" className="icon-button" onClick={() => run()}>
-              <RefreshCcw size={17} />
-            </button>
           </div>
         </button>
-        <div className="dash-nav-right">
-          <div className="demo-pill">● DEMO MODE</div>
-          <button className="export-btn" type="button">
-            ↓ Export CSV
+
+        <div className="nav-actions">
+          {status !== 'complete' && status !== 'error' && (
+            <span className="status-pill"><Loader2 size={14} className="spin" /> {message}</span>
+          )}
+          <span className={isDemo ? 'metric-pill' : 'ghost-pill'}>
+            <span style={{ width: 8, height: 8, borderRadius: '50%', background: isDemo ? 'var(--amber)' : 'var(--ok)', display: 'inline-block' }} />
+            {isDemo ? 'Demo mode' : 'Live audit'}
+          </span>
+          {status === 'complete' && (
+            <button type="button" className="btn-secondary" onClick={() => exportReportCSV(productList)}>
+              <Download size={15} /> Export CSV
+            </button>
+          )}
+          <button type="button" className="icon-button" onClick={toggleTheme}>
+            {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
           </button>
-          <button className="icon-btn" type="button" aria-label="Toggle theme">
-            ☼
-          </button>
-          <button className="icon-btn" type="button" aria-label="Refresh">
-            ↻
+          <button type="button" className="icon-button" onClick={() => run()}>
+            <RefreshCcw size={17} />
           </button>
         </div>
       </nav>
 
-        <main className="dashboard-main">
-          <motion.section 
-            className="dashboard-top-grid"
-            initial="hidden"
-            animate="show"
-            variants={{
-              hidden: { opacity: 0 },
-              show: { opacity: 1, transition: { staggerChildren: 0.1 } }
-            }}
-          >
-            <motion.div 
-              variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
-              className="panel score-hero"
-            >
-              <div className="stack" style={{ gap: 18 }}>
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: 16,
-                    flexWrap: 'wrap',
-                  }}
-                >
-                  <span className="section-kicker" style={{ marginBottom: 0 }}>
-                    Store readiness index
-                  </span>
-                  <span className="ghost-pill">{isProcessing ? 'Audit running' : 'Decision layer active'}</span>
-                </div>
-
-                <div className="score-shell">
-                  <div>
-                    <div className="score-value" style={{ color: scoreColor, fontWeight: 700 }}>
-                      {showsScores ? storeScore.overall_score : '--'}
-                    </div>
-                    <div className="score-sub">out of 100 storewide presentation confidence</div>
-                  </div>
-                </div>
-
-                <p className="section-copy" style={{ maxWidth: 620 }}>
-                  {showsScores
-                    ? 'This score reflects how clearly your catalog communicates product intent, trust, structure, and searchable context to modern shopping journeys.'
-                    : statusCopy[status as keyof typeof statusCopy] || 'Preparing the dashboard.'}
-                </p>
+      <main className="dashboard-main">
+        <motion.section
+          className="dashboard-top-grid"
+          initial="hidden"
+          animate="show"
+          variants={{ hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.1 } } }}
+        >
+          <motion.div variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }} className="panel score-hero">
+            <div className="stack" style={{ gap: 18 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+                <span className="section-kicker">Store readiness index</span>
+                <span className="ghost-pill">{status === 'complete' ? 'Decision layer active' : 'Audit running'}</span>
               </div>
-
-              <div className="stack" style={{ gap: 14 }}>
-                <div className="progress-shell">
-                  <div className="progress-track" style={{ flex: 1 }}>
-                    <div className="progress-fill" style={{ width: `${progressWidth}%`, background: 'var(--accent)' }} />
-                  </div>
-                  <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', fontSize: '0.82rem' }}>
-                    {progress.current}/{progress.total || 100}
-                  </span>
-                </div>
-
-                <div className="flash-card" style={{ background: 'var(--bg-soft)', border: '1px solid var(--border)' }}>
-                  <Search size={18} color="var(--accent)" />
-                  <div>
-                    <strong style={{ display: 'block', fontSize: '0.96rem', marginBottom: 4 }}>{message}</strong>
-                    <span className="faded-note">
-                      {status === 'complete'
-                        ? 'Use the cards below to inspect dimensions, roadmap actions, and product-by-product catalog gaps.'
-                        : 'Streaming updates appear here while the catalog scan progresses.'}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-
-            <div className="metric-grid">
-              {statCards.map((stat) => (
-                <motion.div 
-                  key={stat.label} 
-                  variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
-                  className="metric-card"
-                  style={{ borderLeft: `4px solid ${stat.color}` }}
-                >
-                  <span className="metric-label">{stat.label}</span>
-                  <div>
-                    <div className="metric-value" style={{ color: 'var(--text)', fontWeight: 700 }}>
-                      {stat.value}
-                    </div>
-                    <p className="faded-note" style={{ marginTop: 8 }}>
-                      {stat.sub}
-                    </p>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </motion.section>
-
-          {showsScores && storeScore.business_impact && (
-            <section className="panel impact-card">
-              <div>
-                <span className="section-kicker">Recoverable upside</span>
-                <div className="impact-figure">
-                  <span style={{ color: 'var(--accent)' }}>$</span>
-                  {storeScore.business_impact.recoverable_revenue.toLocaleString()}
-                  <span style={{ fontSize: '1.3rem', color: 'var(--text-muted)' }}>/mo</span>
-                </div>
-              </div>
-
-              <p className="section-copy" style={{ maxWidth: 560 }}>
-                Based on {analyzedCount} analyzed products, the system estimates that
-                {' '}
-                <strong style={{ color: 'var(--danger)' }}>
-                  {storeScore.business_impact.critical_fixes_needed} critical catalog clarity gaps
-                </strong>
-                {' '}
-                are suppressing product visibility. Fixing the structure first creates the fastest lift.
-              </p>
-
-              <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                <button
-                  type="button"
-                  className="btn-secondary"
-                  onClick={() => {
-                    setFilter('critical');
-                    window.scrollTo({ top: 1100, behavior: 'smooth' });
-                  }}
-                >
-                  Focus critical gaps
-                </button>
-                <button
-                  type="button"
-                  className="btn-primary"
-                  onClick={handleMegaSync}
-                  disabled={isSyncing || syncComplete}
-                  style={{
-                    background: syncComplete
-                      ? 'var(--ok)'
-                      : 'var(--gradient-primary)',
-                    boxShadow: '0 12px 24px rgba(37, 99, 235, 0.24)'
-                  }}
-                >
-                  {isSyncing ? (
-                    <>
-                      <RefreshCw size={16} className="spin" />
-                      Syncing catalog
-                    </>
-                  ) : syncComplete ? (
-                    <>
-                      <CheckCircle2 size={16} />
-                      Sync complete
-                    </>
-                  ) : (
-                    <>
-                      Mega-Sync safe fixes
-                      <RefreshCw size={16} />
-                    </>
-                  )}
-                </button>
-              </div>
-            </section>
-          )}
-
-          {showsScores && storeScore.dimension_scores && (
-            <section className="chart-grid">
-              <div className="panel chart-card">
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'flex-end',
-                    justifyContent: 'space-between',
-                    gap: 20,
-                    flexWrap: 'wrap',
-                    marginBottom: 18,
-                  }}
-                >
-                  <div>
-                    <span className="section-kicker">Dimension radar</span>
-                    <h2 className="section-title" style={{ marginBottom: 8 }}>
-                      Which parts of the catalog are helping or hurting customer trust?
-                    </h2>
-                    <p className="section-copy">
-                      Click any dimension card to open more context and see what that score means inside the catalog.
-                    </p>
-                  </div>
-                </div>
-
-                <div style={{ height: 280, marginBottom: 22 }}>
-                  <StoreHealthCharts type="radar" data={storeScore.dimension_scores} />
-                </div>
-
-                <div className="scorecard-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))' }}>
-                  {dimensionEntries.map((entry) => (
-                    <ScoreCard
-                      key={entry.key}
-                      label={entry.label}
-                      score={entry.score}
-                      reason={entry.reason}
-                      onClick={() => setSelectedDimension(entry)}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              <div className="panel chart-card">
-                <span className="section-kicker">Catalog health mix</span>
-                <h2 className="section-title" style={{ fontSize: '1.8rem', marginBottom: 10 }}>
-                  Gap distribution
-                </h2>
-                <p className="section-copy" style={{ marginBottom: 20 }}>
-                  This view shows how many products are still critical, in warning territory, or ready to present.
-                </p>
-
-                <div style={{ height: 220 }}>
-                  <StoreHealthCharts type="pie" data={stats} />
-                </div>
-
-                <div className="stack" style={{ marginTop: 18 }}>
-                  {[
-                    { label: 'Critical', color: 'var(--danger)', value: stats.critical },
-                    { label: 'Warning', color: 'var(--warn)', value: stats.warning },
-                    { label: 'Optimized', color: 'var(--ok)', value: stats.optimized },
-                  ].map((entry) => (
-                    <div
-                      key={entry.label}
-                      className="surface-muted"
-                      style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <span
-                          style={{
-                            width: 10,
-                            height: 10,
-                            borderRadius: '50%',
-                            background: entry.color,
-                            display: 'inline-block',
-                          }}
-                        />
-                        <span style={{ fontWeight: 700 }}>{entry.label}</span>
-                      </div>
-                      <span style={{ color: entry.color, fontWeight: 800 }}>{entry.value}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
-          )}
-
-          {showsScores && storeScore.roadmap && (
-            <StrategicRoadmap roadmap={storeScore.roadmap} products={productList} onMegaSync={handleMegaSync} />
-          )}
-
-          <section className="panel section-bar" style={{ padding: '28px 32px', background: '#FFFFFF' }}>
-            <div className="filter-row" style={{ marginBottom: 20 }}>
-              <span className="section-kicker" style={{ marginBottom: 0 }}>
-                Product queue
-              </span>
-              <div className="filter-row">
-                <Filter size={15} color="var(--text-muted)" />
-                <div className="filter-chip-row">
-                  {[
-                    { id: 'all', label: 'All' },
-                    { id: 'critical', label: 'Critical' },
-                    { id: 'warning', label: 'Warning' },
-                    { id: 'optimized', label: 'Optimized' },
-                  ].map((item) => (
-                    <button
-                      key={item.id}
-                      type="button"
-                      className={`filter-chip ${filter === item.id ? 'filter-chip--active' : ''}`}
-                      onClick={() => setFilter(item.id as FilterKey)}
-                      style={{
-                        background: filter === item.id ? 'var(--gradient-primary)' : 'transparent',
-                        color: filter === item.id ? '#FFFFFF' : 'var(--text-secondary)',
-                        borderColor: filter === item.id ? 'transparent' : 'var(--border)'
-                      }}
-                    >
-                      {item.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </article>
-
-            <div className="progress-shell" style={{ background: 'var(--bg)', padding: '16px 20px', borderRadius: 12 }}>
-              <div>
-                <div style={{ fontWeight: 700, marginBottom: 4 }}>Live processing status</div>
-                <p className="faded-note">
-                  {isProcessing ? message : `Showing ${sortedProducts.length} products in the current filter.`}
-                </p>
-              </div>
-              <div className="progress-track" style={{ height: 8, background: 'var(--border)' }}>
-                <div className="progress-fill" style={{ width: `${progressWidth}%` }} />
-              </div>
-              <div className="metric-sub" style={{ color: 'var(--copper)', fontWeight: 500, cursor: 'pointer' }}>
-                Run your first sync to start saving time →
-              </div>
-            </article>
-          </div>
-        </section>
-
-        <section className="upside reveal" ref={upsideRef}>
-          <div>
-            <div className="metric-label" style={{ color: 'rgba(250,249,247,0.4)' }}>
-              RECOVERABLE UPSIDE
-            </div>
-            <div className="up-amount">
-              ${upside.toLocaleString()}
-              <small>/mo</small>
-            </div>
-          </div>
-          <div style={{ maxWidth: 400 }}>
-            <p style={{ fontSize: 15, lineHeight: 1.65 }}>
-              Based on 6 analyzed products, the system estimates that <span style={{ color: 'var(--danger)', fontWeight: 600 }}>4 critical AI perception gaps</span> are suppressing recommendation visibility. Fixing the
-              structure first creates the fastest lift.
-            </p>
-            <div style={{ marginTop: 20, display: 'flex', gap: 12 }}>
-              <button className="ghost-btn" type="button" style={{ padding: '10px 20px', color: 'rgba(250,249,247,0.7)', borderColor: 'rgba(250,249,247,0.2)' }}>
-                Focus critical gaps
-              </button>
-              <button className="btn-primary" type="button" style={{ padding: '10px 20px' }}>
-                Mega-Sync safe fixes ⟳
-              </button>
-            </div>
-          </div>
-        </section>
-
-        <section className="section-grid reveal">
-          <article className="dash-card">
-            <div className="eyebrow" style={{ marginBottom: 8 }}>
-              DIMENSION RADAR
-            </div>
-            <h3 style={{ fontSize: 26, lineHeight: 1.2 }}>Which parts of the catalog are helping or hurting AI trust?</h3>
-            <p style={{ marginTop: 8, color: 'var(--ink-secondary)', fontSize: 14 }}>Click any dimension card to open more context.</p>
-
-            <div className="canvas-wrap">
-              <canvas ref={radarCanvasRef} width={320} height={320} />
-            </div>
-
-          {status === 'complete' && (
-            <section className="panel chart-card" style={{ marginTop: 28 }}>
-              <span className="section-kicker">Search testing lab</span>
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'flex-end',
-                  justifyContent: 'space-between',
-                  gap: 20,
-                  flexWrap: 'wrap',
-                  marginBottom: 16,
-                }}
-              >
+              <div className="score-shell">
                 <div>
-                  <h2 className="section-title" style={{ marginBottom: 8 }}>
-                    Test how different shoppers rank the catalog now.
-                  </h2>
-                  <p className="section-copy">
-                    Compare confidence across multiple buying personas and inspect why products are
-                    accepted or rejected.
-                  </p>
+                  <div className="score-value" style={{ color: scoreColor, fontWeight: 700 }}>
+                    {showsScores ? storeScore.overall_score : '--'}
+                  </div>
+                  <div className="score-sub">out of 100 storewide presentation confidence</div>
                 </div>
-                <span className="status-pill">
-                  <Search size={14} />
-                  Query studio live
-                </span>
               </div>
-              <h4 style={{ marginTop: 14, fontFamily: 'DM Sans, sans-serif', fontSize: 17 }}>Trust Foundation</h4>
-              <p style={{ marginTop: 4, color: 'var(--ink-secondary)', fontSize: 13 }}>Generate AI Discovery Guide and Policies</p>
-              <div style={{ marginTop: 20, fontSize: 10, letterSpacing: '0.1em', color: 'var(--ink-tertiary)' }}>EST. IMPACT</div>
-              <div style={{ marginTop: 4, fontSize: 13 }}>High (Legal and Agent Safety)</div>
-              <button className="nav-btn" type="button" style={{ width: '100%', marginTop: 16 }}>
-                ✦ Build Trust Guide
-              </button>
-            </article>
-
-            <article className="road-card">
-              <div className="road-top" style={{ background: 'var(--danger)' }} />
-              <div className="badge-row">
-                <span className="badge-small" style={{ background: 'var(--bg-muted)', color: 'var(--ink-secondary)' }}>
-                  PHASE 2
-                </span>
-                <span className="badge-small" style={{ border: '1px solid rgba(153,27,27,0.2)', background: 'rgba(153,27,27,0.08)', color: 'var(--danger)' }}>
-                  ● CRITICAL
-                </span>
-              </div>
-              <h4 style={{ marginTop: 14, fontFamily: 'DM Sans, sans-serif', fontSize: 17 }}>Search Visibility</h4>
-              <p style={{ marginTop: 4, color: 'var(--ink-secondary)', fontSize: 13 }}>Mega-Sync 4 Product Tags</p>
-              <div style={{ marginTop: 20, fontSize: 10, letterSpacing: '0.1em', color: 'var(--ink-tertiary)' }}>EST. IMPACT</div>
-              <div style={{ marginTop: 4, fontSize: 13 }}>Medium (Ranking Volume)</div>
-              <button className="nav-btn" type="button" style={{ width: '100%', marginTop: 16 }}>
-                ⚡ Execute Sync
-              </button>
-            </article>
-
-            <article className="road-card">
-              <div className="road-top" style={{ background: 'var(--warning)' }} />
-              <div className="badge-row">
-                <span className="badge-small" style={{ background: 'var(--bg-muted)', color: 'var(--ink-secondary)' }}>
-                  PHASE 3
-                </span>
-                <span className="badge-small" style={{ border: '1px solid rgba(146,64,14,0.2)', background: 'rgba(146,64,14,0.08)', color: 'var(--warning)' }}>
-                  ● WARNING
-                </span>
-              </div>
-              <h4 style={{ marginTop: 14, fontFamily: 'DM Sans, sans-serif', fontSize: 17 }}>Conversion Optimization</h4>
-              <p style={{ marginTop: 4, color: 'var(--ink-secondary)', fontSize: 13 }}>Semantic Description Deep Audit</p>
-              <div style={{ marginTop: 20, fontSize: 10, letterSpacing: '0.1em', color: 'var(--ink-tertiary)' }}>EST. IMPACT</div>
-              <div style={{ marginTop: 4, fontSize: 13 }}>High (Recommendation Confidence)</div>
-              <button className="nav-btn" type="button" style={{ width: '100%', marginTop: 16 }}>
-                ↗ Start Audit
-              </button>
-            </article>
-          </div>
-        </section>
-
-        <section className="queue reveal">
-          <div className="queue-head">
-            <div>
-              <div className="metric-label">PRODUCT QUEUE</div>
-              <div style={{ marginTop: 6, color: 'var(--ink-secondary)', fontSize: 13 }}>⎇ Filter by severity</div>
+              <p className="section-copy" style={{ maxWidth: 620 }}>
+                {showsScores
+                  ? 'This score reflects how clearly your catalog communicates product intent, trust, and structure.'
+                  : statusCopy[status as keyof typeof statusCopy] || 'Preparing the dashboard.'}
+              </p>
             </div>
 
+            <div className="stack" style={{ gap: 14, marginTop: 24 }}>
+              <div className="progress-shell">
+                <div className="progress-track" style={{ flex: 1 }}>
+                  <div className="progress-fill" style={{ width: `${progressWidth}%`, background: 'var(--accent)' }} />
+                </div>
+                <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', fontSize: '0.82rem' }}>
+                  {progress.current}/{progress.total || 100}
+                </span>
+              </div>
+              <div className="flash-card">
+                <Search size={18} color="var(--accent)" />
+                <div>
+                  <strong style={{ display: 'block', fontSize: '0.96rem', marginBottom: 4 }}>{message}</strong>
+                  <span className="faded-note">Streaming updates appear here while the catalog scan progresses.</span>
+                </div>
+              </div>
+              {error && (
+                <div className="error-banner">
+                  <span style={{ lineHeight: 1.55 }}>{error}</span>
+                </div>
+              )}
+            </div>
+          </motion.div>
+
+          <div className="metric-grid">
+            {statCards.map((stat) => (
+              <motion.div
+                key={stat.label}
+                variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
+                className="metric-card"
+                style={{ borderLeft: `4px solid ${stat.color}` }}
+              >
+                <span className="metric-label">{stat.label}</span>
+                <div>
+                  <div className="metric-value" style={{ fontWeight: 700 }}>{stat.value}</div>
+                  <p className="faded-note" style={{ marginTop: 8 }}>{stat.sub}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </motion.section>
+
+        {showsScores && storeScore.business_impact && (
+          <section className="panel impact-card" style={{ marginTop: 24 }}>
             <div>
-              <div className="tabs">
-                {FILTERS.map((f) => (
-                  <button key={f} type="button" className={`tab ${activeFilter === f ? 'active' : ''}`} onClick={() => setFilter(f)}>
-                    {f}
-                  </button>
+              <span className="section-kicker">Recoverable upside</span>
+              <div className="impact-figure">
+                <span style={{ color: 'var(--accent)' }}>$</span>
+                {storeScore.business_impact.recoverable_revenue.toLocaleString()}
+                <span style={{ fontSize: '1.3rem', color: 'var(--text-muted)' }}>/mo</span>
+              </div>
+            </div>
+            <p className="section-copy" style={{ maxWidth: 560 }}>
+              Based on {productList.length} products, there are <strong style={{ color: 'var(--danger)' }}>{storeScore.business_impact.critical_fixes_needed} critical gaps</strong> suppressing visibility.
+            </p>
+            <div style={{ display: 'flex', gap: 12, marginTop: 20, flexWrap: 'wrap' }}>
+              <button type="button" className="btn-secondary" onClick={() => setActiveFilter('CRITICAL')}>Focus critical gaps</button>
+              <button type="button" className="btn-primary" onClick={handleMegaSync} disabled={isSyncing || syncComplete}>
+                {isSyncing ? <><RefreshCw size={16} className="spin" /> Syncing</> : syncComplete ? <><CheckCircle2 size={16} /> Complete</> : <><RefreshCw size={16} /> Mega-Sync safe fixes</>}
+              </button>
+            </div>
+          </section>
+        )}
+
+        {showsScores && (
+          <section className="chart-grid" style={{ marginTop: 24 }}>
+            <div className="panel chart-card">
+              <span className="section-kicker">Dimension radar</span>
+              <div style={{ height: 320, margin: '20px 0' }}>
+                <StoreHealthCharts type="radar" data={storeScore.dimension_scores} />
+              </div>
+              <div className="scorecard-grid">
+                {dimensionEntries.map((entry) => (
+                  <ScoreCard key={entry.key} label={entry.label} score={entry.score} reason={entry.reason} />
                 ))}
               </div>
             </div>
 
+            <div className="panel chart-card">
+              <span className="section-kicker">Catalog health mix</span>
+              <div style={{ height: 260, margin: '20px 0' }}>
+                <StoreHealthCharts type="pie" data={stats} />
+              </div>
+              <div className="stack" style={{ gap: 10 }}>
+                {Object.entries(stats).map(([key, value]) => (
+                  <div key={key} className="surface-muted" style={{ padding: 14, display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ fontWeight: 600, textTransform: 'capitalize' }}>{key}</span>
+                    <span style={{ fontWeight: 700, color: `var(--${key === 'critical' ? 'danger' : key === 'warning' ? 'warn' : 'ok'})` }}>
+                      {value}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {showsScores && storeScore.roadmap && (
+          <div style={{ marginTop: 24 }}>
+            <StrategicRoadmap roadmap={storeScore.roadmap} products={productList} onMegaSync={handleMegaSync} />
+          </div>
+        )}
+
+        <section className="panel" style={{ marginTop: 24, padding: 32 }}>
+          <div className="filter-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 18, marginBottom: 24 }}>
             <div>
-              <div style={{ fontSize: 13, color: 'var(--ink-secondary)' }}>Live processing status</div>
-              <div style={{ width: 200, height: 4, marginTop: 6, background: 'var(--bg-muted)', borderRadius: 2, overflow: 'hidden' }}>
-                <div
-                  style={{
-                    height: '100%',
-                    width: '100%',
-                    borderRadius: 2,
-                    background: 'var(--success)',
-                    transition: 'width 1500ms ease-out',
-                  }}
-                />
-              </div>
-              <div style={{ marginTop: 4, fontSize: 12, color: 'var(--ink-tertiary)' }}>
-                Showing {filtered.length} products in the current filter.
-              </div>
+              <span className="section-kicker">Product Queue</span>
+              <h2 className="section-title" style={{ marginBottom: 0 }}>Deep Audit Catalog</h2>
+            </div>
+            <div className="filter-chip-row">
+              {FILTERS.map((filter) => (
+                <button
+                  key={filter}
+                  type="button"
+                  className={`filter-chip ${activeFilter === filter ? 'filter-chip--active' : ''}`}
+                  onClick={() => setActiveFilter(filter)}
+                >
+                  {filter}
+                </button>
+              ))}
             </div>
           </div>
 
-          <div className={`queue-list ${fading ? 'fading' : ''}`}>
-            {filtered.map((product) => {
-              const open = expanded === product.id;
-              return (
-                <article
-                  key={product.id}
-                  className={`product-card ${pulseCard === product.id ? 'pulse' : ''}`}
-                  onClick={() => setExpanded((prev) => (prev === product.id ? null : product.id))}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter' || event.key === ' ') {
-                      event.preventDefault();
-                      setExpanded((prev) => (prev === product.id ? null : product.id));
-                    }
-                  }}
-                  tabIndex={0}
-                  role="button"
-                >
-                  <div className="product-main">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                      <div className="avatar">{product.name.slice(0, 1)}</div>
-                      <div>
-                        <div style={{ fontWeight: 600, fontSize: 16 }}>{product.name}</div>
-                        <div className={`status-badge ${severityClass(product.severity)}`}>{product.severity}</div>
-                        <div style={{ marginTop: 4, color: 'var(--ink-secondary)', fontSize: 14 }}>{product.diagnosis}</div>
-                      </div>
-                    </div>
-
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
-                      <div className="score-shift">
-                        <div className="metric-label">AI SCORE SHIFT</div>
-                        <div style={{ marginTop: 4, fontSize: 24, fontFamily: 'Fraunces, serif', fontWeight: 700 }}>
-                          <span style={{ color: 'var(--danger)' }}>{product.oldScore}</span>{' '}
-                          <span style={{ color: 'var(--ink-tertiary)' }}>→</span>{' '}
-                          <span style={{ color: 'var(--success)' }}>{product.newScore}</span>
-                        </div>
-                      </div>
-                      <div style={{ color: 'var(--ink-tertiary)', fontSize: 20, transform: open ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 200ms var(--ease)' }}>
-                        ˅
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className={`expand-wrap ${open ? 'open' : ''}`}>
-                    <div className="expand-inner">
-                      <div className="expand-grid">
-                        <div>
-                          <div className="metric-label">ISSUES DETECTED</div>
-                          <ul style={{ marginTop: 8, paddingLeft: 18, color: 'var(--ink-secondary)', fontSize: 14, lineHeight: 1.7 }}>
-                            {product.issues.map((issue) => (
-                              <li key={issue}>{issue}</li>
-                            ))}
-                          </ul>
-                        </div>
-                        <div>
-                          <div className="metric-label">RECOMMENDED FIXES</div>
-                          <ul style={{ marginTop: 8, paddingLeft: 18, color: 'var(--ink-secondary)', fontSize: 14, lineHeight: 1.7 }}>
-                            {product.fixes.map((fix) => (
-                              <li key={fix}>{fix}</li>
-                            ))}
-                          </ul>
-                        </div>
-                        <div>
-                          <div className="metric-label">AFTER SYNC</div>
-                          <div className="preview-box code-font" style={{ marginTop: 8, fontSize: 12, color: 'var(--ink-secondary)', lineHeight: 1.7 }}>
-                            {product.afterSync}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="action-row">
-                        <button type="button" className="btn-primary" style={{ padding: '10px 18px' }}>
-                          Apply this fix →
-                        </button>
-                        <button type="button" style={{ border: 'none', background: 'transparent', color: 'var(--ink-secondary)', textDecoration: 'underline', cursor: 'pointer' }}>
-                          Skip for now
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </article>
-              );
-            })}
+          <div className="stack" style={{ gap: 16 }}>
+            <AnimatePresence mode="popLayout">
+              {filteredProducts.map((product) => (
+                <ProductCard key={product.id} product={product} isDemo={isDemo} />
+              ))}
+            </AnimatePresence>
           </div>
         </section>
       </main>

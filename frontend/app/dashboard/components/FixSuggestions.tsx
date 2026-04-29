@@ -15,8 +15,8 @@ function CopyBtn({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
   return (
     <button onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
-      style={{ padding: '4px 6px', borderRadius: 6, background: 'transparent', border: 'none', cursor: 'pointer', color: copied ? 'var(--ok)' : 'var(--text-muted)', transition: 'color 0.2s' }}>
-      {copied ? <Check size={13} /> : <Copy size={13} />}
+      style={{ padding: '6px 8px', borderRadius: 8, background: 'transparent', border: 'none', cursor: 'pointer', color: copied ? 'var(--ok)' : 'var(--text-muted)', transition: 'color 0.2s' }}>
+      {copied ? <Check size={15} /> : <Copy size={15} />}
     </button>
   );
 }
@@ -54,7 +54,7 @@ export default function FixSuggestions({ fixes, productId, isDemo, guardrail }: 
   const handlePush = async () => {
     if (isDemo) {
       setPushStatus('success');
-      setPushMessage('Demo mode — changes would be applied to your live store.');
+      setPushMessage('Demo mode - changes would be applied to your live store.');
       return;
     }
     setShowPreview(true);
@@ -81,7 +81,7 @@ export default function FixSuggestions({ fixes, productId, isDemo, guardrail }: 
             <p style={{ fontSize: 11, fontWeight: 800, color: guardrail.is_safe ? 'var(--ok)' : 'var(--danger)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>
               Policy Guardrail: {guardrail.is_safe ? 'SECURE' : 'ACTION REQUIRED'}
             </p>
-            <p style={{ fontSize: 10, color: 'var(--text-muted)', margin: '2px 0 0 0' }}>
+            <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '4px 0 0 0', lineHeight: 1.55 }}>
               {guardrail.reason || 'Verified against store refund and shipping policies.'}
             </p>
           </div>
@@ -90,18 +90,18 @@ export default function FixSuggestions({ fixes, productId, isDemo, guardrail }: 
 
       <div style={{ borderRadius: 12, overflow: 'hidden', border: '1px solid var(--border)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: 'var(--ok-soft)', borderBottom: '1px solid var(--ok-border)' }}>
-          <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--ok)', fontFamily: 'var(--font-head)' }}>Improved Description</p>
+          <p style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.09em', color: 'var(--ok)', fontFamily: 'var(--font-head)' }}>Improved Description</p>
           <CopyBtn text={desc} />
         </div>
-        <p style={{ padding: '14px 16px', fontSize: 13, lineHeight: 1.65, color: 'var(--text-secondary)', background: 'var(--bg-card)' }}>{desc}</p>
+        <p style={{ padding: '16px 18px', fontSize: 15, lineHeight: 1.75, color: 'var(--text-secondary)', background: 'var(--bg-card)' }}>{desc}</p>
       </div>
 
       {keywords.length > 0 && (
         <div>
-          <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: 8, fontFamily: 'var(--font-head)' }}>Added Keywords</p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+          <p style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.09em', color: 'var(--text-muted)', marginBottom: 10, fontFamily: 'var(--font-head)' }}>Added Keywords</p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
             {keywords.map((kw: string, i: number) => (
-              <span key={i} style={{ fontSize: 11, padding: '4px 10px', borderRadius: 99, background: 'var(--ok-soft)', border: '1px solid var(--ok-border)', color: 'var(--ok)', fontWeight: 600, fontFamily: 'var(--font-head)' }}>{kw}</span>
+              <span key={i} style={{ fontSize: 13, padding: '6px 12px', borderRadius: 99, background: 'var(--ok-soft)', border: '1px solid var(--ok-border)', color: 'var(--ok)', fontWeight: 600, fontFamily: 'var(--font-head)' }}>{kw}</span>
             ))}
           </div>
         </div>
@@ -109,11 +109,11 @@ export default function FixSuggestions({ fixes, productId, isDemo, guardrail }: 
 
       {tags.length > 0 && (
         <div>
-          <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: 8, fontFamily: 'var(--font-head)' }}>Structured Tags</p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+          <p style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.09em', color: 'var(--text-muted)', marginBottom: 10, fontFamily: 'var(--font-head)' }}>Structured Tags</p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
             {tags.map((tag: any, i: number) => {
               const label = typeof tag === 'object' ? `${tag.name}: ${tag.value}` : tag;
-              return <span key={i} style={{ fontSize: 11, padding: '4px 10px', borderRadius: 8, background: 'var(--bg-elevated)', border: '1px solid var(--border)', color: 'var(--accent)', fontFamily: 'var(--font-mono)' }}>{label}</span>;
+              return <span key={i} style={{ fontSize: 13, padding: '6px 12px', borderRadius: 10, background: 'var(--bg-elevated)', border: '1px solid var(--border)', color: 'var(--accent)', fontFamily: 'var(--font-mono)' }}>{label}</span>;
             })}
           </div>
         </div>
@@ -121,14 +121,14 @@ export default function FixSuggestions({ fixes, productId, isDemo, guardrail }: 
 
       {faqs.length > 0 && (
         <div>
-          <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: 8, fontFamily: 'var(--font-head)' }}>Suggested FAQs</p>
+          <p style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.09em', color: 'var(--text-muted)', marginBottom: 10, fontFamily: 'var(--font-head)' }}>Suggested FAQs</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {faqs.map((faq: any, i: number) => (
-              <div key={i} style={{ padding: '12px 14px', borderRadius: 10, background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
-                <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)', marginBottom: 4, fontFamily: 'var(--font-head)' }}>
+              <div key={i} style={{ padding: '14px 16px', borderRadius: 12, background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
+                <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: 6, fontFamily: 'var(--font-head)' }}>
                   {typeof faq === 'string' ? faq : faq.question}
                 </p>
-                <p style={{ fontSize: 11, lineHeight: 1.5, color: 'var(--text-secondary)' }}>
+                <p style={{ fontSize: 13, lineHeight: 1.65, color: 'var(--text-secondary)' }}>
                   {typeof faq === 'string' ? 'See product details for more information.' : faq.answer}
                 </p>
               </div>
@@ -139,36 +139,36 @@ export default function FixSuggestions({ fixes, productId, isDemo, guardrail }: 
 
       <div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-          <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--accent)', fontFamily: 'var(--font-head)' }}>Shopify Storefront Preview</p>
-          <span style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 600 }}>Simulated Next.js App Route</span>
+          <p style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.09em', color: 'var(--accent)', fontFamily: 'var(--font-head)' }}>Shopify Storefront Preview</p>
+          <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>Simulated Next.js App Route</span>
         </div>
         
-        <div style={{ background: 'linear-gradient(145deg, #ffffff, #f8fafc)', borderRadius: 12, border: '1px solid #dbeafe', padding: '20px', color: '#18181b', fontFamily: 'var(--font-sans)', boxShadow: '0 12px 28px rgba(37,99,235,0.1)' }}>
-           <div style={{ display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' }}>
-             <span style={{ fontSize: 10, padding: '4px 8px', background: '#f4f4f5', borderRadius: 6, color: '#52525b', fontWeight: 600, border: '1px solid #e4e4e7' }}>Catalog Optimized</span>
+        <div style={{ background: 'linear-gradient(145deg, #ffffff, #f8fafc)', borderRadius: 16, border: '1px solid #dbeafe', padding: '22px', color: '#18181b', fontFamily: 'var(--font-sans)', boxShadow: '0 12px 28px rgba(37,99,235,0.1)' }}>
+           <div style={{ display: 'flex', gap: 8, marginBottom: 18, flexWrap: 'wrap' }}>
+             <span style={{ fontSize: 13, padding: '6px 10px', background: '#f4f4f5', borderRadius: 8, color: '#52525b', fontWeight: 600, border: '1px solid #e4e4e7' }}>Catalog Optimized</span>
              {tags.map((tag: any, i: number) => {
                 const label = typeof tag === 'object' ? `${tag.name}: ${tag.value}` : tag;
-                return <span key={i} style={{ fontSize: 10, padding: '4px 8px', background: '#f4f4f5', borderRadius: 6, color: '#52525b', border: '1px solid #e4e4e7' }}>{label}</span>;
+                return <span key={i} style={{ fontSize: 13, padding: '6px 10px', background: '#f4f4f5', borderRadius: 8, color: '#52525b', border: '1px solid #e4e4e7' }}>{label}</span>;
              })}
              {keywords.map((kw: string, i: number) => (
-                <span key={'kw'+i} style={{ fontSize: 10, padding: '4px 8px', background: '#ecfdf5', color: '#059669', borderRadius: 6, border: '1px solid #a7f3d0' }}>{kw}</span>
+                <span key={'kw'+i} style={{ fontSize: 13, padding: '6px 10px', background: '#ecfdf5', color: '#059669', borderRadius: 8, border: '1px solid #a7f3d0' }}>{kw}</span>
              ))}
            </div>
            
-           <h4 style={{ fontSize: 16, fontWeight: 700, marginBottom: 8, color: '#09090b', letterSpacing: '-0.02em', fontFamily: 'var(--font-head)' }}>Description</h4>
-           <div style={{ fontSize: 13, lineHeight: 1.6, color: '#3f3f46', background: '#fff', padding: '16px', borderRadius: 8, border: '1px solid #e4e4e7', whiteSpace: 'pre-wrap' }}>
+           <h4 style={{ fontSize: 20, fontWeight: 700, marginBottom: 10, color: '#09090b', letterSpacing: '-0.02em', fontFamily: 'var(--font-head)' }}>Description</h4>
+           <div style={{ fontSize: 15, lineHeight: 1.8, color: '#3f3f46', background: '#fff', padding: '18px', borderRadius: 12, border: '1px solid #e4e4e7', whiteSpace: 'pre-wrap' }}>
              {desc}
            </div>
         </div>
       </div>
 
       {pushStatus === 'success' && (
-        <div style={{ padding: '10px 14px', borderRadius: 10, background: 'var(--ok-soft)', border: '1px solid var(--ok-border)', color: 'var(--ok)', fontSize: 12, fontWeight: 600 }}>
+        <div style={{ padding: '12px 16px', borderRadius: 12, background: 'var(--ok-soft)', border: '1px solid var(--ok-border)', color: 'var(--ok)', fontSize: 14, fontWeight: 600 }}>
           {pushMessage}
         </div>
       )}
       {pushStatus === 'error' && (
-        <div style={{ padding: '10px 14px', borderRadius: 10, background: 'var(--danger-soft)', border: '1px solid var(--danger-border)', color: 'var(--danger)', fontSize: 12, fontWeight: 600 }}>
+        <div style={{ padding: '12px 16px', borderRadius: 12, background: 'var(--danger-soft)', border: '1px solid var(--danger-border)', color: 'var(--danger)', fontSize: 14, fontWeight: 600 }}>
           {pushMessage}
         </div>
       )}
@@ -176,7 +176,7 @@ export default function FixSuggestions({ fixes, productId, isDemo, guardrail }: 
       <button
         onClick={handlePush}
         disabled={pushing}
-        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '13px', borderRadius: 10, background: pushStatus === 'success' ? 'var(--ok)' : 'var(--gradient-primary)', color: '#FFFFFF', border: 'none', cursor: pushing ? 'not-allowed' : 'pointer', fontFamily: 'var(--font-head)', fontWeight: 700, fontSize: 14, transition: 'all 0.2s', opacity: pushing ? 0.7 : 1 }}
+        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '15px', borderRadius: 12, background: pushStatus === 'success' ? 'var(--ok)' : 'var(--gradient-primary)', color: '#FFFFFF', border: 'none', cursor: pushing ? 'not-allowed' : 'pointer', fontFamily: 'var(--font-head)', fontWeight: 700, fontSize: 17, transition: 'all 0.2s', opacity: pushing ? 0.7 : 1 }}
         onMouseEnter={e => { if (!pushing) { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 4px 20px var(--accent-glow)'; } }}
         onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
       >
