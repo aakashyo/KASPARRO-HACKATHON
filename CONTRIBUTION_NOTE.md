@@ -3,7 +3,7 @@
 ## Team
 
 **Project:** AI RepOptimizer
-**Hackathon:** Anthropic Hackathon 2025
+**Hackathon:** Kasparro Hackathon 
 **Contributors:** Milind Shandilya (`milind899`) and Akash Singh (`aakashyo`)
 
 ## Overview
