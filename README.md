@@ -92,6 +92,7 @@ render.yaml                   Deployment configuration
 - [Technical Document](./TECHNICAL_DOCUMENT.md)
 - [Contribution Note](./CONTRIBUTION_NOTE.md)
 - [Decision Log](./DECISION_LOG.md)
+- [Screenshots](./docs/screenshots/)
 
 ## Setup Instructions
 
@@ -175,16 +176,39 @@ The recommended demo flow is:
 
 ## Product Walkthrough
 
-The screenshot set below gives a quick visual walkthrough of the product experience:
+The screenshot set below gives a quick visual walkthrough of the product experience.
 
-- [Landing page](./docs/screenshots/Screenshot%202026-05-02%20195034.png)
-- [Store connect / login flow](./docs/screenshots/Screenshot%202026-05-02%20195225.png)
-- [Dashboard overview](./docs/screenshots/Screenshot%202026-05-02%20195238.png)
-- [Product audit and issue review](./docs/screenshots/Screenshot%202026-05-02%20195255.png)
-- [AI readiness metrics and analysis panels](./docs/screenshots/Screenshot%202026-05-02%20195330.png)
-- [Fix recommendation flow](./docs/screenshots/Screenshot%202026-05-02%20195350.png)
-- [Simulation / deeper dashboard state](./docs/screenshots/Screenshot%202026-05-02%20195710.png)
-- [Final workflow state](./docs/screenshots/Screenshot%202026-05-02%20195736.png)
+### Landing Page
+
+![Landing page](./docs/screenshots/Screenshot%202026-05-02%20195034.png)
+
+### Store Connect / Login Flow
+
+![Store connect / login flow](./docs/screenshots/Screenshot%202026-05-02%20195225.png)
+
+### Dashboard Overview
+
+![Dashboard overview](./docs/screenshots/Screenshot%202026-05-02%20195238.png)
+
+### Product Audit and Issue Review
+
+![Product audit and issue review](./docs/screenshots/Screenshot%202026-05-02%20195255.png)
+
+### AI Readiness Metrics and Analysis Panels
+
+![AI readiness metrics and analysis panels](./docs/screenshots/Screenshot%202026-05-02%20195330.png)
+
+### Fix Recommendation Flow
+
+![Fix recommendation flow](./docs/screenshots/Screenshot%202026-05-02%20195350.png)
+
+### Simulation / Deeper Dashboard State
+
+![Simulation / deeper dashboard state](./docs/screenshots/Screenshot%202026-05-02%20195710.png)
+
+### Final Workflow State
+
+![Final workflow state](./docs/screenshots/Screenshot%202026-05-02%20195736.png)
 
 ## Current Prototype Scope
 
