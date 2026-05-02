@@ -161,6 +161,10 @@ npm run dev
 http://localhost:3000
 ```
 
+## Demo Video
+
+Watch the full product walkthrough here: [Demo Video](https://drive.google.com/drive/folders/1gFlhfdio6icHjkJjP0SKllDPYOW5OULE?usp=sharing)
+
 ## Demo Flow
 
 The recommended demo flow is:
