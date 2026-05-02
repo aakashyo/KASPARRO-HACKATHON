@@ -1,6 +1,6 @@
 # AI RepOptimizer
 
-AI RepOptimizer is a Shopify-focused commerce intelligence tool built for the Anthropic Hackathon. It helps merchants understand how AI shopping systems interpret their product catalog, identify discoverability gaps, and generate safer, more structured improvements that make products easier for AI-driven commerce systems to recommend.
+AI RepOptimizer is a Shopify-focused commerce intelligence tool built for the Kasparro Hackathon. It helps merchants understand how AI shopping systems interpret their product catalog, identify discoverability gaps, and generate safer, more structured improvements that make products easier for AI-driven commerce systems to recommend.
 
 ## What Problem It Solves
 
