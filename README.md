@@ -173,6 +173,19 @@ The recommended demo flow is:
 7. Preview FAQ or improvement outputs
 8. Review push-back actions
 
+## Product Walkthrough
+
+The screenshot set below gives a quick visual walkthrough of the product experience:
+
+- [Landing page](./docs/screenshots/Screenshot%202026-05-02%20195034.png)
+- [Store connect / login flow](./docs/screenshots/Screenshot%202026-05-02%20195225.png)
+- [Dashboard overview](./docs/screenshots/Screenshot%202026-05-02%20195238.png)
+- [Product audit and issue review](./docs/screenshots/Screenshot%202026-05-02%20195255.png)
+- [AI readiness metrics and analysis panels](./docs/screenshots/Screenshot%202026-05-02%20195330.png)
+- [Fix recommendation flow](./docs/screenshots/Screenshot%202026-05-02%20195350.png)
+- [Simulation / deeper dashboard state](./docs/screenshots/Screenshot%202026-05-02%20195710.png)
+- [Final workflow state](./docs/screenshots/Screenshot%202026-05-02%20195736.png)
+
 ## Current Prototype Scope
 
 This project is a working end-to-end prototype built under hackathon constraints. It intentionally favors a complete and reviewable workflow over production-hard infrastructure.
